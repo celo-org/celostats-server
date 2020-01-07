@@ -241,12 +241,12 @@ netStatsApp.controller('StatsCtrl', function ($scope, $filter, $localStorage, so
             $scope.nodes[index].stats.gasPrice = data.stats.gasPrice;
             $scope.nodes[index].stats.uptime = data.stats.uptime;
             $scope.nodes[index].stats.address = data.stats.address;
+
             if (!_.isUndefined(data.stats.latency) && _.get($scope.nodes[index], 'stats.latency', 0) !== data.stats.latency) {
               $scope.nodes[index].stats.latency = data.stats.latency;
-
-              latencyFilter($scope.nodes[index]);
             }
 
+            latencyFilter($scope.nodes[index]);
             updateActiveNodes();
           }
         }
@@ -316,8 +316,7 @@ netStatsApp.controller('StatsCtrl', function ($scope, $filter, $localStorage, so
           if (!_.isUndefined(data.stats))
             $scope.nodes[index].stats = data.stats;
 
-          // toastr['error']("Node "+ $scope.nodes[index].info.name +" went away!", "Node connection was lost!");
-
+          latencyFilter($scope.nodes[index]);
           updateActiveNodes();
         }
 
