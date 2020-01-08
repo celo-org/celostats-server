@@ -2,8 +2,6 @@
 import _ from 'lodash'
 import History from "./history";
 import Node from "./node"
-// @ts-ignore
-import * as Primus from "primus"
 import { Stats } from "./interfaces/Stats";
 import { Validator } from "./interfaces/Validator";
 import { Pending } from "./interfaces/Pending";
@@ -13,30 +11,23 @@ import { ChartData } from "./interfaces/ChartData";
 import { BlockStats } from "./interfaces/BlockStats";
 import { BasicStatsResponse } from "./interfaces/BasicStatsResponse";
 import { NodeStats } from "./interfaces/NodeStats";
-import { BlockData } from "./interfaces/BlockData";
+import { Block } from "./interfaces/Block";
 import { NodeInformation } from "./interfaces/NodeInformation";
+import { Histogram } from "./interfaces/Histogram";
 
 export default class Collection {
 
   private nodes: Node[] = []
   private history: History = new History()
   private debounced: any = null
-  // todo: refactor this outta here
-  private externalAPI: Primus
   private highestBlock: number = 1
-
-  constructor(
-    externalAPI: Primus
-  ) {
-    this.externalAPI = externalAPI
-  }
 
   public add(
     nodeInformation: NodeInformation,
-    callback: { (err: Error | string, nodeInfo: NodeInfo): void | null }
-  ) {
+    callback: { (err: Error | string, nodeInfo: NodeInfo): void }
+  ): void {
     const node: Node = this.getNodeOrNew(
-      {validatorData: {signer: nodeInformation.stats.id}},
+      {validatorData: {signer: nodeInformation.nodeData.id}},
       nodeInformation
     )
     node.setInfo(
@@ -47,20 +38,21 @@ export default class Collection {
 
   // todo: this is dead code!
   private update(
+    id: string,
     stats: Stats,
     callback: { (err: Error | string, stats: NodeStats): void }
-  ) {
-    const node: Node = this.getNode({validatorData: {signer: stats.id}})
+  ): void {
+    const node: Node = this.getNode({validatorData: {signer: id}})
 
     if (!node) {
       callback('Node not found', null)
     } else {
-      const block = this.history.add(stats.block, stats.id, node.trusted)
+      const block = this.history.add(stats.block, id, node.getTrusted())
 
       if (!block) {
         callback('Block data wrong', null)
       } else {
-        const propagationHistory: number[] = this.history.getNodePropagation(stats.id)
+        const propagationHistory: number[] = this.history.getNodePropagation(id)
 
         stats.block.arrived = block.block.arrived
         stats.block.received = block.block.received
@@ -77,20 +69,25 @@ export default class Collection {
 
   public addBlock(
     id: string,
-    block: BlockData,
-    callback: { (err: Error | string, blockStats: BlockStats): void }
-  ) {
-    const node = this.getNode({validatorData: {signer: id}})
+    block: Block,
+    callbackUpdatedStats: { (err: Error | string, blockStats: BlockStats): void },
+    callbackHighestBlock: { (err: Error | string, highestBlock: number): void }
+  ): void {
+    const node: Node = this.getNode({validatorData: {signer: id}})
 
     if (!node) {
-      console.error(this.nodes.map(item => console.log(item.validatorData.signer)))
-      callback(`Node ${id} not found`, null)
+      console.error(
+        this.nodes.map(node => {
+          console.log(node.getValidatorData().signer)
+        })
+      )
+      callbackUpdatedStats(`Node ${id} not found`, null)
     } else {
 
-      const newBlock = this.history.add(block, id, node.trusted)
+      const newBlock = this.history.add(block, id, node.getTrusted())
 
       if (!newBlock) {
-        callback('Block undefined', null)
+        callbackUpdatedStats('Block undefined', null)
       } else {
         const propagationHistory: number[] = this.history.getNodePropagation(id)
 
@@ -101,13 +98,11 @@ export default class Collection {
 
         if (newBlock.block.number > this.highestBlock) {
           this.highestBlock = newBlock.block.number
-          this.externalAPI.write({
-            action: 'lastBlock',
-            number: this.highestBlock
-          })
+
+          callbackHighestBlock(null, this.highestBlock)
         }
 
-        node.setBlock(block, propagationHistory, callback)
+        node.setBlock(block, propagationHistory, callbackUpdatedStats)
       }
     }
   }
@@ -116,11 +111,12 @@ export default class Collection {
     id: string,
     stats: Stats,
     callback: { (err: Error | string, pending: Pending | null): void }
-  ) {
-    const node = this.getNode({validatorData: {signer: id}})
+  ): void {
+    const node: Node = this.getNode({validatorData: {signer: id}})
 
-    if (!node)
-      return false
+    if (!node) {
+      return
+    }
 
     node.setPending(stats, callback)
   }
@@ -129,8 +125,8 @@ export default class Collection {
     id: string,
     stats: Stats,
     callback: { (err: Error | string, basicStats: BasicStatsResponse | null): void }
-  ) {
-    const node = this.getNode({validatorData: {signer: id}})
+  ): void {
+    const node: Node = this.getNode({validatorData: {signer: id}})
 
     if (!node) {
       callback('Node not found', null)
@@ -143,20 +139,21 @@ export default class Collection {
     id: string,
     latency: number,
     callback: { (err: Error | string, latency: Latency): void }
-  ) {
-    const node = this.getNode({validatorData: {signer: id}})
+  ): void {
+    const node: Node = this.getNode({validatorData: {signer: id}})
 
-    if (!node)
-      return false
+    if (!node) {
+      return
+    }
 
     node.setLatency(latency, callback)
   }
 
   public inactive(
-    id: string,
+    spark: string,
     callback: { (err: Error | string, stats: NodeStats): void }
   ): void {
-    const node = this.getNode({spark: id})
+    const node = this.getNode({spark})
 
     if (!node) {
       callback('Node not found', null)
@@ -206,16 +203,18 @@ export default class Collection {
     search: object,
     data: NodeInformation | Validator
   ): Node {
-    return this.getNodeByIndex(this.getIndexOrNew(search, data))
+    return this.getNodeByIndex(
+      this.getIndexOrNew(search, data)
+    )
   }
 
-  public all() {
+  public all(): Node[] {
     this.removeOldNodes()
 
     return this.nodes
   }
 
-  private removeOldNodes() {
+  private removeOldNodes(): void {
     const deleteList = []
 
     for (let i = this.nodes.length - 1; i >= 0; i--) {
@@ -232,21 +231,21 @@ export default class Collection {
   }
 
   // todo: this is dead code
-  private blockPropagationChart() {
+  private blockPropagationChart(): Histogram {
     return this.history.getBlockPropagation()
   }
 
   public setChartsCallback(
     callback: { (err: Error | string, chartData: ChartData): void }
-  ) {
+  ): void {
     this.history.setCallback(callback)
   }
 
-  public getCharts() {
+  public getCharts(): void {
     this.getChartsDebounced()
   }
 
-  private getChartsDebounced() {
+  private getChartsDebounced(): void {
 
     if (this.debounced === null) {
       this.debounced = _.debounce(() => {

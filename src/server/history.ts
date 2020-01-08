@@ -2,7 +2,7 @@
 import _ from "lodash"
 // @ts-ignore
 import * as d3 from "d3"
-import { BlockData } from "./interfaces/BlockData";
+import { Block } from "./interfaces/Block";
 import { PropagationTime } from "./interfaces/PropagationTime";
 import { ChartData } from "./interfaces/ChartData";
 import { Histogram } from "./interfaces/Histogram";
@@ -21,12 +21,15 @@ export default class History {
   private blocks: BlockWrapper[] = []
   private callback: { (err: Error | string, chartData: ChartData): void } = null
 
-  add(
-    block: BlockData,
+  public add(
+    block: Block,
     id: string,
     trusted: boolean,
     addingHistory = false
-  ) {
+  ): {
+    block: Block,
+    changed: boolean
+  } {
     let changed = false
 
     if (
@@ -190,11 +193,9 @@ export default class History {
         changed: changed
       }
     }
-
-    return false
   }
 
-  static compareBlocks(block1: BlockData, block2: BlockData) {
+  static compareBlocks(block1: Block, block2: Block): boolean {
     return !(block1.hash !== block2.hash ||
       block1.parentHash !== block2.parentHash ||
       block1.miner !== block2.miner ||
@@ -202,7 +203,7 @@ export default class History {
       block1.totalDifficulty !== block2.totalDifficulty)
   }
 
-  static compareForks(historyBlock: BlockWrapper, block2: BlockData) {
+  static compareForks(historyBlock: BlockWrapper, block2: Block): number {
     if (_.isUndefined(historyBlock))
       return -1
 
@@ -216,7 +217,7 @@ export default class History {
     return -1
   }
 
-  private save(block: BlockWrapper) {
+  private save(block: BlockWrapper): void {
     this.blocks
       .unshift(block)
 
@@ -230,7 +231,8 @@ export default class History {
     }
   }
 
-  clean(max: number): void {
+  // todo: this is dead code
+  private clean(max: number): void {
     if (max > 0 && this.blocks.length > 0 && max < this.bestBlockNumber()) {
       console.log('MAX:', max)
 
@@ -284,7 +286,7 @@ export default class History {
     return _.minBy(this.blocks, 'height')
   }
 
-  private worstBlockNumber() {
+  private worstBlockNumber(): number {
     const worst = this.worstBlock()
 
     if (!_.isUndefined(worst) && !_.isUndefined(worst.height))
@@ -388,7 +390,7 @@ export default class History {
 
   public setCallback(
     callback: { (err: Error | string, chartData: ChartData): void }
-  ) {
+  ): void {
     this.callback = callback
   }
 
@@ -401,47 +403,43 @@ export default class History {
   }
 
   public getCharts(): void {
-    if (this.callback !== null) {
-
-      const chartHistory = _(this.blocks)
-        .slice(0, MAX_BINS)
-        .toArray()
-        .map((blockWrapper: BlockWrapper): {
-          height: number
-          blocktime: number
-          difficulty: string
-          uncles: number
-          transactions: number
-          gasSpending: number
-          gasLimit: number
-          miner: string
-        } => {
-          return {
-            height: blockWrapper.height,
-            blocktime: blockWrapper.block.time / 1000,
-            difficulty: blockWrapper.block.difficulty,
-            uncles: blockWrapper.block.uncles.length,
-            transactions: blockWrapper.block.transactions ? blockWrapper.block.transactions.length : 0,
-            gasSpending: blockWrapper.block.gasUsed,
-            gasLimit: blockWrapper.block.gasLimit,
-            miner: blockWrapper.block.miner
-          }
-        })
-        .value()
-
-      this.callback(null, {
-        height: _.map(chartHistory, 'height'),
-        blocktime: History.padArray(_.map(chartHistory, 'blocktime'), MAX_BINS, 0),
-        avgBlocktime: this.getAvgBlocktime(),
-        difficulty: _.map(chartHistory, 'difficulty'),
-        uncles: _.map(chartHistory, 'uncles'),
-        transactions: _.map(chartHistory, 'transactions'),
-        gasSpending: History.padArray(_.map(chartHistory, 'gasSpending'), MAX_BINS, 0),
-        gasLimit: History.padArray(_.map(chartHistory, 'gasLimit'), MAX_BINS, 0),
-        miners: this.getMinersCount(),
-        propagation: this.getBlockPropagation(),
+    const chartHistory = _(this.blocks)
+      .slice(0, MAX_BINS)
+      .toArray()
+      .map((blockWrapper: BlockWrapper): {
+        height: number
+        blocktime: number
+        difficulty: string
+        uncles: number
+        transactions: number
+        gasSpending: number
+        gasLimit: number
+        miner: string
+      } => {
+        return {
+          height: blockWrapper.height,
+          blocktime: blockWrapper.block.time / 1000,
+          difficulty: blockWrapper.block.difficulty,
+          uncles: blockWrapper.block.uncles.length,
+          transactions: blockWrapper.block.transactions ? blockWrapper.block.transactions.length : 0,
+          gasSpending: blockWrapper.block.gasUsed,
+          gasLimit: blockWrapper.block.gasLimit,
+          miner: blockWrapper.block.miner
+        }
       })
-    }
-  }
+      .value()
 
+    this.callback(null, {
+      height: _.map(chartHistory, 'height'),
+      blocktime: History.padArray(_.map(chartHistory, 'blocktime'), MAX_BINS, 0),
+      avgBlocktime: this.getAvgBlocktime(),
+      difficulty: _.map(chartHistory, 'difficulty'),
+      uncles: _.map(chartHistory, 'uncles'),
+      transactions: _.map(chartHistory, 'transactions'),
+      gasSpending: History.padArray(_.map(chartHistory, 'gasSpending'), MAX_BINS, 0),
+      gasLimit: History.padArray(_.map(chartHistory, 'gasLimit'), MAX_BINS, 0),
+      miners: this.getMinersCount(),
+      propagation: this.getBlockPropagation(),
+    })
+  }
 }

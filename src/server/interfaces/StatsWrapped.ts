@@ -5,3 +5,4 @@ export interface StatsWrapped {
   address?: string
   stats?: Stats
 }
+

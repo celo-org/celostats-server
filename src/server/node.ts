@@ -3,7 +3,7 @@ import _ from 'lodash'
 import { trusted } from "./utils/config"
 // @ts-ignore
 import { Stats } from "./interfaces/Stats";
-import { BlockData } from "./interfaces/BlockData";
+import { Block } from "./interfaces/Block";
 import { Validator } from "./interfaces/Validator";
 import { Pending } from "./interfaces/Pending";
 import { NodeInfo } from "./interfaces/NodeInfo"
@@ -24,13 +24,13 @@ export default class Node {
   private id: string = null
   private spark: string
   private address: string = null
-
+  private trusted: boolean = false
+  private propagationHistory: number[] = []
   private info: Info = {
     canUpdateHistory: false,
     name: null,
     contact: null
   } as Info
-
   private stats: Stats = {
     active: false,
     mining: false,
@@ -62,7 +62,6 @@ export default class Node {
     latency: 0,
     uptime: 100
   }
-  private propagationHistory: number[] = []
   private uptime: Uptime = {
     started: 0,
     up: 0,
@@ -70,9 +69,7 @@ export default class Node {
     lastStatus: false,
     lastUpdate: 0
   }
-
-  public name: string = null
-  public validatorData: Validator = {
+  private validatorData: Validator = {
     name: null,
     url: null,
     address: null,
@@ -81,7 +78,6 @@ export default class Node {
     elected: false,
     signer: null
   }
-  public trusted: boolean = false
 
   constructor(
     data: NodeInformation | Validator
@@ -114,12 +110,19 @@ export default class Node {
       this.stats.latency = nodeInformation.nodeData.latency
     }
 
-    this.setInfo(nodeInformation, null)
+    this.setInfo(
+      nodeInformation,
+      (err: Error | string) => {
+        if (err) {
+          console.log(err)
+        }
+      }
+    )
   }
 
   public setInfo(
     nodeInformation: NodeInformation,
-    callback: { (err: Error | string, nodeInfo: NodeInfo): void | null }
+    callback: { (err: Error | string, nodeInfo: NodeInfo): void }
   ) {
     if (!_.isUndefined(nodeInformation.stats.info)) {
       this.info = nodeInformation.stats.info
@@ -139,18 +142,36 @@ export default class Node {
     this.setState(true)
     this.validatorData.signer = this.id
 
-    if (callback) {
-      callback(null, this.getInfo())
-    }
+    callback(null, this.getInfo())
   }
 
   public setValidatorData(data: Validator) {
+    this.validatorData = data
+  }
+
+  public getValidatorData(): Validator {
+    return this.validatorData;
+  }
+
+  public setValidatorElected(elected: boolean) {
+    this.validatorData.elected = elected;
+  }
+
+  public setValidatorRegistered(registered: boolean) {
+    this.validatorData.registered = registered;
+  }
+
+  public integrateValidatorData(data: Validator) {
     this.info.name = data.name || data.address
     this.info.contact = data.address
     this.trusted = true
     this.validatorData.signer = data.signer
     this.id = data.address
     this.address = data.address
+  }
+
+  public getTrusted(): boolean {
+    return this.trusted
   }
 
   public setStats(
@@ -161,16 +182,30 @@ export default class Node {
     if (!_.isUndefined(stats)) {
 
       const block = _.result(stats, 'block', this.stats.block)
-      this.setBlock(block, history, () => {
-      })
+      this.setBlock(
+        block,
+        history,
+        (err: Error | string, blockStats: BlockStats) => {
+          if (err) {
+            console.error(err)
+          }
+        })
 
-      this.setBasicStats(stats, () => {
-      })
+      this.setBasicStats(
+        stats,
+        (err: Error | string) => {
+          if (err) {
+            console.error(err)
+          }
+        })
 
       const pending = _.result(stats, 'pending', this.stats.pending)
 
       if (pending) {
-        this.setPending(stats, () => {
+        this.setPending(stats, (err: Error | string) => {
+          if (err) {
+            console.error(err)
+          }
         })
       }
 
@@ -181,7 +216,7 @@ export default class Node {
   }
 
   public setBlock(
-    block: BlockData,
+    block: Block,
     propagationHistory: number[],
     callback: { (err: Error | string, blockStats: BlockStats): void }
   ) {
@@ -238,15 +273,17 @@ export default class Node {
     callback: { (err: Error | string, basicStats: BasicStatsResponse | null): void }
   ) {
     if (!_.isUndefined(stats)) {
-      if (!_.isEqual(stats, {
-        active: this.stats.active,
-        mining: this.stats.mining,
-        elected: this.stats.elected,
-        hashrate: this.stats.hashrate,
-        peers: this.stats.peers,
-        gasPrice: this.stats.gasPrice,
-        uptime: this.stats.uptime
-      })) {
+      if (!_.isEqual(stats,
+        {
+          active: this.stats.active,
+          mining: this.stats.mining,
+          elected: this.stats.elected,
+          hashrate: this.stats.hashrate,
+          peers: this.stats.peers,
+          gasPrice: this.stats.gasPrice,
+          uptime: this.stats.uptime
+        })
+      ) {
         this.stats.active = stats.active
         this.stats.mining = stats.mining
         this.stats.elected = stats.elected

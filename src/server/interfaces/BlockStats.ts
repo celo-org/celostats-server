@@ -1,8 +1,8 @@
-import { BlockData } from "./BlockData";
+import { Block } from "./Block";
 
 export interface BlockStats {
   id: string
-  block: BlockData
+  block: Block
   propagationAvg: number,
   history: number[]
 }

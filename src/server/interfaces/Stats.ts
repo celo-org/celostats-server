@@ -1,5 +1,5 @@
 import { BasicStats } from "./BasicStats";
-import { BlockData } from "./BlockData";
+import { Block } from "./Block";
 import { Info } from "./Info";
 
 export interface Stats extends BasicStats {
@@ -9,7 +9,7 @@ export interface Stats extends BasicStats {
   registered?: boolean
   signer?: string
   pending: number
-  block: BlockData
+  block: Block
   clientTime?: number
   info?: Info
 }

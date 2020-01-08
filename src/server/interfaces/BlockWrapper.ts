@@ -1,9 +1,9 @@
 import { PropagationTime } from "./PropagationTime";
-import { BlockData } from "./BlockData";
+import { Block } from "./Block";
 
 export interface BlockWrapper {
   height: number
-  block: BlockData
-  forks: BlockData[]
+  block: Block
+  forks: Block[]
   propagTimes: PropagationTime[]
 }

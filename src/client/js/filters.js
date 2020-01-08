@@ -190,20 +190,25 @@ angular.module('netStatsApp.filters', [])
 	}
 })
 .filter('hashFilter', ['$sce', '$filter', function($sce, filter) {
-	return function(hash, number) {
+	function hashFilter(hash, number) {
 		if(typeof hash === 'undefined')
 			return "?";
 
-		if(hash.substr(0,2) === '0x')
+		if(hash.substr(0,2) === '0x') {
 			hash = hash.substr(2);
+		}
+
 		var hashStr = hash.substr(0, 8) + '..' + hash.substr(hash.length - 8);
 
 		return $sce.trustAsHtml('' +
 			'<a class="blockhash" href="' + blockscoutUrl + '/blocks/' + number + '" target="_blank">'
 			+ hashStr +
 			'</a>')
-	}}
-	])
+	}
+
+	hashFilter.$stateful = true
+	return hashFilter;
+}])
 .filter('blockNumberFilter', ['$sce', '$filter', function($sce, filter) {
 	return function(number) {
 		if(typeof number === 'undefined')
@@ -335,7 +340,7 @@ angular.module('netStatsApp.filters', [])
 	};
 })
 .filter('latencyFilter', function() {
-	var latencyFilter = function(stats) {
+	function latencyFilter(stats) {
 		if(stats.active === false)
 			return 'offline';
 		else

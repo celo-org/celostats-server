@@ -1,6 +1,6 @@
 import { Validators } from "./Validators";
 
-export interface BlockData {
+export interface Block {
   number?: number
   hash?: string
   parentHash?: string
