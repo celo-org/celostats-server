@@ -15,7 +15,7 @@
     "clean": "grunt clean",
     "watch": "grunt watch",
     "dist": "grunt",
-    "start": "ts-node ./src/server/app.ts"
+    "start": "node ./dist/server/app.js"
   },
   "dependencies": {
     "@types/d3": "^5.7.2",
