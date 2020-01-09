@@ -484,7 +484,7 @@ export default class Server {
               if (latency) {
                 console.success(
                   'API', 'PIN',
-                  'Latency:', JSON.stringify(latency, null, 2),
+                  'Latency:', latency.latency,
                   'from:', id
                 )
               }
