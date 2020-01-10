@@ -361,7 +361,7 @@ netStatsApp.controller('StatsCtrl', function ($scope, $filter, $localStorage, so
 
     $scope.nodesActive = _.filter($scope.nodes, function (node) {
       // forkFilter(node);
-      return node.stats.active == true;
+      return node.stats.active === true;
     }).length;
 
     $scope.upTimeTotal = _.reduce($scope.nodes, function (total, node) {

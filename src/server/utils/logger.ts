@@ -106,12 +106,14 @@ styles.forEach(function (item) {
 
   // @ts-ignore
   console[item.name] = (...args) => {
-    if (args.length === 0)
+    if (args.length === 0) {
       return false
+    }
 
     // @ts-ignore
-    if (verbosity[ENV_VERBOSITY].indexOf(item.name) === -1)
+    if (verbosity[ENV_VERBOSITY].indexOf(item.name) === -1) {
       return false
+    }
 
     let type = null,
       sign,
@@ -119,7 +121,10 @@ styles.forEach(function (item) {
       section: string = 'API',
       message = ''
 
-    if (args[0].indexOf(new Date().getFullYear()) >= 0) {
+    const now = Date.now()
+    const tzOffset = (new Date()).getTimezoneOffset() * 60000;
+
+    if (args[0].indexOf(new Date(now - tzOffset).getFullYear()) >= 0) {
       time = args.splice(0, 1)
     }
 
@@ -139,7 +144,9 @@ styles.forEach(function (item) {
     }
 
     if (item.name !== 'time' && item.name !== 'timeEnd') {
-      time = (new Date()).toJSON().replace('T', ' ').replace('Z', ' ')
+      time = new Date(now - tzOffset).toISOString()
+        .replace('T', ' ')
+        .replace('Z', ' ')
     }
 
     sign = chalk.reset.magenta(time) + sign

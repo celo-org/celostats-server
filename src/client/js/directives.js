@@ -182,7 +182,7 @@ angular.module('netStatsApp.directives', [])
 							barWidth : 2,
 							barSpacing : 1,
 							tooltipSuffix: '',
-							chartRangeMax: 8000,
+							chartRangeMax: 50,
 							colorMap: jQuery.range_map({
 								'0:1': '#8be9fd',
 								'1:1000': '#50fa7b',
