@@ -99,12 +99,14 @@ export default class Node {
   ) {
     _.fill(this.propagationHistory, -1)
 
-    if (this.id === null && this.uptime.started === null) {
+    if (
+      this.id === null &&
+      this.uptime.started === null
+    ) {
       this.setState(true)
     }
 
     this.id = _.result(nodeInformation.nodeData, 'id', this.id)
-    this.spark = nodeInformation.nodeData.spark
 
     if (!_.isUndefined(nodeInformation.nodeData.latency)) {
       this.stats.latency = nodeInformation.nodeData.latency
@@ -141,6 +143,7 @@ export default class Node {
 
     this.setState(true)
     this.validatorData.signer = this.id
+    this.spark = nodeInformation.nodeData.spark
 
     callback(null, this.getInfo())
   }
