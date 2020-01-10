@@ -1,7 +1,7 @@
-import { BasicStats } from "./BasicStats";
+import { StatsBase } from "./StatsBase";
 
 export interface BasicStatsResponse {
   id: string,
-  stats: BasicStats,
+  stats: StatsBase,
   history?: number[]
 }

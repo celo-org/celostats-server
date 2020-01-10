@@ -1,7 +1,7 @@
 import { Info } from "./Info";
+import { Wrapper } from "./Wrapper";
 
-export interface InfoWrapped {
-  id?: string
+export interface InfoWrapped extends Wrapper {
   address?: string
   info?: Info
 }

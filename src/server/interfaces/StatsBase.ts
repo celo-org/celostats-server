@@ -1,4 +1,4 @@
-export interface BasicStats {
+export interface StatsBase {
   active: boolean
   mining: boolean
   elected?: boolean
@@ -6,6 +6,6 @@ export interface BasicStats {
   syncing: boolean
   peers: number
   gasPrice: number
-  latency?: number
-  uptime?: number
+  latency: number
+  uptime: number
 }

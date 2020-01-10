@@ -1,8 +1,7 @@
 import { Stats } from "./Stats";
+import { Wrapper } from "./Wrapper";
 
-export interface StatsWrapped {
-  id?: string
-  address?: string
+export interface StatsWrapped extends Wrapper {
   stats?: Stats
 }
 
