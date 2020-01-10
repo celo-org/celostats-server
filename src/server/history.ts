@@ -40,8 +40,6 @@ export default class History {
       !_.isUndefined(block.difficulty) &&
       block.number >= 0
     ) {
-      trusted = (process.env.LITE === 'true' ? true : trusted)
-
       const historyBlock: BlockWrapper = this.search(block.number)
       let forkIndex = -1
 
