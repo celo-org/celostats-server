@@ -318,7 +318,7 @@ span.small-title span.small {
 }
 
 .blocks-holder .block:last-child {
-	margin-right: 0px;
+	margin-right: 1px;
 }
 
 .second-row .box {
