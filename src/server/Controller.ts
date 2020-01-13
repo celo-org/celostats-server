@@ -1,10 +1,10 @@
+import './utils/logger'
 // @ts-ignore
 import Primus from "primus"
 import Collection from "./collection";
 import Node from "./node";
 import { Statistics } from "./statistics/Statistics";
 import { ChartData } from "./interfaces/ChartData";
-import _ from "lodash";
 import { Sides } from "./statistics/Sides";
 import { Directions } from "./statistics/Directions";
 import { Proof } from "./interfaces/Proof";
@@ -64,7 +64,7 @@ export default class Controller {
       this.clientWrite({
         action: 'client-ping',
         data: {
-          serverTime: _.now()
+          serverTime: Date.now()
         }
       })
     }, clientPingTimeout)
@@ -266,7 +266,10 @@ export default class Controller {
       id, stats,
       (err: Error | string, basicStats: BasicStatsResponse) => {
         if (err) {
-          console.error('API', 'STA', 'Stats error:', err)
+          console.error(
+            'API', 'STA',
+            'Stats error:', err
+          )
         } else {
 
           if (basicStats) {
@@ -340,13 +343,13 @@ export default class Controller {
     stats: NodePing,
     spark: Primus.spark
   ): void {
-    const start = (!_.isUndefined(stats.clientTime) ? stats.clientTime : null)
+    const start = (stats.clientTime ? stats.clientTime : null)
 
     spark.emit(
       'node-pong',
       <NodePong>{
         clientTime: start,
-        serverTime: _.now()
+        serverTime: Date.now()
       }
     )
 
@@ -395,7 +398,7 @@ export default class Controller {
       spark.id, proof, stats, spark
     )
 
-    if (isAuthed && !_.isUndefined(stats.info)) {
+    if (isAuthed && stats.info) {
       this.handleNodeInfo(id, proof, stats, spark)
     }
 
@@ -409,8 +412,8 @@ export default class Controller {
     data: ClientPong,
     spark: Primus.spark
   ): void {
-    const serverTime = _.get(data, 'serverTime', 0)
-    const latency = Math.ceil((_.now() - serverTime) / 2)
+    const serverTime = data.serverTime || 0
+    const latency = Math.ceil((Date.now() - serverTime) / 2)
 
     spark.emit(
       'client-latency',
@@ -443,10 +446,12 @@ export default class Controller {
   public handleClientEnd(
     id: string,
     ip: string
-  ): void {
+  ): boolean {
     console.success(
       'API', 'CON', 'Client Close:',
       ip, `'${id}'`
     )
+
+    return true
   }
 }

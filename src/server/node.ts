@@ -1,7 +1,8 @@
-// @ts-ignore
-import _ from 'lodash'
+import {
+  isEqual,
+  result
+} from "lodash"
 import { trusted } from "./utils/config"
-// @ts-ignore
 import { Stats } from "./interfaces/Stats";
 import { Block } from "./interfaces/Block";
 import { Validator } from "./interfaces/Validator";
@@ -97,7 +98,7 @@ export default class Node {
   public init(
     nodeInformation: NodeInformation
   ) {
-    _.fill(this.propagationHistory, -1)
+    this.propagationHistory.fill(-1, 0, MAX_HISTORY)
 
     if (
       this.id === null &&
@@ -106,9 +107,9 @@ export default class Node {
       this.setState(true)
     }
 
-    this.id = _.result(nodeInformation.nodeData, 'id', this.id)
+    this.id = nodeInformation.nodeData.id || this.id
 
-    if (!_.isUndefined(nodeInformation.nodeData.latency)) {
+    if (nodeInformation.nodeData.latency) {
       this.stats.latency = nodeInformation.nodeData.latency
     }
 
@@ -126,15 +127,15 @@ export default class Node {
     nodeInformation: NodeInformation,
     callback: { (err: Error | string, nodeInfo: NodeInfo): void }
   ) {
-    if (!_.isUndefined(nodeInformation.stats.info)) {
+    if (nodeInformation.stats.info) {
       this.info = nodeInformation.stats.info
 
-      if (!_.isUndefined(nodeInformation.stats.info.canUpdateHistory)) {
-        this.info.canUpdateHistory = _.result(nodeInformation.stats, 'info.canUpdateHistory', false)
+      if (nodeInformation.stats.info.canUpdateHistory) {
+        this.info.canUpdateHistory = result(nodeInformation.stats, 'info.canUpdateHistory', false)
       }
     }
 
-    if (!_.isUndefined(nodeInformation.nodeData.ip)) {
+    if (nodeInformation.nodeData.ip) {
       if (trusted.indexOf(nodeInformation.nodeData.ip) >= 0) {
         this.trusted = true
       }
@@ -182,9 +183,10 @@ export default class Node {
     history: number[],
     callback: { (err: Error | string, stats: NodeStats): void }
   ) {
-    if (!_.isUndefined(stats)) {
+    if (stats) {
 
-      const block = _.result(stats, 'block', this.stats.block)
+      const block = stats.block || this.stats.block
+
       this.setBlock(
         block,
         history,
@@ -202,7 +204,7 @@ export default class Node {
           }
         })
 
-      const pending = _.result(stats, 'pending', this.stats.pending)
+      const pending = stats.pending || this.stats.pending
 
       if (pending) {
         this.setPending(stats, (err: Error | string) => {
@@ -223,11 +225,11 @@ export default class Node {
     propagationHistory: number[],
     callback: { (err: Error | string, blockStats: BlockStats): void }
   ) {
-    if (!_.isUndefined(block) && !_.isUndefined(block.number)) {
+    if (block && block.number) {
 
       if (
-        !_.isEqual(propagationHistory, this.propagationHistory) ||
-        !_.isEqual(block, this.stats.block)
+        !isEqual(propagationHistory, this.propagationHistory) ||
+        !isEqual(block, this.stats.block)
       ) {
         if (
           block.number !== this.stats.block.number ||
@@ -255,8 +257,11 @@ export default class Node {
     stats: Stats,
     callback: { (err: Error | string, pending: Pending | null): void }
   ) {
-    if (!_.isUndefined(stats) && !_.isUndefined(stats.pending)) {
-      if (!_.isEqual(stats.pending, this.stats.pending)) {
+    // bad request
+    if (stats && !isNaN(stats.pending)) {
+      // nothing pending
+      if (stats.pending !== this.stats.pending) {
+        // pending
         this.stats.pending = stats.pending
 
         callback(null, {
@@ -267,7 +272,7 @@ export default class Node {
         callback(null, null)
       }
     } else {
-      callback('Stats undefined', null)
+      callback('Stats undefined in pending', null)
     }
   }
 
@@ -275,8 +280,8 @@ export default class Node {
     stats: Stats,
     callback: { (err: Error | string, basicStats: BasicStatsResponse | null): void }
   ) {
-    if (!_.isUndefined(stats)) {
-      if (!_.isEqual(stats,
+    if (stats) {
+      if (!isEqual(stats,
         {
           active: this.stats.active,
           mining: this.stats.mining,
@@ -290,7 +295,7 @@ export default class Node {
         this.stats.active = stats.active
         this.stats.mining = stats.mining
         this.stats.elected = stats.elected
-        this.stats.syncing = (!_.isUndefined(stats.syncing) ? stats.syncing : false)
+        this.stats.syncing = stats.syncing || false
         this.stats.hashrate = stats.hashrate
         this.stats.peers = stats.peers
         this.stats.gasPrice = stats.gasPrice
@@ -301,7 +306,7 @@ export default class Node {
         callback(null, null)
       }
     } else {
-      callback('Stats undefined', null)
+      callback('Stats undefined in basic stats', null)
     }
   }
 
@@ -309,8 +314,8 @@ export default class Node {
     latency: number,
     callback: { (err: Error | string, latency: Latency): void }
   ) {
-    if (!_.isUndefined(latency)) {
-      if (!_.isEqual(latency, this.stats.latency)) {
+    if (!isNaN(latency)) {
+      if (latency !== this.stats.latency) {
         this.stats.latency = latency
 
         callback(null, {
@@ -328,7 +333,7 @@ export default class Node {
   public setState(
     active: boolean
   ) {
-    const now = _.now()
+    const now = Date.now()
 
     if (this.uptime.started !== null) {
       if (this.uptime.lastStatus === active) {
@@ -351,7 +356,7 @@ export default class Node {
     return (
       !this.uptime.lastStatus &&
       this.uptime.lastUpdate !== null &&
-      (_.now() - this.uptime.lastUpdate) > MAX_INACTIVE_TIME
+      (Date.now() - this.uptime.lastUpdate) > MAX_INACTIVE_TIME
     )
   }
 
@@ -435,7 +440,7 @@ export default class Node {
     propagationHistory: number[]
   ) {
     // anything new?
-    if (_.isEqual(propagationHistory, this.propagationHistory)) {
+    if (isEqual(propagationHistory, this.propagationHistory)) {
       // no, nothing to set
       return false
     }
@@ -449,13 +454,14 @@ export default class Node {
 
     this.propagationHistory = propagationHistory
 
-    const positives = _.filter(
-      this.propagationHistory,
-      (p: number) => {
+    const positives: number[] = this.propagationHistory
+      .filter((p: number) => {
         return p >= 0
       })
 
-    this.stats.propagationAvg = (positives.length > 0 ? Math.round(_.sum(positives) / positives.length) : 0)
+    const sum = positives.reduce((sum, h) => sum + h, 0)
+
+    this.stats.propagationAvg = (positives.length > 0 ? Math.round(sum / positives.length) : 0)
 
     return true
   }

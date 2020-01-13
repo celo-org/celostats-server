@@ -5,8 +5,6 @@ import Primus from "primus"
 import * as primusEmit from "primus-emit"
 // @ts-ignore
 import * as primusSparkLatency from "primus-spark-latency"
-// @ts-ignore
-import _ from "lodash"
 import Controller from "./Controller";
 import { createServer } from "http"
 import routes from "./routes"
@@ -147,10 +145,7 @@ export default class Server {
           proof: Proof
         } = data
 
-        if (
-          isInputValid(stats) &&
-          !_.isUndefined(stats.block)
-        ) {
+        if (isInputValid(stats) && stats.block) {
           const id = proof.address
 
           // handle validator information from block
@@ -174,10 +169,7 @@ export default class Server {
           proof: Proof
         } = data
 
-        if (
-          isInputValid(stats) &&
-          !_.isUndefined(stats.stats)
-        ) {
+        if (isInputValid(stats) && stats.stats) {
           const id = proof.address
 
           this.controller.handleNodePending(id, stats.stats)
@@ -197,10 +189,7 @@ export default class Server {
           proof: Proof
         } = data;
 
-        if (
-          isInputValid(stats) &&
-          !_.isUndefined(stats.stats)
-        ) {
+        if (isInputValid(stats) && stats.stats) {
 
           // why? why not spark.id like everywhere?
           const id = proof.address

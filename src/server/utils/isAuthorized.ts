@@ -1,6 +1,5 @@
 import { Proof } from "../interfaces/Proof";
 import { InfoWrapped } from "../interfaces/InfoWrapped";
-import _ from "lodash";
 import { reserved, trusted } from "./config";
 import { Keccak } from "sha3";
 // @ts-ignore
@@ -17,11 +16,8 @@ export function isAuthorize(
 
   if (
     isInputValid(stats) &&
-    !_.isUndefined(proof) &&
-    !_.isUndefined(proof.publicKey) &&
-    !_.isUndefined(proof.signature) &&
-    reserved.indexOf(stats.id) < 0 &&
-    trusted
+    proof && proof.publicKey && proof.signature &&
+    reserved.indexOf(stats.id) < 0 && trusted
       .map(address => address && address.toLowerCase())
       .indexOf(proof.address) >= 0
   ) {

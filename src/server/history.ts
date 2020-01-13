@@ -1,5 +1,8 @@
-// @ts-ignore
-import _ from "lodash"
+import {
+  findIndex,
+  maxBy,
+  minBy
+} from "lodash"
 // @ts-ignore
 import * as d3 from "d3"
 import { Block } from "./interfaces/Block";
@@ -9,6 +12,7 @@ import { Histogram } from "./interfaces/Histogram";
 import { HistogramEntry } from "./interfaces/HistogramEntry";
 import { Miner } from "./interfaces/Miner";
 import { BlockWrapper } from "./interfaces/BlockWrapper";
+import { padArray } from "./utils/padArray";
 
 const MAX_HISTORY = 2000
 const MAX_PEER_PROPAGATION = 40
@@ -33,17 +37,15 @@ export default class History {
     let changed = false
 
     if (
-      !_.isUndefined(block) &&
-      !_.isUndefined(block.number) &&
-      !_.isUndefined(block.uncles) &&
-      !_.isUndefined(block.transactions) &&
-      !_.isUndefined(block.difficulty) &&
+      block &&
+      block.number && block.uncles &&
+      block.transactions && block.difficulty &&
       block.number >= 0
     ) {
       const historyBlock: BlockWrapper = this.search(block.number)
       let forkIndex = -1
 
-      const now = _.now()
+      const now = Date.now()
 
       block.trusted = trusted
       block.arrived = now
@@ -55,14 +57,14 @@ export default class History {
         // We already have a block with this height in collection
 
         // Check if node already checked this block height
-        const propIndex = _.findIndex(historyBlock.propagTimes, {node: id})
+        const propIndex = findIndex(historyBlock.propagTimes, {node: id})
 
         // Check if node already check a fork with this height
         forkIndex = History.compareForks(historyBlock, block)
 
         if (propIndex === -1) {
           // Node didn't submit this block before
-          if (forkIndex >= 0 && !_.isUndefined(historyBlock.forks[forkIndex])) {
+          if (forkIndex >= 0 && historyBlock.forks[forkIndex]) {
             // Found fork => update data
             block.arrived = historyBlock.forks[forkIndex].arrived
             block.propagation = now - historyBlock.forks[forkIndex].received
@@ -92,8 +94,8 @@ export default class History {
             propagation: block.propagation
           })
         } else {
-          // Node submited the block before
-          if (forkIndex >= 0 && !_.isUndefined(historyBlock.forks[forkIndex])) {
+          // Node submitted the block before
+          if (forkIndex >= 0 && historyBlock.forks[forkIndex]) {
             // Matching fork found => update data
             block.arrived = historyBlock.forks[forkIndex].arrived
 
@@ -202,15 +204,19 @@ export default class History {
   }
 
   static compareForks(historyBlock: BlockWrapper, block2: Block): number {
-    if (_.isUndefined(historyBlock))
+    if (!historyBlock) {
       return -1
+    }
 
-    if (_.isUndefined(historyBlock.forks) || historyBlock.forks.length === 0)
+    if (!historyBlock.forks || historyBlock.forks.length === 0) {
       return -1
+    }
 
-    for (let x = 0; x < historyBlock.forks.length; x++)
-      if (History.compareBlocks(historyBlock.forks[x], block2))
+    for (let x = 0; x < historyBlock.forks.length; x++) {
+      if (History.compareBlocks(historyBlock.forks[x], block2)) {
         return x
+      }
+    }
 
     return -1
   }
@@ -236,11 +242,10 @@ export default class History {
 
       console.log('History items before:', this.blocks.length)
 
-      this.blocks = _(this.blocks)
+      this.blocks = this.blocks
         .filter((blockWrapper: BlockWrapper) => {
           return (blockWrapper.height <= max && blockWrapper.block.trusted === false)
         })
-        .value()
 
       console.log('History items after:', this.blocks.length)
     }
@@ -249,10 +254,11 @@ export default class History {
   private search(
     number: number
   ): BlockWrapper {
-    const index = _.findIndex(this.blocks, {height: number})
+    const index = findIndex(this.blocks, {height: number})
 
-    if (index < 0)
+    if (index < 0) {
       return null
+    }
 
     return this.blocks[index]
   }
@@ -261,34 +267,37 @@ export default class History {
     const heights = this.blocks.map(item => item.height)
     const index = heights.indexOf(Math.max(...heights))
 
-    if (index < 0)
+    if (index < 0) {
       return null
+    }
 
     return this.blocks[index]
   }
 
   private bestBlock(): BlockWrapper {
-    return _.maxBy(this.blocks, 'height')
+    return maxBy(this.blocks, 'height')
   }
 
   private bestBlockNumber(): number {
     const best: BlockWrapper = this.bestBlock()
 
-    if (!_.isUndefined(best) && !_.isUndefined(best.height))
+    if (best && best.height) {
       return best.height
+    }
 
     return 0
   }
 
   private worstBlock(): BlockWrapper {
-    return _.minBy(this.blocks, 'height')
+    return minBy(this.blocks, 'height')
   }
 
   private worstBlockNumber(): number {
     const worst = this.worstBlock()
 
-    if (!_.isUndefined(worst) && !_.isUndefined(worst.height))
+    if (worst && worst.height) {
       return worst.height
+    }
 
     return 0
   }
@@ -318,20 +327,22 @@ export default class History {
     const propagation: number[] = []
     let avgPropagation: number = 0
 
-    _.forEach(this.blocks, (n: BlockWrapper) => {
-      _.forEach(n.propagTimes, (p: PropagationTime) => {
+    this.blocks.forEach((block: BlockWrapper) => {
+      block.propagTimes.forEach((propagationTime: PropagationTime) => {
         const prop = Math.min(
           MAX_PROPAGATION_RANGE,
-          _.result(p, 'propagation', -1)
+          propagationTime.propagation || -1
         )
 
-        if (prop >= 0)
+        if (prop >= 0) {
           propagation.push(prop)
+        }
       })
     })
 
     if (propagation.length > 0) {
-      avgPropagation = Math.round(_.sum(propagation) / propagation.length)
+      const sum = propagation.reduce((sum, p) => sum + p, 0)
+      avgPropagation = Math.round(sum / propagation.length)
     }
 
     const data = d3.histogram()
@@ -364,18 +375,18 @@ export default class History {
   }
 
   private getAvgBlocktime(): number {
-    const blockTimes = _(this.blocks)
-      .toArray()
+    const blockTimes = this.blocks
       .map((item: BlockWrapper): number => {
         return item.block.time / 1000
       })
-      .value()
 
-    return _.sum(blockTimes) / (blockTimes.length === 0 ? 1 : blockTimes.length)
+    const sum = blockTimes.reduce((sum, b) => sum + b, 0)
+
+    return sum / (blockTimes.length === 0 ? 1 : blockTimes.length)
   }
 
   private getMinersCount(): Miner[] {
-    return _(this.blocks)
+    return this.blocks
       .slice(0, MAX_BINS)
       .map((item: BlockWrapper): Miner => {
         return {
@@ -383,7 +394,6 @@ export default class History {
           number: item.block.number
         }
       })
-      .value()
   }
 
   public setCallback(
@@ -392,18 +402,9 @@ export default class History {
     this.callback = callback
   }
 
-  private static padArray(
-    arr: any[],
-    len: number,
-    fill: any
-  ): number[] {
-    return arr.concat(Array(len).fill(fill)).slice(0, len)
-  }
-
   public getCharts(): void {
-    const chartHistory = _(this.blocks)
+    const chartHistory = this.blocks
       .slice(0, MAX_BINS)
-      .toArray()
       .map((blockWrapper: BlockWrapper): {
         height: number
         blocktime: number
@@ -425,17 +426,16 @@ export default class History {
           miner: blockWrapper.block.miner
         }
       })
-      .value()
 
     this.callback(null, {
-      height: _.map(chartHistory, 'height'),
-      blocktime: History.padArray(_.map(chartHistory, 'blocktime'), MAX_BINS, 0),
+      height: chartHistory.map((h) => h.height),
+      blocktime: padArray(chartHistory.map((h) => h.blocktime), MAX_BINS, 0),
       avgBlocktime: this.getAvgBlocktime(),
-      difficulty: _.map(chartHistory, 'difficulty'),
-      uncles: _.map(chartHistory, 'uncles'),
-      transactions: _.map(chartHistory, 'transactions'),
-      gasSpending: History.padArray(_.map(chartHistory, 'gasSpending'), MAX_BINS, 0),
-      gasLimit: History.padArray(_.map(chartHistory, 'gasLimit'), MAX_BINS, 0),
+      difficulty: chartHistory.map((h) => h.difficulty),
+      uncles: chartHistory.map((h) => h.uncles),
+      transactions: chartHistory.map((h) => h.transactions),
+      gasSpending: padArray(chartHistory.map((h) => h.gasSpending), MAX_BINS, 0),
+      gasLimit: padArray(chartHistory.map((h) => h.gasLimit), MAX_BINS, 0),
       miners: this.getMinersCount(),
       propagation: this.getBlockPropagation(),
     })

@@ -1,5 +1,7 @@
-// @ts-ignore
-import _ from 'lodash'
+import {
+  findIndex,
+  debounce
+} from "lodash"
 import History from "./history";
 import Node from "./node"
 import { Stats } from "./interfaces/Stats";
@@ -45,7 +47,7 @@ export default class Collection {
     const node: Node = this.getNode({validatorData: {signer: id}})
 
     if (!node) {
-      callback('Node not found', null)
+      callback('Node not found during update', null)
     } else {
       const block = this.history.add(stats.block, id, node.getTrusted())
 
@@ -137,7 +139,7 @@ export default class Collection {
     const node: Node = this.getNode({validatorData: {signer: id}})
 
     if (!node) {
-      callback('Node not found', null)
+      callback('Node not found during update stats', null)
     } else {
       node.setBasicStats(stats, callback)
     }
@@ -164,7 +166,7 @@ export default class Collection {
     const node = this.getNode({spark})
 
     if (!node) {
-      callback('Node not found', null)
+      callback('Node not found during setting inactive', null)
     } else {
       node.setState(false)
       callback(null, node.getStats())
@@ -174,7 +176,7 @@ export default class Collection {
   public getIndex(
     search: object
   ): number {
-    return _.findIndex(this.nodes, search)
+    return findIndex(this.nodes, search)
   }
 
   private getNode(
@@ -256,7 +258,7 @@ export default class Collection {
   private getChartsDebounced(): void {
 
     if (this.debounced === null) {
-      this.debounced = _.debounce(() => {
+      this.debounced = debounce(() => {
         this.history.getCharts()
       }, 500, {
         leading: false,
