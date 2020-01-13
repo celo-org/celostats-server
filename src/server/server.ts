@@ -33,8 +33,13 @@ import { IDictionary } from "./interfaces/IDictionary";
 import { isInputValid } from "./utils/isInputValid";
 
 // general config
-const port = process.env.PORT || 3000
-const compression = process.env.COMPRESSION || false
+const cfg = {
+  port: process.env.PORT || 3000,
+  compression: process.env.COMPRESSION || false,
+  headersTimeout: 0.9 * 1000,
+  maxHeadersCount: 0,
+  timeout: 0.6 * 1000
+}
 
 // add trusted from env
 if (process.env.TRUSTED_ADDRESSES) {
@@ -57,15 +62,15 @@ export default class Server {
   constructor() {
     const server = createServer(routes)
 
-    server.headersTimeout = 0.9 * 1000
-    server.maxHeadersCount = 0
-    server.timeout = 0.6 * 1000
+    server.headersTimeout = cfg.headersTimeout
+    server.maxHeadersCount = cfg.maxHeadersCount
+    server.timeout = cfg.timeout
 
     this.api = new Primus(server, {
       transformer: 'websockets',
       pathname: '/api',
       parser: 'JSON',
-      compression,
+      compression: cfg.compression,
       pingInterval: false
     })
 
@@ -73,7 +78,7 @@ export default class Server {
       transformer: 'websockets',
       pathname: '/primus',
       parser: 'JSON',
-      compression,
+      compression: cfg.compression,
       pingInterval: false
     })
 
@@ -82,11 +87,12 @@ export default class Server {
       this.client
     )
 
-    server.listen(port)
+    server.listen(cfg.port)
 
     console.success(
       "SYS", "CON",
-      `Server started and listening on port: ${port}!`
+      'Server started and listening!',
+      `Config ${JSON.stringify(cfg, null, 2)}`
     )
   }
 
@@ -153,7 +159,7 @@ export default class Server {
           this.controller.handleNodeBlock(id, spark.address.ip, stats.block)
 
         } else {
-          console.error('API', 'BLK', 'Block error:', data)
+          console.error('API', 'BLK', 'Invalid Block message:', stats)
         }
       })
 
