@@ -107,6 +107,14 @@ export default class Collection {
     }
   }
 
+  public getLength(): number {
+    return this.nodes.length
+  }
+
+  public getHighestBlock(): number {
+    return this.highestBlock
+  }
+
   public updatePending(
     id: string,
     stats: Stats,

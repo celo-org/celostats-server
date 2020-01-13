@@ -358,6 +358,7 @@ export default class Node {
   public getStats(): NodeStats {
     return {
       id: this.id,
+      name: this.info.name,
       stats: {
         active: this.stats.active,
         mining: this.stats.mining,
