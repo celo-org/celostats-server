@@ -34,6 +34,7 @@ import { isInputValid } from "./utils/isInputValid";
 
 // general config
 const port = process.env.PORT || 3000
+const compression = process.env.COMPRESSION || false
 
 // add trusted from env
 if (process.env.TRUSTED_ADDRESSES) {
@@ -64,7 +65,7 @@ export default class Server {
       transformer: 'websockets',
       pathname: '/api',
       parser: 'JSON',
-      compression: true,
+      compression,
       pingInterval: false
     })
 
@@ -72,7 +73,7 @@ export default class Server {
       transformer: 'websockets',
       pathname: '/primus',
       parser: 'JSON',
-      compression: true,
+      compression,
       pingInterval: false
     })
 
