@@ -44,16 +44,18 @@ export default class Server {
       transformer: 'websockets',
       pathname: '/api',
       parser: 'JSON',
+      pingInterval: false,
       compression: cfg.compression,
-      pingInterval: false
+      transport: cfg.transport
     })
 
     this.client = new Primus(server, {
       transformer: 'websockets',
       pathname: '/primus',
       parser: 'JSON',
+      pingInterval: false,
       compression: cfg.compression,
-      pingInterval: false
+      transport: cfg.transport
     })
 
     this.controller = new Controller(

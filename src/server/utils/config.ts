@@ -18,7 +18,6 @@ if (process.env.RESERVED_ADDRESSES) {
 // general config
 export const cfg = {
   port: process.env.PORT || 3000,
-  compression: process.env.COMPRESSION || true,
   headersTimeout: 0.9 * 1000,
   maxHeadersCount: 0,
   timeout: 0.6 * 1000,
@@ -32,5 +31,9 @@ export const cfg = {
   clientPingTimeout: 5 * 1000,
   nodeCleanupTimeout: 1000 * 60 * 60,
   statisticsInterval: 60 * 1000,
-  chartDebounceInterval: 500
+  chartDebounceInterval: 500,
+  compression: process.env.COMPRESSION || true,
+  transport: {
+    perMessageDeflate: process.env.COMPRESSION || true
+  }
 }
