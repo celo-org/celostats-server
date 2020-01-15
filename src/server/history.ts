@@ -1,8 +1,3 @@
-import {
-  findIndex,
-  maxBy,
-  minBy
-} from "lodash"
 // @ts-ignore
 import * as d3 from "d3"
 import { Block } from "./interfaces/Block";
@@ -13,12 +8,7 @@ import { HistogramEntry } from "./interfaces/HistogramEntry";
 import { Miner } from "./interfaces/Miner";
 import { BlockWrapper } from "./interfaces/BlockWrapper";
 import { padArray } from "./utils/padArray";
-
-const MAX_HISTORY = 2000
-const MAX_PEER_PROPAGATION = 40
-const MIN_PROPAGATION_RANGE = 0
-const MAX_PROPAGATION_RANGE = 10000
-const MAX_BINS = 40
+import { cfg } from "./utils/config";
 
 export default class History {
 
@@ -57,12 +47,14 @@ export default class History {
         // We already have a block with this height in collection
 
         // Check if node already checked this block height
-        const propIndex = findIndex(historyBlock.propagTimes, {node: id})
+        const propagationIndex = historyBlock.propagTimes.indexOf(
+          historyBlock.propagTimes.find((p) => p.node === id)
+        )
 
         // Check if node already check a fork with this height
         forkIndex = History.compareForks(historyBlock, block)
 
-        if (propIndex === -1) {
+        if (propagationIndex === -1) {
           // Node didn't submit this block before
           if (forkIndex >= 0 && historyBlock.forks[forkIndex]) {
             // Found fork => update data
@@ -99,21 +91,21 @@ export default class History {
             // Matching fork found => update data
             block.arrived = historyBlock.forks[forkIndex].arrived
 
-            if (forkIndex === historyBlock.propagTimes[propIndex].fork) {
+            if (forkIndex === historyBlock.propagTimes[propagationIndex].fork) {
               // Fork index is the same
-              block.received = historyBlock.propagTimes[propIndex].received
-              block.propagation = historyBlock.propagTimes[propIndex].propagation
+              block.received = historyBlock.propagTimes[propagationIndex].received
+              block.propagation = historyBlock.propagTimes[propagationIndex].propagation
             } else {
               // Fork index is different
-              historyBlock.propagTimes[propIndex].fork = forkIndex
-              historyBlock.propagTimes[propIndex].propagation =
+              historyBlock.propagTimes[propagationIndex].fork = forkIndex
+              historyBlock.propagTimes[propagationIndex].propagation =
                 block.propagation = now - historyBlock.forks[forkIndex].received
             }
 
           } else {
             // No matching fork found => replace old one
-            block.received = historyBlock.propagTimes[propIndex].received
-            block.propagation = historyBlock.propagTimes[propIndex].propagation
+            block.received = historyBlock.propagTimes[propagationIndex].received
+            block.propagation = historyBlock.propagTimes[propagationIndex].propagation
 
             const prevBlock = this.prevMaxBlock()
 
@@ -158,7 +150,7 @@ export default class History {
           block.time = 0
         }
 
-        const item: BlockWrapper = {
+        const blockWrapper: BlockWrapper = {
           height: block.number,
           block: block,
           forks: [block],
@@ -169,12 +161,12 @@ export default class History {
           this.blocks.length === 0 ||
           (this.blocks.length > 0 && block.number > this.worstBlockNumber()) ||
           (
-            this.blocks.length < MAX_HISTORY &&
+            this.blocks.length < cfg.maxBlockHistory &&
             block.number < this.bestBlockNumber() &&
             addingHistory
           )
         ) {
-          item.propagTimes.push({
+          blockWrapper.propagTimes.push({
             node: id,
             trusted: trusted,
             fork: 0,
@@ -182,7 +174,7 @@ export default class History {
             propagation: block.propagation
           })
 
-          this.save(item)
+          this.save(blockWrapper)
 
           changed = true
         }
@@ -221,7 +213,9 @@ export default class History {
     return -1
   }
 
-  private save(block: BlockWrapper): void {
+  private save(
+    block: BlockWrapper
+  ): void {
     this.blocks
       .unshift(block)
 
@@ -229,8 +223,7 @@ export default class History {
       (block1: BlockWrapper, block2: BlockWrapper) => block2.height - block1.height
     )
 
-    if (this.blocks.length > MAX_HISTORY) {
-      delete (this.blocks[this.blocks.length - 1])
+    if (this.blocks.length > cfg.maxBlockHistory) {
       this.blocks.pop()
     }
   }
@@ -254,7 +247,9 @@ export default class History {
   private search(
     number: number
   ): BlockWrapper {
-    const index = findIndex(this.blocks, {height: number})
+    const index = this.blocks.indexOf(
+      this.blocks.find((b: BlockWrapper) => b.height === number)
+    )
 
     if (index < 0) {
       return null
@@ -275,7 +270,11 @@ export default class History {
   }
 
   private bestBlock(): BlockWrapper {
-    return maxBy(this.blocks, 'height')
+    return this.blocks[0]
+  }
+
+  private worstBlock(): BlockWrapper {
+    return this.blocks[this.blocks.length - 1]
   }
 
   private bestBlockNumber(): number {
@@ -286,10 +285,6 @@ export default class History {
     }
 
     return 0
-  }
-
-  private worstBlock(): BlockWrapper {
-    return minBy(this.blocks, 'height')
   }
 
   private worstBlockNumber(): number {
@@ -306,9 +301,7 @@ export default class History {
     id: string
   ): number[] {
     return this.blocks
-      .slice(
-        0, MAX_PEER_PROPAGATION
-      )
+      .slice(0, cfg.maxPeerPropagation)
       .map((block: BlockWrapper) => {
 
         const matches = block.propagTimes.filter(
@@ -330,7 +323,7 @@ export default class History {
     this.blocks.forEach((block: BlockWrapper) => {
       block.propagTimes.forEach((propagationTime: PropagationTime) => {
         const prop = Math.min(
-          MAX_PROPAGATION_RANGE,
+          cfg.maxPropagationRange,
           propagationTime.propagation || -1
         )
 
@@ -346,8 +339,11 @@ export default class History {
     }
 
     const data = d3.histogram()
-      .domain([MIN_PROPAGATION_RANGE, MAX_PROPAGATION_RANGE])
-      .thresholds(MAX_BINS)
+      .domain([
+        cfg.minPropagationRange,
+        cfg.maxPropagationRange
+      ])
+      .thresholds(cfg.maxBins)
       (propagation)
 
     let freqCum = 0
@@ -387,7 +383,7 @@ export default class History {
 
   private getMinersCount(): Miner[] {
     return this.blocks
-      .slice(0, MAX_BINS)
+      .slice(0, cfg.maxBins)
       .map((item: BlockWrapper): Miner => {
         return {
           miner: item.block.miner,
@@ -404,7 +400,7 @@ export default class History {
 
   public getCharts(): void {
     const chartHistory = this.blocks
-      .slice(0, MAX_BINS)
+      .slice(0, cfg.maxBins)
       .map((blockWrapper: BlockWrapper): {
         height: number
         blocktime: number
@@ -429,13 +425,13 @@ export default class History {
 
     this.callback(null, {
       height: chartHistory.map((h) => h.height),
-      blocktime: padArray(chartHistory.map((h) => h.blocktime), MAX_BINS, 0),
+      blocktime: padArray(chartHistory.map((h) => h.blocktime), cfg.maxBins, 0),
       avgBlocktime: this.getAvgBlocktime(),
       difficulty: chartHistory.map((h) => h.difficulty),
       uncles: chartHistory.map((h) => h.uncles),
       transactions: chartHistory.map((h) => h.transactions),
-      gasSpending: padArray(chartHistory.map((h) => h.gasSpending), MAX_BINS, 0),
-      gasLimit: padArray(chartHistory.map((h) => h.gasLimit), MAX_BINS, 0),
+      gasSpending: padArray(chartHistory.map((h) => h.gasSpending), cfg.maxBins, 0),
+      gasLimit: padArray(chartHistory.map((h) => h.gasLimit), cfg.maxBins, 0),
       miners: this.getMinersCount(),
       propagation: this.getBlockPropagation(),
     })

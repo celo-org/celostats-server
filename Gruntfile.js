@@ -38,7 +38,7 @@ module.exports = function (grunt) {
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
     clean: {
-      build: ['dist'],
+      build: ['dist', 'coverage', '.nyc_output'],
       js: ['dist/js/*.*', '!dist/js/netstats.*'],
       css: ['dist/css/*.css', '!dist/css/netstats.*.css']
     },

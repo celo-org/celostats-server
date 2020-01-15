@@ -1,7 +1,3 @@
-import {
-  findIndex,
-  debounce
-} from "lodash"
 import History from "./history";
 import Node from "./node"
 import { Stats } from "./interfaces/Stats";
@@ -16,6 +12,8 @@ import { NodeStats } from "./interfaces/NodeStats";
 import { Block } from "./interfaces/Block";
 import { NodeInformation } from "./interfaces/NodeInformation";
 import { Histogram } from "./interfaces/Histogram";
+import { debounce } from "debounce"
+import { cfg } from "./utils/config";
 
 export default class Collection {
 
@@ -29,7 +27,7 @@ export default class Collection {
     callback: { (err: Error | string, nodeInfo: NodeInfo): void }
   ): void {
     const node: Node = this.getNodeOrNew(
-      {validatorData: {signer: nodeInformation.nodeData.id}},
+      (n: Node) => n.getValidatorData().signer === nodeInformation.nodeData.id,
       nodeInformation
     )
     node.setInfo(
@@ -44,7 +42,7 @@ export default class Collection {
     stats: Stats,
     callback: { (err: Error | string, stats: NodeStats): void }
   ): void {
-    const node: Node = this.getNode({validatorData: {signer: id}})
+    const node: Node = this.getNode((n: Node) => n.getValidatorData().signer === id)
 
     if (!node) {
       callback('Node not found during update', null)
@@ -75,7 +73,7 @@ export default class Collection {
     callbackUpdatedStats: { (err: Error | string, blockStats: BlockStats): void },
     callbackHighestBlock: { (err: Error | string, highestBlock: number): void }
   ): void {
-    const node: Node = this.getNode({validatorData: {signer: id}})
+    const node: Node = this.getNode((n: Node) => n.getValidatorData().signer === id)
 
     if (!node) {
       console.error(
@@ -122,7 +120,7 @@ export default class Collection {
     stats: Stats,
     callback: { (err: Error | string, pending: Pending | null): void }
   ): void {
-    const node: Node = this.getNode({validatorData: {signer: id}})
+    const node: Node = this.getNode((n: Node) => n.getValidatorData().signer === id)
 
     if (!node) {
       return
@@ -136,7 +134,7 @@ export default class Collection {
     stats: Stats,
     callback: { (err: Error | string, basicStats: BasicStatsResponse | null): void }
   ): void {
-    const node: Node = this.getNode({validatorData: {signer: id}})
+    const node: Node = this.getNode((n: Node) => n.getValidatorData().signer === id)
 
     if (!node) {
       callback('Node not found during update stats', null)
@@ -150,7 +148,7 @@ export default class Collection {
     latency: number,
     callback: { (err: Error | string, latency: Latency): void }
   ): void {
-    const node: Node = this.getNode({validatorData: {signer: id}})
+    const node: Node = this.getNode((n: Node) => n.getValidatorData().signer === id)
 
     if (!node) {
       return
@@ -163,7 +161,7 @@ export default class Collection {
     spark: string,
     callback: { (err: Error | string, stats: NodeStats): void }
   ): void {
-    const node = this.getNode({spark})
+    const node = this.getNode((n: Node) => n.getSpark() === spark)
 
     if (!node) {
       callback('Node not found during setting inactive', null)
@@ -174,13 +172,13 @@ export default class Collection {
   }
 
   public getIndex(
-    search: object
+    search: { (n: Node): boolean }
   ): number {
-    return findIndex(this.nodes, search)
+    return this.nodes.indexOf(this.nodes.find(search))
   }
 
   private getNode(
-    search: object
+    search: { (n: Node): boolean }
   ): Node {
     const index = this.getIndex(search)
 
@@ -201,7 +199,7 @@ export default class Collection {
   }
 
   private getIndexOrNew(
-    search: object,
+    search: { (n: Node): boolean },
     data: NodeInformation | Validator
   ): number {
     const index = this.getIndex(search)
@@ -210,7 +208,7 @@ export default class Collection {
   }
 
   public getNodeOrNew(
-    search: object,
+    search: { (n: Node): boolean },
     data: NodeInformation | Validator
   ): Node {
     return this.getNodeByIndex(
@@ -252,19 +250,13 @@ export default class Collection {
   }
 
   public getCharts(): void {
-    this.getChartsDebounced()
-  }
-
-  private getChartsDebounced(): void {
 
     if (this.debounced === null) {
       this.debounced = debounce(() => {
-        this.history.getCharts()
-      }, 500, {
-        leading: false,
-        maxWait: 2000,
-        trailing: true
-      })
+          this.history.getCharts()
+        },
+        cfg.chartDebounceInterval
+      )
     }
 
     this.debounced()

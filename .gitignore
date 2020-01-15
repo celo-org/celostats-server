@@ -25,6 +25,3 @@ coverage
 
 # IdeaIDE
 .idea
-
-# server
-/src/server/**/*.js

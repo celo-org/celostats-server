@@ -1,8 +1,4 @@
-import {
-  isEqual,
-  result
-} from "lodash"
-import { trusted } from "./utils/config"
+import { cfg, trusted } from "./utils/config"
 import { Stats } from "./interfaces/Stats";
 import { Block } from "./interfaces/Block";
 import { Validator } from "./interfaces/Validator";
@@ -16,9 +12,7 @@ import { Uptime } from "./interfaces/Uptime";
 import { NodeStats } from "./interfaces/NodeStats";
 import { NodeDetails } from "./interfaces/NodeDetails";
 import { NodeInformation } from "./interfaces/NodeInformation";
-
-const MAX_HISTORY = 40
-const MAX_INACTIVE_TIME = 1000 * 60 * 60 * 4
+import deepEqual from "deep-equal";
 
 export default class Node {
 
@@ -98,7 +92,7 @@ export default class Node {
   public init(
     nodeInformation: NodeInformation
   ) {
-    this.propagationHistory.fill(-1, 0, MAX_HISTORY)
+    this.propagationHistory.fill(-1, 0, cfg.maxPropagationHistory)
 
     if (
       this.id === null &&
@@ -127,11 +121,11 @@ export default class Node {
     nodeInformation: NodeInformation,
     callback: { (err: Error | string, nodeInfo: NodeInfo): void }
   ) {
-    if (nodeInformation.stats.info) {
+    if (nodeInformation.stats && nodeInformation.stats.info) {
       this.info = nodeInformation.stats.info
 
       if (nodeInformation.stats.info.canUpdateHistory) {
-        this.info.canUpdateHistory = result(nodeInformation.stats, 'info.canUpdateHistory', false)
+        this.info.canUpdateHistory = nodeInformation.stats.info.canUpdateHistory || false
       }
     }
 
@@ -159,6 +153,14 @@ export default class Node {
 
   public setValidatorElected(elected: boolean) {
     this.validatorData.elected = elected;
+  }
+
+  public getSpark() {
+    return this.spark;
+  }
+
+  public getId(): string {
+    return this.id
   }
 
   public setValidatorRegistered(registered: boolean) {
@@ -225,11 +227,11 @@ export default class Node {
     propagationHistory: number[],
     callback: { (err: Error | string, blockStats: BlockStats): void }
   ) {
-    if (block && block.number) {
+    if (block && !isNaN(block.number)) {
 
       if (
-        !isEqual(propagationHistory, this.propagationHistory) ||
-        !isEqual(block, this.stats.block)
+        !deepEqual(propagationHistory, this.propagationHistory) ||
+        !deepEqual(block, this.stats.block)
       ) {
         if (
           block.number !== this.stats.block.number ||
@@ -281,7 +283,7 @@ export default class Node {
     callback: { (err: Error | string, basicStats: BasicStatsResponse | null): void }
   ) {
     if (stats) {
-      if (!isEqual(stats,
+      if (!deepEqual(stats,
         {
           active: this.stats.active,
           mining: this.stats.mining,
@@ -356,7 +358,7 @@ export default class Node {
     return (
       !this.uptime.lastStatus &&
       this.uptime.lastUpdate !== null &&
-      (Date.now() - this.uptime.lastUpdate) > MAX_INACTIVE_TIME
+      (Date.now() - this.uptime.lastUpdate) > cfg.maxInactiveTime
     )
   }
 
@@ -440,13 +442,13 @@ export default class Node {
     propagationHistory: number[]
   ) {
     // anything new?
-    if (isEqual(propagationHistory, this.propagationHistory)) {
+    if (deepEqual(propagationHistory, this.propagationHistory)) {
       // no, nothing to set
       return false
     }
 
     if (!propagationHistory) {
-      this.propagationHistory = [].fill(-1, 0, MAX_HISTORY)
+      this.propagationHistory = [].fill(-1, 0, cfg.maxPropagationHistory)
       this.stats.propagationAvg = 0
 
       return true

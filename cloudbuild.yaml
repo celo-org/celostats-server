@@ -1,7 +1,9 @@
 steps:
-  - name: 'gcr.io/cloud-builders/npm'
+  - name: 'node:13'
+    entrypoint: npm
     args: ['install']
-  - name: 'gcr.io/cloud-builders/npm'
+  - name: 'node:13'
+    entrypoint: npm
     args: ['test']
   - name: "gcr.io/cloud-builders/docker"
     args: ["build", "-f", "Dockerfile", "-t", "gcr.io/$PROJECT_ID/ethstats:$COMMIT_SHA", "."]

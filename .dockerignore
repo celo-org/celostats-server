@@ -1,4 +1,13 @@
+# git
 **/.git
+
+# npm
 node_modules
+
+# build
 dist
+
+# test
 test
+coverage
+.nyc_output
