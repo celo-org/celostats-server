@@ -2,6 +2,9 @@ import express from "express";
 
 export const routes = express.Router()
 
+/**
+ * Base view
+ */
 routes.get('/', (
   req: express.Request,
   res: express.Response
@@ -9,6 +12,9 @@ routes.get('/', (
   res.render('index')
 })
 
+/**
+ * Memory view
+ */
 routes.get('/memory', (
   req: express.Request,
   res: express.Response
@@ -27,7 +33,9 @@ routes.get('/memory', (
   ))
 })
 
-// catch 404 and forward to error handler
+/**
+ * catch 404 and forward to error handler
+ */
 routes.use((
   req: express.Request,
   res: express.Response,
@@ -38,7 +46,9 @@ routes.use((
   next(err)
 })
 
-// error handlers
+/**
+ * Error handler
+ */
 routes.use((
   err: any,
   req: express.Request,
@@ -48,18 +58,5 @@ routes.use((
   res.render('error', {
     message: err.message,
     error: err
-  })
-})
-
-// production error handler
-routes.use((
-  err: any,
-  req: express.Request,
-  res: express.Response
-) => {
-  res.status(err.status || 500)
-  res.render('error', {
-    message: err.message,
-    error: {}
   })
 })

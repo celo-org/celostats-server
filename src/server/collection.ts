@@ -217,6 +217,11 @@ export default class Collection {
     this.removeOldNodes()
 
     return this.nodes
+      .filter((elem: Node, index, self) => self.findIndex(
+        (t: Node) => {
+          return (t.getId() === elem.getId())
+        }) === index
+      )
   }
 
   private removeOldNodes(): void {

@@ -16,9 +16,11 @@ if (process.env.RESERVED_ADDRESSES) {
 }
 
 const compression = process.env.COMPRESSION ? process.env.COMPRESSION === 'true' : true
+const production = process.env.NODE_ENV ? process.env.NODE_ENV === 'production' : false
 
 // general config
 export const cfg = {
+  production,
   port: process.env.PORT || 3000,
   headersTimeout: 0.9 * 1000,
   maxHeadersCount: 0,
