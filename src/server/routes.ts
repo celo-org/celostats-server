@@ -1,26 +1,34 @@
-import express from "express"
-import * as path from "path"
-import * as bodyParser from "body-parser";
+import express from "express";
 
-const app = express()
+export const routes = express.Router()
 
-// view engine setup
-app.set('views', path.join(__dirname, '../client/views'))
-app.set('view engine', 'jade')
-
-app.use(bodyParser.json())
-app.use(bodyParser.urlencoded({extended: false}))
-app.use(express.static(path.join(__dirname, '../../dist')))
-
-app.get('/', (
+routes.get('/', (
   req: express.Request,
   res: express.Response
 ) => {
   res.render('index')
 })
 
+routes.get('/memory', (
+  req: express.Request,
+  res: express.Response
+) => {
+  const mem = process.memoryUsage()
+
+  res.set('Content-Type', 'text/html');
+  res.send(Buffer.from(`
+<div>
+    <div>rss: ${(mem.rss / 1024 / 1024).toFixed(2)}mb</div>
+    <div>heapUsed: ${(mem.heapUsed / 1024 / 1024).toFixed(2)}mb</div>
+    <div>heapTotal: ${(mem.heapTotal / 1024 / 1024).toFixed(2)}mb</div>
+    <div>external: ${(mem.external / 1024 / 1024).toFixed(2)}mb</div>
+</div>
+`
+  ))
+})
+
 // catch 404 and forward to error handler
-app.use((
+routes.use((
   req: express.Request,
   res: express.Response,
   next: express.NextFunction
@@ -31,7 +39,7 @@ app.use((
 })
 
 // error handlers
-app.use((
+routes.use((
   err: any,
   req: express.Request,
   res: express.Response
@@ -44,7 +52,7 @@ app.use((
 })
 
 // production error handler
-app.use((
+routes.use((
   err: any,
   req: express.Request,
   res: express.Response
@@ -55,5 +63,3 @@ app.use((
     error: {}
   })
 })
-
-export default app

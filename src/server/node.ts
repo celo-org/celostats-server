@@ -37,17 +37,23 @@ export default class Node {
     block: {
       number: 0,
       hash: '0x0000000000000000000000000000000000000000000000000000000000000000',
+      parentHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
       difficulty: '0',
       totalDifficulty: '0',
       gasLimit: 0,
+      gasUsed: 0,
       timestamp: 0,
       time: 0,
+      miner: '0x0000000000000000000000000000000000000000000000000000000000000000',
       validators: {
         registered: [],
         elected: []
       },
+      trusted: false,
       arrival: 0,
       received: 0,
+      arrived: 0,
+      fork: 0,
       propagation: 0,
       transactions: [],
       uncles: []
@@ -229,26 +235,27 @@ export default class Node {
   ) {
     if (block && !isNaN(block.number)) {
 
-      if (
-        !deepEqual(propagationHistory, this.propagationHistory) ||
-        !deepEqual(block, this.stats.block)
-      ) {
-        if (
-          block.number !== this.stats.block.number ||
-          block.hash !== this.stats.block.hash
-        ) {
-          if (!block.validators.registered) {
-            block.validators = this.stats.block.validators
-          }
+      const propagationHistoryChanged =
+        !deepEqual(propagationHistory, this.propagationHistory)
 
-          this.stats.block = block
-        }
+      const blockDataChanged =
+        !deepEqual(block, this.stats.block)
+
+      if (propagationHistoryChanged || blockDataChanged) {
 
         this.setPropagationHistory(propagationHistory)
 
-        callback(null, this.getBlockStats())
-      } else {
-        callback(null, null)
+        const blockNumberChanged = block.number !== this.stats.block.number
+        const blockHashChanged = block.hash !== this.stats.block.hash
+
+        if (blockNumberChanged || blockHashChanged) {
+          if (!block.validators.registered) {
+            block.validators = this.stats.block.validators
+          }
+          this.stats.block = block
+
+          callback(null, this.getBlockStats())
+        }
       }
     } else {
       callback('Block undefined', null)

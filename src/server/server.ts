@@ -7,7 +7,8 @@ import * as primusEmit from "primus-emit"
 import * as primusSparkLatency from "primus-spark-latency"
 import Controller from "./Controller";
 import { createServer } from "http"
-import routes from "./routes"
+import { expressConfig } from "./expressConfig"
+import { routes } from "./routes";
 import { cfg } from "./utils/config"
 import { Proof } from "./interfaces/Proof";
 import { NodeResponseLatency } from "./interfaces/NodeResponseLatency";
@@ -25,6 +26,7 @@ import { Sides } from "./statistics/Sides";
 import { Directions } from "./statistics/Directions";
 import { IDictionary } from "./interfaces/IDictionary";
 import { isInputValid } from "./utils/isInputValid";
+import express from "express";
 
 export default class Server {
 
@@ -34,7 +36,45 @@ export default class Server {
   private readonly controller: Controller;
 
   constructor() {
-    const server = createServer(routes)
+
+    expressConfig.get('/config', (
+      req: express.Request,
+      res: express.Response
+    ) => {
+      res.set('Content-Type', 'text/html');
+      res.send(Buffer.from(
+        `
+        <pre>${JSON.stringify(cfg, null, 2)}</pre>
+        `
+      ))
+    })
+
+    expressConfig.get('/stats', (
+      req: express.Request,
+      res: express.Response
+    ) => {
+      let clients = 0
+      this.client.forEach(() => clients++);
+
+      let nodes = 0;
+      this.api.forEach(() => nodes++);
+
+      const stats = this.controller.statistics.prepare(
+        clients,
+        nodes
+      );
+
+      res.set('Content-Type', 'text/html');
+      res.send(Buffer.from(
+        `
+        <pre>${stats}</pre>
+        `
+      ))
+    })
+
+    expressConfig.use(routes)
+
+    const server = createServer(expressConfig)
 
     server.headersTimeout = cfg.headersTimeout
     server.maxHeadersCount = cfg.maxHeadersCount
@@ -209,7 +249,11 @@ export default class Server {
 
           const id = proof.address
 
-          this.controller.handleNodeLatency(id, stats.latency)
+          this.controller.handleNodeLatency(
+            id,
+            // todo: make node send this as number instead of string
+            parseInt(String(stats.latency))
+          )
         }
       })
 

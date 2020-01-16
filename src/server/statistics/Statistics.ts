@@ -41,7 +41,7 @@ export class Statistics {
     return this.messages[Sides.Client][direction] + this.messages[Sides.Node][direction]
   }
 
-  print(clients: number, nodes: number) {
+  prepare(clients: number, nodes: number): string {
     const dbSize = JSON.stringify(this.nodes).length
     const duration = Date.now() - this.startTime;
 
@@ -71,9 +71,13 @@ export class Statistics {
       '\n=================================================================='
     ]
 
+    return output.join('')
+  }
+
+  print(clients: number, nodes: number): void {
     console.success(
       "SYS", "STA",
-      output.join("")
+      this.prepare(clients, nodes)
     )
   }
 }

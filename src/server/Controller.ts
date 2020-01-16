@@ -17,7 +17,11 @@ import { BlockStats } from "./interfaces/BlockStats";
 import { Stats } from "./interfaces/Stats";
 import { Pending } from "./interfaces/Pending";
 import { Validators } from "./interfaces/Validators";
-import { banned, cfg, trusted } from "./utils/config";
+import {
+  banned,
+  cfg,
+  trusted
+} from "./utils/config";
 import { BasicStatsResponse } from "./interfaces/BasicStatsResponse";
 import { Latency } from "./interfaces/Latency";
 import { NodeStats } from "./interfaces/NodeStats";
@@ -38,23 +42,7 @@ export default class Controller {
     this.statistics = new Statistics(this.nodes);
   }
 
-  private initNodes(): void {
-    // Init collections
-    this.nodes.setChartsCallback(
-      (err: Error | string, charts: ChartData): void => {
-        if (err) {
-          console.error('COL', 'CHR', 'Charts error:', err)
-        } else {
-          this.clientWrite({
-            action: 'charts',
-            data: charts
-          })
-        }
-      }
-    )
-  }
-
-  private wireup(): void {
+  public init(): void {
     // ping clients
     setInterval(() => {
       this.clientWrite({
@@ -72,7 +60,7 @@ export default class Controller {
         data: this.nodes.all()
       })
 
-      this.nodes.getCharts()
+      this.handleGetCharts()
 
     }, cfg.nodeCleanupTimeout)
 
@@ -96,9 +84,31 @@ export default class Controller {
     });
   }
 
-  public init() {
-    this.initNodes()
-    this.wireup()
+  private handleGetCharts(
+    spark?: Primus.spark
+  ): void {
+    this.nodes.getCharts(
+      (err: Error | string, charts: ChartData): void => {
+        if (err) {
+          console.error('COL', 'CHR', 'Charts error:', err)
+        } else {
+
+          const payload = {
+            action: 'charts',
+            data: charts
+          }
+          if (spark) {
+            spark.write(payload)
+
+            this.statistics.add(Sides.Client, Directions.Out)
+          } else {
+
+            // propagate to all clients
+            this.clientWrite(payload)
+          }
+        }
+      }
+    )
   }
 
   /*************************************
@@ -156,20 +166,33 @@ export default class Controller {
       id, block,
       (err: Error | string, updatedStats: BlockStats) => {
         if (err) {
-          console.error('API', 'BLK', 'Block error:', err, updatedStats)
+          console.error(
+            'API', 'BLK',
+            'Block error:', err, updatedStats
+          )
         } else if (updatedStats) {
+
+          // TODO: Change this and built this into a real data model
+          // TODO: THIS IS A HACK!
+
+          // @ts-ignore
+          updatedStats.block.validators.elected = updatedStats.block.validators.elected ? updatedStats.block.validators.elected.length : 0
+          // @ts-ignore
+          updatedStats.block.validators.registered = updatedStats.block.validators.registered ? updatedStats.block.validators.registered.length : 0
+
+          delete (updatedStats.block.transactions)
 
           this.clientWrite({
             action: 'block',
             data: updatedStats
           })
 
-          console.info('API', 'BLK',
+          console.info(
+            'API', 'BLK',
             'Block:', updatedStats.block['number'],
             'td:', updatedStats.block['totalDifficulty'],
-            'from:', updatedStats.id, 'ip:', ip)
-
-          this.nodes.getCharts()
+            'from:', updatedStats.id, 'ip:', ip
+          )
         }
       },
       (err: Error | string, highestBlock: number) => {
@@ -180,6 +203,9 @@ export default class Controller {
             action: 'lastBlock',
             number: highestBlock
           })
+
+          // propagate to all the clients
+          this.handleGetCharts()
         }
       }
     )
@@ -430,7 +456,8 @@ export default class Controller {
 
     this.statistics.add(Sides.Client, Directions.Out)
 
-    this.nodes.getCharts()
+    // propagate the charts only to this client not to all
+    this.handleGetCharts(spark);
 
     console.success(
       'API', 'CON',

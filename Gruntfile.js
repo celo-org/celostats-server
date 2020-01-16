@@ -56,7 +56,7 @@ module.exports = function (grunt) {
         tasks: ['default']
       }
     },
-    jade: {
+    pug: {
       build: {
         options: {
           data: {
@@ -164,13 +164,13 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-contrib-clean')
   grunt.loadNpmTasks('grunt-contrib-copy')
   grunt.loadNpmTasks('grunt-contrib-concat')
-  grunt.loadNpmTasks('grunt-contrib-jade')
+  grunt.loadNpmTasks('grunt-contrib-pug')
   grunt.loadNpmTasks('grunt-contrib-cssmin')
   grunt.loadNpmTasks('grunt-contrib-uglify')
   grunt.loadNpmTasks('grunt-contrib-watch')
 
   grunt.registerTask('build', [
-    'jade:build',
+    'pug:build',
     'copy:build',
     'cssmin:build',
     'concat:vendor',

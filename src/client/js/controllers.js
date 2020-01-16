@@ -25,8 +25,8 @@ netStatsApp.controller('StatsCtrl', function ($scope, $filter, $localStorage, so
   $scope.gasSpending = _.fill(Array(MAX_BINS), 2);
   $scope.miners = [];
   $scope.validators = {
-    'elected': [],
-    'registered': []
+    elected: 0,
+    registered: 0
   };
 
 

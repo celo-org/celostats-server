@@ -12,14 +12,11 @@ import { NodeStats } from "./interfaces/NodeStats";
 import { Block } from "./interfaces/Block";
 import { NodeInformation } from "./interfaces/NodeInformation";
 import { Histogram } from "./interfaces/Histogram";
-import { debounce } from "debounce"
-import { cfg } from "./utils/config";
 
 export default class Collection {
 
   private nodes: Node[] = []
   private history: History = new History()
-  private debounced: any = null
   private highestBlock: number = 1
 
   public add(
@@ -243,22 +240,10 @@ export default class Collection {
     return this.history.getBlockPropagation()
   }
 
-  public setChartsCallback(
-    callback: { (err: Error | string, chartData: ChartData): void }
+  public getCharts(
+    callback: { (err: Error | string, charts: ChartData): void }
   ): void {
-    this.history.setCallback(callback)
-  }
 
-  public getCharts(): void {
-
-    if (this.debounced === null) {
-      this.debounced = debounce(() => {
-          this.history.getCharts()
-        },
-        cfg.chartDebounceInterval
-      )
-    }
-
-    this.debounced()
+    this.history.getCharts(callback);
   }
 }

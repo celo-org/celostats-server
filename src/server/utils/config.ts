@@ -15,6 +15,8 @@ if (process.env.RESERVED_ADDRESSES) {
   reserved.push(...process.env.RESERVED_ADDRESSES.split(','))
 }
 
+const compression = process.env.COMPRESSION ? process.env.COMPRESSION === 'true' : true
+
 // general config
 export const cfg = {
   port: process.env.PORT || 3000,
@@ -31,9 +33,8 @@ export const cfg = {
   clientPingTimeout: 5 * 1000,
   nodeCleanupTimeout: 1000 * 60 * 60,
   statisticsInterval: 60 * 1000,
-  chartDebounceInterval: 500,
-  compression: process.env.COMPRESSION || true,
+  compression,
   transport: {
-    perMessageDeflate: process.env.COMPRESSION || true
+    perMessageDeflate: compression
   }
 }

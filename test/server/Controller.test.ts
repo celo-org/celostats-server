@@ -1,10 +1,11 @@
-import Controller from "../../src/server/Controller"
+import assert from "assert"
 import { createServer } from "http";
-import routes from "../../src/server/routes";
+import Controller from "../../src/server/Controller"
+import { expressConfig } from "../../src/server/expressConfig";
+import { routes } from "../../src/server/routes";
 // @ts-ignore
 import Primus from "primus"
 import { ClientPong } from "../../src/server/interfaces/ClientPong";
-import assert from "assert"
 import { Sides } from "../../src/server/statistics/Sides";
 
 describe('Controller', () => {
@@ -12,7 +13,9 @@ describe('Controller', () => {
   let controller: Controller;
 
   beforeEach(() => {
-    const server = createServer(routes)
+    expressConfig.use(routes)
+
+    const server = createServer(expressConfig)
 
     server.headersTimeout = 0.9 * 1000
     server.maxHeadersCount = 0
