@@ -1,39 +1,39 @@
 import assert from "assert"
-import Collection from "../../src/server/collection";
+import Collection from "../../src/server/Collection";
 import { NodeInformation } from "../../src/server/interfaces/NodeInformation";
 
 describe('Collection', () => {
 
   let collection: Collection;
 
+  const node: NodeInformation = {
+    nodeData: {
+      id: 'node1',
+      address: '0x12345',
+      ip: '',
+      spark: '',
+      latency: 0
+    },
+    stats: {
+      id: '11',
+      address: '0x12345'
+    }
+  }
+
   beforeEach(() => {
     collection = new Collection();
   })
 
-  describe('all', () => {
+  describe('#all()', () => {
 
     it('should return the inserted node', (done) => {
 
-      const node: NodeInformation = {
-        nodeData: {
-          id: 'node1',
-          address: '0x12345',
-          ip: '',
-          spark: '',
-          latency: 0
-        },
-        stats: {
-          id: '11',
-          address: '0x12345'
-        }
-      }
-
-      collection.add(node, (err) => {
+      collection.addNode(node, (err) => {
         if (err) {
           throw err
         }
 
-        const all = collection.all()
+        const all = collection.getAll()
         assert.equal(all.length, 1)
         assert.equal(all[0].getId(), node.nodeData.id)
         done()
@@ -58,19 +58,19 @@ describe('Collection', () => {
         }
       }
 
-      collection.add(node1, (err) => {
+      collection.addNode(node1, (err) => {
         if (err) {
           throw err
         }
 
         const node2 = Object.assign({}, node1)
 
-        collection.add(node2, (err) => {
+        collection.addNode(node2, (err) => {
           if (err) {
             throw err
           }
 
-          assert.equal(collection.all().length, 1)
+          assert.equal(collection.getAll().length, 1)
           done()
         })
 

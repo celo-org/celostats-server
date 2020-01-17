@@ -1,8 +1,8 @@
 import assert from "assert"
 import { createServer } from "http";
 import Controller from "../../src/server/Controller"
-import { expressConfig } from "../../src/server/expressConfig";
-import { routes } from "../../src/server/routes";
+import { expressConfig } from "../../src/server/server/expressConfig";
+import { routes } from "../../src/server/server/routes";
 // @ts-ignore
 import Primus from "primus"
 import { ClientPong } from "../../src/server/interfaces/ClientPong";

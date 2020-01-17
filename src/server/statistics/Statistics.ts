@@ -1,6 +1,6 @@
 import { Sides } from "./Sides";
 import { Directions } from "./Directions";
-import Collection from "../collection";
+import Collection from "../Collection";
 
 export class Statistics {
 
@@ -25,7 +25,10 @@ export class Statistics {
     }
   }
 
-  constructor(private readonly nodes: Collection) {
+  private collection: Collection;
+
+  constructor(collection: Collection) {
+    this.collection = collection
     this.startTime = Date.now()
   }
 
@@ -41,9 +44,12 @@ export class Statistics {
     return this.messages[Sides.Client][direction] + this.messages[Sides.Node][direction]
   }
 
-  prepare(clients: number, nodes: number): string {
-    const dbSize = JSON.stringify(this.nodes).length
-    const duration = Date.now() - this.startTime;
+  prepare(
+    clients: number,
+    nodes: number
+  ): string {
+    const dbSize = JSON.stringify(this.collection).length
+    const durationInSeconds = (Date.now() - this.startTime) / 1000;
 
     const serverMessages: bigint = this.sumBySide(Sides.Node)
     const clientMessages: bigint = this.sumBySide(Sides.Client)
@@ -52,20 +58,22 @@ export class Statistics {
 
     const totalMessages: bigint = serverMessages + clientMessages;
     const messagePrecession = 3
-    const height = this.nodes.getHighestBlock()
-    const numberNodes = this.nodes.getLength()
+    const height = this.collection.getHighestBlock()
+    const amount = this.collection.getSize()
 
     const output = [
       '\n==================================================================',
       `\nStarted at date: ${new Date(this.startTime).toLocaleString()}`,
+      `\nCurrent date: ${new Date().toLocaleString()}`,
       `\nDB size: ${(dbSize / 1024 / 1024).toFixed(2)}mb`,
-      `\nNodes in DB: ${numberNodes}`,
+      `\nNodes in DB: ${amount.nodes}`,
+      `\nBlocks in DB: ${amount.blocks}`,
       `\nHighest block: ${height}`,
-      `\nMessages to/from nodes: ${serverMessages.toLocaleString()} / ${(Number(serverMessages) / duration).toFixed(messagePrecession)} per second`,
-      `\nMessages to/from clients: ${clientMessages.toLocaleString()} / ${(Number(clientMessages) / duration).toFixed(messagePrecession)} per second`,
-      `\nMessages received: ${inMessages.toLocaleString()} / ${(Number(inMessages) / duration).toFixed(messagePrecession)} per second`,
-      `\nMessages sent: ${outMessages.toLocaleString()} / ${(Number(inMessages) / duration).toFixed(messagePrecession)} per second`,
-      `\nTotal messages received and sent: ${totalMessages.toLocaleString()} / ${(Number(totalMessages) / duration).toFixed(messagePrecession)} per second`,
+      `\nMessages to/from nodes: ${serverMessages.toLocaleString()} / ${(Number(serverMessages) / durationInSeconds).toFixed(messagePrecession)} per second`,
+      `\nMessages to/from clients: ${clientMessages.toLocaleString()} / ${(Number(clientMessages) / durationInSeconds).toFixed(messagePrecession)} per second`,
+      `\nMessages received: ${inMessages.toLocaleString()} / ${(Number(inMessages) / durationInSeconds).toFixed(messagePrecession)} per second`,
+      `\nMessages sent: ${outMessages.toLocaleString()} / ${(Number(outMessages) / durationInSeconds).toFixed(messagePrecession)} per second`,
+      `\nTotal messages received and sent: ${totalMessages.toLocaleString()} / ${(Number(totalMessages) / durationInSeconds).toFixed(messagePrecession)} per second`,
       `\nNodes connected: ${nodes}`,
       `\nClients connected: ${clients}`,
       '\n=================================================================='
@@ -74,7 +82,10 @@ export class Statistics {
     return output.join('')
   }
 
-  print(clients: number, nodes: number): void {
+  print(
+    clients: number,
+    nodes: number
+  ): void {
     console.success(
       "SYS", "STA",
       this.prepare(clients, nodes)

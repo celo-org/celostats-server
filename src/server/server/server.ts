@@ -1,32 +1,33 @@
-import './utils/logger'
+import '../utils/logger'
 // @ts-ignore
 import Primus from "primus"
 // @ts-ignore
 import * as primusEmit from "primus-emit"
 // @ts-ignore
 import * as primusSparkLatency from "primus-spark-latency"
-import Controller from "./Controller";
+import express from "express";
+import Controller from "../Controller";
 import { createServer } from "http"
 import { expressConfig } from "./expressConfig"
 import { routes } from "./routes";
-import { cfg } from "./utils/config"
-import { Proof } from "./interfaces/Proof";
-import { NodeResponseLatency } from "./interfaces/NodeResponseLatency";
-import { StatsWrapped } from "./interfaces/StatsWrapped";
-import { ClientPong } from "./interfaces/ClientPong";
-import { NodeResponsePing } from "./interfaces/NodeResponsePing";
-import { NodeResponseStats } from "./interfaces/NodeResponseStats";
-import { Latency } from "./interfaces/Latency";
-import { NodePing } from "./interfaces/NodePing";
-import { NodeResponseBlock } from "./interfaces/NodeResponseBlock";
-import { BlockWrapped } from "./interfaces/BlockWrapped";
-import { NodeResponseInfo } from "./interfaces/NodeResponseInfo";
-import { InfoWrapped } from "./interfaces/InfoWrapped";
-import { Sides } from "./statistics/Sides";
-import { Directions } from "./statistics/Directions";
-import { IDictionary } from "./interfaces/IDictionary";
-import { isInputValid } from "./utils/isInputValid";
-import express from "express";
+import { cfg } from "../utils/config"
+import { Proof } from "../interfaces/Proof";
+import { NodeResponseLatency } from "../interfaces/NodeResponseLatency";
+import { StatsWrapped } from "../interfaces/StatsWrapped";
+import { ClientPong } from "../interfaces/ClientPong";
+import { NodeResponsePing } from "../interfaces/NodeResponsePing";
+import { NodeResponseStats } from "../interfaces/NodeResponseStats";
+import { Latency } from "../interfaces/Latency";
+import { NodePing } from "../interfaces/NodePing";
+import { NodeResponseBlock } from "../interfaces/NodeResponseBlock";
+import { BlockWrapped } from "../interfaces/BlockWrapped";
+import { NodeResponseInfo } from "../interfaces/NodeResponseInfo";
+import { InfoWrapped } from "../interfaces/InfoWrapped";
+import { Sides } from "../statistics/Sides";
+import { Directions } from "../statistics/Directions";
+import { IDictionary } from "../interfaces/IDictionary";
+import { isInputValid } from "../utils/isInputValid";
+import { deleteSpark } from "../utils/deleteSpark";
 
 export default class Server {
 
@@ -86,7 +87,11 @@ export default class Server {
       parser: 'JSON',
       pingInterval: false,
       compression: cfg.compression,
-      transport: cfg.transport
+      transport: cfg.transport,
+      plugin: {
+        emit: primusEmit,
+        'spark-latency': primusSparkLatency
+      }
     })
 
     this.client = new Primus(server, {
@@ -95,7 +100,10 @@ export default class Server {
       parser: 'JSON',
       pingInterval: false,
       compression: cfg.compression,
-      transport: cfg.transport
+      transport: cfg.transport,
+      plugin: {
+        emit: primusEmit
+      }
     })
 
     this.controller = new Controller(
@@ -113,10 +121,6 @@ export default class Server {
   }
 
   private initApi(): void {
-    // Init API Socket connection
-    this.api.plugin('emit', primusEmit)
-    this.api.plugin('spark-latency', primusSparkLatency)
-
     // Init API Socket events
     this.api.on('connection', (spark: Primus.spark): void => {
       this.controller.statistics.add(Sides.Node, Directions.In)
@@ -172,7 +176,11 @@ export default class Server {
           this.controller.handleNodeBlock(id, spark.address.ip, stats.block)
 
         } else {
-          console.error('API', 'BLK', 'Invalid Block message:', stats)
+          console.error(
+            'API', 'BLK',
+            'Invalid Block message:',
+            stats
+          )
         }
       })
 
@@ -278,12 +286,13 @@ export default class Server {
 
       })
     })
+
+    this.api.on('disconnection', (spark: Primus.spark): void => {
+      deleteSpark(spark)
+    });
   }
 
   private initClient(): void {
-    // Init Client Socket connection
-    this.client.plugin('emit', primusEmit)
-
     this.client.on('connection', (spark: Primus.spark): void => {
       this.controller.statistics.add(Sides.Client, Directions.In)
 
@@ -313,6 +322,10 @@ export default class Server {
       })
 
     })
+
+    this.client.on('disconnection', (spark: Primus.spark): void => {
+      deleteSpark(spark)
+    });
   }
 
   public init(): void {

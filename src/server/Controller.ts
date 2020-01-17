@@ -1,8 +1,8 @@
 import './utils/logger'
 // @ts-ignore
 import Primus from "primus"
-import Collection from "./collection";
-import Node from "./node";
+import Collection from "./Collection";
+import Node from "./Node";
 import { Statistics } from "./statistics/Statistics";
 import { ChartData } from "./interfaces/ChartData";
 import { Sides } from "./statistics/Sides";
@@ -31,15 +31,15 @@ import { NodePong } from "./interfaces/NodePong";
 import { isAuthorized } from "./utils/isAuthorized";
 
 export default class Controller {
-  private readonly nodes: Collection
+  private readonly collection: Collection
   public readonly statistics: Statistics;
 
   constructor(
     private api: Primus,
     private client: Primus
   ) {
-    this.nodes = new Collection()
-    this.statistics = new Statistics(this.nodes);
+    this.collection = new Collection()
+    this.statistics = new Statistics(this.collection);
   }
 
   public init(): void {
@@ -57,7 +57,7 @@ export default class Controller {
     setInterval(() => {
       this.clientWrite({
         action: 'init',
-        data: this.nodes.all()
+        data: this.collection.getAll()
       })
 
       this.handleGetCharts()
@@ -87,24 +87,27 @@ export default class Controller {
   private handleGetCharts(
     spark?: Primus.spark
   ): void {
-    this.nodes.getCharts(
+    this.collection.getCharts(
       (err: Error | string, charts: ChartData): void => {
         if (err) {
-          console.error('COL', 'CHR', 'Charts error:', err)
+          console.error(
+            'COL', 'CHR',
+            'Charts error:', err
+          )
         } else {
 
-          const payload = {
+          const chartsResponse = {
             action: 'charts',
             data: charts
           }
           if (spark) {
-            spark.write(payload)
+            spark.write(chartsResponse)
 
             this.statistics.add(Sides.Client, Directions.Out)
           } else {
 
             // propagate to all clients
-            this.clientWrite(payload)
+            this.clientWrite(chartsResponse)
           }
         }
       }
@@ -129,14 +132,17 @@ export default class Controller {
       latency: spark.latency || 0
     }
 
-    this.nodes.add(
+    this.collection.addNode(
       <NodeInformation>{
         nodeData,
         stats
       },
       (err: Error | string, info: NodeInfo): void => {
         if (err) {
-          console.error('API', 'CON', 'Connection error:', err)
+          console.error(
+            'API', 'CON',
+            'Connection error:', err
+          )
           return
         }
 
@@ -162,7 +168,7 @@ export default class Controller {
     ip: string,
     block: Block
   ): void {
-    this.nodes.addBlock(
+    this.collection.addBlock(
       id, block,
       (err: Error | string, updatedStats: BlockStats) => {
         if (err) {
@@ -215,7 +221,7 @@ export default class Controller {
     id: string,
     stats: Stats
   ): void {
-    this.nodes.updatePending(
+    this.collection.updatePending(
       id, stats,
       (err: Error | string, pending: Pending) => {
         if (err) {
@@ -260,22 +266,10 @@ export default class Controller {
           trusted.push(validator.signer)
         }
 
-        const search = (n: Node) => n.getId() === validator.address
-        const index: number = this.nodes.getIndex(search)
-        const node: Node = this.nodes.getNodeOrNew(search, validator)
-
-        if (index < 0) {
-          // only if new node
-          node.integrateValidatorData(validator)
-        }
-
-        node.setValidatorData(validator)
-
-        if (validators.elected.indexOf(validator.address) > -1) {
-          node.setValidatorElected(true)
-        }
-
-        node.setValidatorRegistered(true)
+        const isElected = validators.elected.indexOf(validator.address) > -1
+        this.collection.setValidator(
+          validator, isElected
+        )
       })
     }
   }
@@ -284,7 +278,7 @@ export default class Controller {
     id: string,
     stats: Stats
   ): void {
-    this.nodes.updateStats(
+    this.collection.updateStats(
       id, stats,
       (err: Error | string, basicStats: BasicStatsResponse) => {
         if (err) {
@@ -313,7 +307,7 @@ export default class Controller {
     id: string,
     latency: number
   ): void {
-    this.nodes.updateLatency(
+    this.collection.updateLatency(
       id, latency,
       (err: Error | string, latency: Latency): void => {
         if (err) {
@@ -335,7 +329,7 @@ export default class Controller {
     id: string
   ): void {
 
-    this.nodes.inactive(
+    this.collection.setInactive(
       id,
       (err: Error | string, nodeStats: NodeStats
       ) => {
@@ -377,7 +371,10 @@ export default class Controller {
 
     this.statistics.add(Sides.Node, Directions.Out)
 
-    console.info('API', 'PIN', 'Ping from:', id)
+    console.info(
+      'API', 'PIN',
+      'Ping from:', id
+    )
   }
 
   private handleNodeAuth(
@@ -451,7 +448,7 @@ export default class Controller {
   ): void {
     spark.emit(
       'init',
-      {nodes: this.nodes.all()}
+      {nodes: this.collection.getAll()}
     )
 
     this.statistics.add(Sides.Client, Directions.Out)
