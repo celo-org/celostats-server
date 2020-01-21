@@ -266,6 +266,9 @@ netStatsApp.controller('StatsCtrl', function (
         node.stats.uptime = data.stats.uptime;
         node.stats.address = data.stats.address;
 
+        // todo optimize data model to update validatorData properly
+        node.validatorData.elected = data.stats.elected;
+
         if (
           !_.isUndefined(data.stats.latency) &&
           _.get(node, 'stats.latency', 0) !== data.stats.latency

@@ -157,7 +157,7 @@ block content
               span(ng-bind-html="node.validatorData.affiliation || '' | addressFilter")
             td
               span(data-toggle="tooltip", data-placement="top", data-html="true", data-original-title="{{node.validatorData | stakingString}}")
-                span(class="{{ node.stats | stakingClass }}", ng-bind-html="node.stats | stakingFilter")
+                span(class="{{ node.validatorData | stakingClass }}", ng-bind-html="node.validatorData | stakingFilter")
             td(class="{{ node.stats.peers | peerClass : node.stats.active }}", style="padding-left: 11px;") {{node.stats.peers}}
             td(style="padding-left: 15px;") {{node.stats.pending}}
             td(class="{{ node.stats | blockClass : bestBlock }}")

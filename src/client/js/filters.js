@@ -50,7 +50,7 @@ angular.module('netStatsApp.filters', [])
     };
   })
   .filter('stakingClass', function () {
-    return function (validatorData) {
+    var stakingClass = function (validatorData) {
       if (validatorData) {
         if (validatorData.elected)
           return 'text-success';
@@ -59,6 +59,9 @@ angular.module('netStatsApp.filters', [])
       }
       return 'text-info';
     };
+
+    stakingClass.$stateful = true
+    return stakingClass
   })
   .filter('hashrateFilter', ['$sce', '$filter', function ($sce, filter) {
     return function (hashes, isMining) {
@@ -78,7 +81,7 @@ angular.module('netStatsApp.filters', [])
     };
   }])
   .filter('stakingFilter', ['$sce', '$filter', function ($sce, filter) {
-    return function (validatorData) {
+    var stakingFilter = function (validatorData) {
       if (validatorData) {
         if (validatorData.elected)
           return $sce.trustAsHtml('<i class="icon-check-o"></i>');
@@ -87,9 +90,11 @@ angular.module('netStatsApp.filters', [])
       }
       return $sce.trustAsHtml('<i class="icon-block"></i>');
     };
+    stakingFilter.$stateful = true;
+    return stakingFilter;
   }])
   .filter('stakingString', function () {
-    return function (validatorData) {
+    var stakingString = function (validatorData) {
       if (validatorData) {
         if (validatorData.elected)
           return 'Elected';
@@ -98,6 +103,9 @@ angular.module('netStatsApp.filters', [])
       }
       return 'Full node';
     };
+
+    stakingString.$stateful = true;
+    return stakingString;
   })
   .filter('totalDifficultyFilter', function () {
     return function (hashes) {
