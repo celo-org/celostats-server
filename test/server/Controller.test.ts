@@ -7,12 +7,14 @@ import { routes } from "../../src/server/server/routes";
 import Primus from "primus"
 import { ClientPong } from "../../src/server/interfaces/ClientPong";
 import { Sides } from "../../src/server/statistics/Sides";
+import io from "socket.io";
+import { cfg } from "../../src/server/utils/config";
 
 describe('Controller', () => {
 
   let controller: Controller;
 
-  beforeEach(() => {
+  before(() => {
     expressConfig.use(routes)
 
     const server = createServer(expressConfig)
@@ -29,12 +31,12 @@ describe('Controller', () => {
       pingInterval: false
     })
 
-    const client = new Primus(server, {
-      transformer: 'websockets',
-      pathname: '/primus',
-      parser: 'JSON',
-      compression: true,
-      pingInterval: false
+    const client = io(server, {
+      path: '/client',
+      transports: ['websocket'],
+      cookie: false,
+      perMessageDeflate: cfg.compression,
+      httpCompression: cfg.compression
     })
 
     controller = new Controller(api, client)
@@ -43,7 +45,14 @@ describe('Controller', () => {
   describe('#handleClientEnd()', () => {
 
     it('should write then end to the console', () => {
-      const hasEnded = controller.handleClientEnd("hello", "0.0.0.1")
+      const socket = <io.Socket>{
+        conn: {
+          remoteAddress: "0.0.0.1"
+        }
+      }
+      const hasEnded = controller.handleClientEnd(
+        "hello", socket, 'all fine'
+      )
       assert(hasEnded)
     });
 
@@ -58,8 +67,8 @@ describe('Controller', () => {
       }
 
       // mock spark
-      const spark = {
-        emit: (name: string, payload: any) => {
+      const socket = <io.Socket>{
+        emit: (name: string, payload: any): void => {
           // evaluate
           assert(name === 'client-latency')
           assert(payload.latency === 0 || payload.latency === 1)
@@ -68,7 +77,7 @@ describe('Controller', () => {
       }
 
       // call
-      controller.handleClientPong(data, spark)
+      controller.handleClientPong(data, socket)
     });
 
     it('should write to the statistics', () => {
@@ -76,15 +85,15 @@ describe('Controller', () => {
       const data: ClientPong = <ClientPong>{}
 
       // mock spark
-      const spark = {
-        emit: () => {
+      const socket = <io.Socket>{
+        emit: (name: string, payload: any): void => {
         }
       }
 
       // before
       const before = controller.statistics.sumBySide(Sides.Client)
       // call
-      controller.handleClientPong(data, spark)
+      controller.handleClientPong(data, socket)
       // after
       const after = controller.statistics.sumBySide(Sides.Client)
       // evaluate
@@ -100,7 +109,7 @@ describe('Controller', () => {
       }
 
       // mock spark
-      const spark = {
+      const socket = <io.Socket>{
         emit: (name: string, payload: any) => {
           // evaluate
           assert(name === 'client-latency')
@@ -113,7 +122,7 @@ describe('Controller', () => {
       }
 
       // call
-      controller.handleClientPong(data, spark)
+      controller.handleClientPong(data, socket)
     });
 
     it('should read not supplied server time properly', async (done) => {
@@ -122,7 +131,7 @@ describe('Controller', () => {
       const data: ClientPong = <ClientPong>{}
 
       // mock spark
-      const spark = {
+      const socket = <io.Socket>{
         emit: (name: string, payload: any) => {
           const expected = Math.round(Date.now() / 2)
           // evaluate
@@ -137,7 +146,7 @@ describe('Controller', () => {
       }
 
       // call
-      controller.handleClientPong(data, spark)
+      controller.handleClientPong(data, socket)
     });
 
   });

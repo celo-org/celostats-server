@@ -29,6 +29,7 @@ import { ClientPong } from "./interfaces/ClientPong";
 import { NodePing } from "./interfaces/NodePing";
 import { NodePong } from "./interfaces/NodePong";
 import { isAuthorized } from "./utils/isAuthorized";
+import io from "socket.io"
 
 export default class Controller {
   private readonly collection: Collection
@@ -36,7 +37,7 @@ export default class Controller {
 
   constructor(
     private api: Primus,
-    private client: Primus
+    private client: io.Server
   ) {
     this.collection = new Collection()
     this.statistics = new Statistics(this.collection);
@@ -45,7 +46,7 @@ export default class Controller {
   public init(): void {
     // ping clients
     setInterval(() => {
-      this.clientWrite({
+      this.clientBroadcast({
         action: 'client-ping',
         data: {
           serverTime: Date.now()
@@ -55,7 +56,7 @@ export default class Controller {
 
     // Cleanup old inactive nodes
     setInterval(() => {
-      this.clientWrite({
+      this.clientBroadcast({
         action: 'init',
         data: this.collection.getAll()
       })
@@ -66,8 +67,7 @@ export default class Controller {
 
     // print statistics
     setInterval(() => {
-      let clients = 0
-      this.client.forEach(() => clients++);
+      const clients = Object.keys(this.client.sockets.connected).length
 
       let nodes = 0;
       this.api.forEach(() => nodes++);
@@ -76,42 +76,11 @@ export default class Controller {
     }, cfg.statisticsInterval)
   }
 
-  private clientWrite(payload: object) {
-    this.client.forEach((spark: Primus.spark) => {
-      spark.write(payload)
-
+  private clientBroadcast(payload: object) {
+    for (let i in this.client.sockets.connected) {
+      this.client.sockets.connected[i].emit('b', payload);
       this.statistics.add(Sides.Client, Directions.Out)
-    });
-  }
-
-  private handleGetCharts(
-    spark?: Primus.spark
-  ): void {
-    this.collection.getCharts(
-      (err: Error | string, charts: ChartData): void => {
-        if (err) {
-          console.error(
-            'COL', 'CHR',
-            'Charts error:', err
-          )
-        } else {
-
-          const chartsResponse = {
-            action: 'charts',
-            data: charts
-          }
-          if (spark) {
-            spark.write(chartsResponse)
-
-            this.statistics.add(Sides.Client, Directions.Out)
-          } else {
-
-            // propagate to all clients
-            this.clientWrite(chartsResponse)
-          }
-        }
-      }
-    )
+    }
   }
 
   /*************************************
@@ -155,7 +124,7 @@ export default class Controller {
             'API', 'CON', 'Node',
             `'${stats.id}'`, `(${spark.id})`, 'Connected')
 
-          this.clientWrite({
+          this.clientBroadcast({
             action: 'add',
             data: info
           })
@@ -188,7 +157,7 @@ export default class Controller {
 
           delete (updatedStats.block.transactions)
 
-          this.clientWrite({
+          this.clientBroadcast({
             action: 'block',
             data: updatedStats
           })
@@ -205,7 +174,7 @@ export default class Controller {
         if (err) {
           console.error(err)
         } else {
-          this.clientWrite({
+          this.clientBroadcast({
             action: 'lastBlock',
             number: highestBlock
           })
@@ -229,7 +198,7 @@ export default class Controller {
         }
 
         if (pending) {
-          this.clientWrite({
+          this.clientBroadcast({
             action: 'pending',
             data: pending
           })
@@ -289,7 +258,7 @@ export default class Controller {
         } else {
 
           if (basicStats) {
-            this.clientWrite({
+            this.clientBroadcast({
               action: 'stats',
               data: basicStats
             })
@@ -340,7 +309,7 @@ export default class Controller {
             'ended.', 'Error:', err
           )
         } else {
-          this.clientWrite({
+          this.clientBroadcast({
             action: 'inactive',
             data: nodeStats
           })
@@ -427,14 +396,44 @@ export default class Controller {
   /*************************************
    * Client handlers
    *************************************/
+  private handleGetCharts(
+    socket?: io.Socket
+  ): void {
+    this.collection.getCharts(
+      (err: Error | string, charts: ChartData): void => {
+        if (err) {
+          console.error(
+            'COL', 'CHR',
+            'Charts error:', err
+          )
+        } else {
+
+          if (socket) {
+            socket.emit('charts', charts)
+
+            this.statistics.add(Sides.Client, Directions.Out)
+          } else {
+
+            const chartsResponse = {
+              action: 'charts',
+              data: charts
+            }
+            // propagate to all clients
+            this.clientBroadcast(chartsResponse)
+          }
+        }
+      }
+    )
+  }
+
   public handleClientPong(
     data: ClientPong,
-    spark: Primus.spark
+    socket: io.Socket
   ): void {
     const serverTime = data.serverTime || 0
     const latency = Math.ceil((Date.now() - serverTime) / 2)
 
-    spark.emit(
+    socket.emit(
       'client-latency',
       {latency: latency}
     )
@@ -444,17 +443,17 @@ export default class Controller {
 
   public handleClientReady(
     id: string,
-    spark: Primus.spark
+    socket: io.Socket
   ): void {
-    spark.emit(
+    socket.emit(
       'init',
-      {nodes: this.collection.getAll()}
+      this.collection.getAll()
     )
 
     this.statistics.add(Sides.Client, Directions.Out)
 
     // propagate the charts only to this client not to all
-    this.handleGetCharts(spark);
+    this.handleGetCharts(socket);
 
     console.success(
       'API', 'CON',
@@ -465,11 +464,13 @@ export default class Controller {
 
   public handleClientEnd(
     id: string,
-    ip: string
+    socket: io.Socket,
+    reason: string
   ): boolean {
     console.success(
       'API', 'CON', 'Client Close:',
-      ip, `'${id}'`
+      socket.conn.remoteAddress, `'${id}'`,
+      reason
     )
 
     return true

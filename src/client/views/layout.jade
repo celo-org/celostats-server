@@ -11,5 +11,6 @@ html(ng-app="netStatsApp")
     link(rel='shortcut icon', type="image/x-icon", href="{{$root.faviconPath}}")
   body
     block content
-  script(src="/primus/primus.js")
+  script(src="/client/socket.io.js")
+  script(src="/js/vendor.min.js")
   script(src="/js/netstats.min.js")

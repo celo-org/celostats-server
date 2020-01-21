@@ -1,4 +1,5 @@
 import '../utils/logger'
+import io from "socket.io"
 // @ts-ignore
 import Primus from "primus"
 // @ts-ignore
@@ -32,7 +33,7 @@ import { deleteSpark } from "../utils/deleteSpark";
 export default class Server {
 
   private readonly api: Primus
-  private readonly client: Primus
+  private readonly client: io.Server
   private readonly danglingConnections: IDictionary = {}
   private readonly controller: Controller;
 
@@ -43,19 +44,18 @@ export default class Server {
       res: express.Response
     ) => {
       res.set('Content-Type', 'text/html');
-      res.send(Buffer.from(
-        `
-        <pre>${JSON.stringify(cfg, null, 2)}</pre>
-        `
-      ))
+      res.send(
+        Buffer.from(
+          `<pre>${JSON.stringify(cfg, null, 2)}</pre>`
+        )
+      )
     })
 
     expressConfig.get('/stats', (
       req: express.Request,
       res: express.Response
     ) => {
-      let clients = 0
-      this.client.forEach(() => clients++);
+      const clients = Object.keys(this.client.sockets.connected).length
 
       let nodes = 0;
       this.api.forEach(() => nodes++);
@@ -66,11 +66,9 @@ export default class Server {
       );
 
       res.set('Content-Type', 'text/html');
-      res.send(Buffer.from(
-        `
-        <pre>${stats}</pre>
-        `
-      ))
+      res.send(
+        Buffer.from(`<pre>${stats}</pre>`)
+      )
     })
 
     expressConfig.use(routes)
@@ -94,16 +92,12 @@ export default class Server {
       }
     })
 
-    this.client = new Primus(server, {
-      transformer: 'websockets',
-      pathname: '/primus',
-      parser: 'JSON',
-      pingInterval: false,
-      compression: cfg.compression,
-      transport: cfg.transport,
-      plugin: {
-        emit: primusEmit
-      }
+    this.client = io(server, {
+      path: '/client',
+      transports: ['websocket'],
+      cookie: false,
+      perMessageDeflate: cfg.compression,
+      httpCompression: cfg.compression
     })
 
     this.controller = new Controller(
@@ -293,39 +287,37 @@ export default class Server {
   }
 
   private initClient(): void {
-    this.client.on('connection', (spark: Primus.spark): void => {
-      this.controller.statistics.add(Sides.Client, Directions.In)
-
-      console.success(
-        'API', 'CON', 'Client Open:',
-        spark.address.ip, `'${spark.id}'`
-      )
-
-      spark.on('ready', (): void => {
+    this.client
+      .on('connection', (socket: io.Socket): void => {
         this.controller.statistics.add(Sides.Client, Directions.In)
 
-        const id = spark.id
+        console.success(
+          'API', 'CON', 'Client Open:',
+          socket.conn.remoteAddress, `'${socket.id}'`
+        )
 
-        this.controller.handleClientReady(id, spark)
+        socket
+          .once('ready', (): void => {
+            this.controller.statistics.add(Sides.Client, Directions.In)
+            const id = socket.id
+
+            this.controller.handleClientReady(id, socket)
+          })
+          .on('client-pong', (data: ClientPong): void => {
+            this.controller.statistics.add(Sides.Client, Directions.In)
+
+            this.controller.handleClientPong(data, socket)
+          })
+          .once('error', (reason: string): void => {
+            const id = socket.id;
+            console.error(reason)
+            this.controller.handleClientEnd(id, socket, reason)
+          })
+          .once('disconnecting', (reason: string): void => {
+            const id = socket.id;
+            this.controller.handleClientEnd(id, socket, reason)
+          })
       })
-
-      spark.on('client-pong', (data: ClientPong): void => {
-        this.controller.statistics.add(Sides.Client, Directions.In)
-
-        this.controller.handleClientPong(data, spark)
-      })
-
-      spark.on('end', (): void => {
-        const id = spark.id;
-
-        this.controller.handleClientEnd(id, spark.address.ip)
-      })
-
-    })
-
-    this.client.on('disconnection', (spark: Primus.spark): void => {
-      deleteSpark(spark)
-    });
   }
 
   public init(): void {
