@@ -24,7 +24,10 @@ export function generateProof(
 
   // sign
   const sig = key.sign(msgHash)
-  const signature = sig.r.toString(16) + sig.s.toString(16)
+  const signature = (
+    sig.r.toString(16).padEnd(64, "0") +
+    sig.s.toString(16).padEnd(64, "0")
+  )
 
   const proof = {
     // address is just the hash of the public key
