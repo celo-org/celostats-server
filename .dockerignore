@@ -8,6 +8,6 @@ node_modules
 dist
 
 # test
-test
-coverage
-.nyc_output
+test/
+coverage/
+.nyc_output/
