@@ -10,10 +10,10 @@ steps:
     args: [
       "build",
       "-f", "Dockerfile",
-      "-t", "gcr.io/$PROJECT_ID/ethstats:$COMMIT_SHA",
+      "-t", "gcr.io/$PROJECT_ID/celostats-server:$COMMIT_SHA",
       "."
     ]
     waitFor: ["-"]
 timeout: 1200s
 images:
-  - "gcr.io/$PROJECT_ID/ethstats:$COMMIT_SHA"
+  - "gcr.io/$PROJECT_ID/celostats-server:$COMMIT_SHA"

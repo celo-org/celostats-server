@@ -7,6 +7,7 @@
     "node": ">=10.0.0"
   },
   "scripts": {
+    "clean": "rm -rf ./dist ./coverage ./.nyc_output",
     "test": "VERBOSITY=0 mocha",
     "test:watch": "yarn test -- --watch",
     "test:cover": "nyc yarn test",
