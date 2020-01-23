@@ -4,6 +4,7 @@
   "version": "0.1.0",
   "private": false,
   "scripts": {
+    "clean": "rm -rf ./dist ./coverage ./.nyc_output",
     "test": "VERBOSITY=0 mocha",
     "test:watch": "npm test -- --watch",
     "test:cover": "nyc npm test",
