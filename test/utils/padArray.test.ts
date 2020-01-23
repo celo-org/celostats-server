@@ -1,4 +1,4 @@
-import { padArray } from "../../../src/server/utils/padArray"
+import { padArray } from "../../src/utils/padArray"
 import assert from "assert"
 
 describe('padArray', () => {

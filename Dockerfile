@@ -6,9 +6,8 @@ WORKDIR /celostats-server
 ENV NODE_ENV=production
 
 RUN npm install
-RUN npm install -g grunt-cli typescript
-RUN grunt --configPath="src/client/js/celoConfig.js"
-RUN npm run compile:server
+RUN npm install -g typescript
+RUN npm run build
 RUN rm -rf ./src
 
 EXPOSE 3000

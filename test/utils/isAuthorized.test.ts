@@ -1,8 +1,8 @@
 import assert from "assert"
-import { isAuthorized } from "../../../src/server/utils/isAuthorized"
-import { Proof } from "../../../src/server/interfaces/Proof";
-import { StatsWrapped } from "../../../src/server/interfaces/StatsWrapped";
-import { trusted } from "../../../src/server/utils/config";
+import { isAuthorized } from "../../src/utils/isAuthorized"
+import { Proof } from "../../src/interfaces/Proof";
+import { StatsWrapped } from "../../src/interfaces/StatsWrapped";
+import { trusted } from "../../src/utils/config";
 import { generateProof } from "./generateProof";
 
 describe('isAuthorized', () => {

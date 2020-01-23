@@ -1,5 +1,5 @@
 import { generateProof } from "./generateProof";
-import { StatsWrapped } from "../../../src/server/interfaces/StatsWrapped"
+import { StatsWrapped } from "../../src/interfaces/StatsWrapped"
 import * as assert from "assert"
 
 describe('#generateProof()', () => {

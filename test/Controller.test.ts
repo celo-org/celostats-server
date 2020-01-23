@@ -1,14 +1,14 @@
 import assert from "assert"
+import io from "socket.io";
 import { createServer } from "http";
-import Controller from "../../src/server/Controller"
-import { expressConfig } from "../../src/server/server/expressConfig";
-import { routes } from "../../src/server/server/routes";
+import Controller from "../src/Controller"
+import { expressConfig } from "../src/server/expressConfig";
+import { routes } from "../src/server/routes";
 // @ts-ignore
 import Primus from "primus"
-import { ClientPong } from "../../src/server/interfaces/ClientPong";
-import { Sides } from "../../src/server/statistics/Sides";
-import io from "socket.io";
-import { cfg } from "../../src/server/utils/config";
+import { ClientPong } from "../src/interfaces/ClientPong";
+import { Sides } from "../src/statistics/Sides";
+import { cfg } from "../src/utils/config";
 
 describe('Controller', () => {
 

@@ -1,7 +1,7 @@
-import { Wrapper } from "../../../src/server/interfaces/Wrapper";
-import { Proof } from "../../../src/server/interfaces/Proof";
-import { hash } from "../../../src/server/utils/hash";
-import { trusted } from "../../../src/server/utils/config";
+import { Wrapper } from "../../src/interfaces/Wrapper";
+import { Proof } from "../../src/interfaces/Proof";
+import { hash } from "../../src/utils/hash";
+import { trusted } from "../../src/utils/config";
 // @ts-ignore
 import { ec as EC } from "elliptic"
 // @ts-ignore

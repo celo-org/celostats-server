@@ -1,16 +1,8 @@
 import express from "express";
+import { expressConfig } from "./expressConfig"
+import { cfg } from "../utils/config"
 
 export const routes = express.Router()
-
-/**
- * Base view
- */
-routes.get('/', (
-  req: express.Request,
-  res: express.Response
-) => {
-  res.render('index')
-})
 
 /**
  * Memory view
@@ -22,7 +14,8 @@ routes.get('/memory', (
   const mem = process.memoryUsage()
 
   res.set('Content-Type', 'text/html');
-  res.send(Buffer.from(`
+  res.send(
+    Buffer.from(`
 <div>
     <div>rss: ${(mem.rss / 1024 / 1024).toFixed(2)}mb</div>
     <div>heapUsed: ${(mem.heapUsed / 1024 / 1024).toFixed(2)}mb</div>
@@ -30,7 +23,20 @@ routes.get('/memory', (
     <div>external: ${(mem.external / 1024 / 1024).toFixed(2)}mb</div>
 </div>
 `
-  ))
+    )
+  )
+})
+
+expressConfig.get('/config', (
+  req: express.Request,
+  res: express.Response
+) => {
+  res.set('Content-Type', 'text/html');
+  res.send(
+    Buffer.from(
+      `<pre>${JSON.stringify(cfg, null, 2)}</pre>`
+    )
+  )
 })
 
 /**

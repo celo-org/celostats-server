@@ -39,18 +39,6 @@ export default class Server {
 
   constructor() {
 
-    expressConfig.get('/config', (
-      req: express.Request,
-      res: express.Response
-    ) => {
-      res.set('Content-Type', 'text/html');
-      res.send(
-        Buffer.from(
-          `<pre>${JSON.stringify(cfg, null, 2)}</pre>`
-        )
-      )
-    })
-
     expressConfig.get('/stats', (
       req: express.Request,
       res: express.Response

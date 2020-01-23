@@ -1,4 +1,4 @@
-import { isInputValid } from "../../../src/server/utils/isInputValid"
+import { isInputValid } from "../../src/utils/isInputValid"
 import assert from "assert"
 
 describe('isInputValid', () => {
