@@ -1,7 +1,7 @@
 Celo Network Stats
 ===============================================
 
-This is a visual interface for tracking proof-of-work ("mainnet") and proof-of-authority ("testnet") network status. It uses WebSockets to receive stats from running nodes and output them through an angular interface. It is the front-end implementation for [ethstats-client](https://github.com/goerli/ethstats-client).
+This is a visual interface for tracking proof-of-work ("mainnet") and proof-of-authority ("testnet") network status. It uses WebSockets to receive stats from running nodes and output them through an angular interface. It is the front-end implementation for [celostats-frontend](https://github.com/celo-org/celostats-frontend).
 
 ## Proof-of-Stake
 ![Screenshot](https://user-images.githubusercontent.com/6178597/69904869-cba34900-13ac-11ea-9136-13fc51cf246e.gif "Screenshot POS")
@@ -18,23 +18,16 @@ Make sure you have node.js (10 or above) and npm installed.
 Clone the repository and install the dependencies:
 
 ```bash
-git clone https://github.com/goerli/ethstats-server
-cd ethstats-server
+git clone https://github.com/celo-org/celostats-server
+cd celostats-server
 npm install
-npm install -g grunt-cli
 ```
 
 #### Build
-In order to build the static files you have to run grunt tasks which will generate dist directories containing the js and css files, fonts and images.
+In order to build the static files you have to run compile which will generate dist directories containing the runnable version.
 
 ```bash
-grunt
-```
-
-To build the static files for a network other than Ethereum copy and change src/js/defaultConfig.js and run the following command.
-
-```bash
-grunt --configPath="src/js/celoConfig.js"
+npm run compile
 ```
 
 #### Run
