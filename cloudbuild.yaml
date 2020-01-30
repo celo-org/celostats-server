@@ -14,6 +14,7 @@ steps:
       "."
     ]
     waitFor: ["-"]
+    
 timeout: 1200s
 images:
   - "gcr.io/$PROJECT_ID/celostats-server:$COMMIT_SHA"
