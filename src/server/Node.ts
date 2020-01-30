@@ -30,6 +30,7 @@ export default class Node {
     active: false,
     mining: false,
     elected: false,
+    proxy: false,
     hashrate: 0,
     peers: 0,
     pending: 0,
@@ -376,6 +377,8 @@ export default class Node {
       stats: {
         active: this.stats.active,
         mining: this.stats.mining,
+        elected: this.stats.elected,
+        proxy: this.stats.proxy,
         syncing: this.stats.syncing,
         hashrate: this.stats.hashrate,
         peers: this.stats.peers,
@@ -406,6 +409,7 @@ export default class Node {
         active: this.stats.active,
         mining: this.stats.mining,
         elected: this.stats.elected,
+        proxy: this.stats.proxy,
         syncing: this.stats.syncing,
         hashrate: this.stats.hashrate,
         peers: this.stats.peers,
@@ -423,6 +427,8 @@ export default class Node {
       stats: {
         active: this.stats.active,
         mining: this.stats.mining,
+        elected: this.stats.elected,
+        proxy: this.stats.proxy,
         syncing: this.stats.syncing,
         hashrate: this.stats.hashrate,
         peers: this.stats.peers,
