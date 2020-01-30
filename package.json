@@ -14,7 +14,6 @@
     "compile": "yarn compile:client && yarn compile:server",
     "compile:server": "tsc -b ./src/server",
     "compile:client": "grunt",
-    "clean": "grunt clean",
     "watch": "grunt watch",
     "dist": "grunt",
     "start": "node ./dist/server/app.js",
