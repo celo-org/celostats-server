@@ -1,6 +1,6 @@
 import { Info } from "./Info";
 
 export interface NodeInfo {
-  id: string,
-  info: Info
+  readonly id: string,
+  readonly info: Info
 }

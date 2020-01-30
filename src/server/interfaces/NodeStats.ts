@@ -1,8 +1,8 @@
 import { Stats } from "./Stats";
 
 export interface NodeStats {
-  id: string,
-  name: string,
-  stats: Stats
-  history: number[]
+  readonly id: string,
+  readonly name: string,
+  readonly stats: Stats
+  readonly history: number[]
 }

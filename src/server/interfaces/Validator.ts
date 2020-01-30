@@ -1,9 +1,10 @@
 export interface Validator {
-  registered: boolean
-  address: string
-  name: string
   signer: string
-  url: string
-  affiliation: string
+  registered: boolean
   elected: boolean
+  address: string
+  trusted: boolean
+  readonly name: string
+  readonly url: string
+  readonly affiliation: string
 }

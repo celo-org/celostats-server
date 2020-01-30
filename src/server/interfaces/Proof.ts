@@ -1,6 +1,6 @@
 export interface Proof {
-  address: string
-  msgHash: string
-  publicKey: string
-  signature: string
+  readonly address: string
+  readonly msgHash: string
+  readonly publicKey: string
+  readonly signature: string
 }

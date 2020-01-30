@@ -1,6 +1,6 @@
 import { HistogramEntry } from "./HistogramEntry";
 
 export interface Histogram {
-  histogram: HistogramEntry[]
-  avg: number
+  readonly histogram: HistogramEntry[]
+  readonly avg: number
 }

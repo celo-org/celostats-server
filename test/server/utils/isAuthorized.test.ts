@@ -1,15 +1,18 @@
 import assert from "assert"
 import { isAuthorized } from "../../../src/server/utils/isAuthorized"
 import { Proof } from "../../../src/server/interfaces/Proof";
-import { StatsWrapped } from "../../../src/server/interfaces/StatsWrapped";
 import { trusted } from "../../../src/server/utils/config";
 import { generateProof } from "./generateProof";
+import { dummyInfo } from "../constats"
+import { InfoWrapped } from "../../../src/server/interfaces/InfoWrapped"
 
 describe('isAuthorized', () => {
 
   it('should authorize with valid sig', () => {
 
-    const stats: StatsWrapped = {
+    const stats: InfoWrapped = {
+      address: "0x0",
+      info: dummyInfo,
       id: 'lorem ipsum'
     }
 
@@ -21,12 +24,15 @@ describe('isAuthorized', () => {
 
   it('should not authorize with invalid sig', () => {
 
-    const stats: StatsWrapped = {
+    const stats: InfoWrapped = {
+      address: "0x0",
+      info: dummyInfo,
       id: 'lorem ipsum'
     }
 
     const proof: Proof = generateProof(stats)
     // put fake sig
+    // @ts-ignore
     proof.signature = '0x' + new Array(130)
       .fill('d', 0, 130)
       .join('')
@@ -37,13 +43,16 @@ describe('isAuthorized', () => {
 
   it('should not authorize with different valid sig', () => {
 
-    const stats: StatsWrapped = {
+    const stats: InfoWrapped = {
+      address: "0x0",
+      info: dummyInfo,
       id: 'lorem ipsum'
     }
 
     const proof: Proof = generateProof(stats)
 
     // change the payload to force a different signature
+    // @ts-ignore
     stats.id = 'asdfg'
     const result = isAuthorized(proof, stats)
 
@@ -52,12 +61,15 @@ describe('isAuthorized', () => {
 
   it('should not authorize with different address', () => {
 
-    const stats: StatsWrapped = {
+    const stats: InfoWrapped = {
+      address: "0x0",
+      info: dummyInfo,
       id: 'lorem ipsum'
     }
 
     const proof: Proof = generateProof(stats)
 
+    // @ts-ignore
     proof.address = 'lorem ipsum'
     trusted.push(proof.address)
 
@@ -68,12 +80,15 @@ describe('isAuthorized', () => {
 
   it('should not authorize from untrusted address', () => {
 
-    const stats: StatsWrapped = {
+    const stats: InfoWrapped = {
+      address: "0x0",
+      info: dummyInfo,
       id: 'lorem ipsum'
     }
 
     const proof: Proof = generateProof(stats)
 
+    // @ts-ignore
     proof.address = '0xuntrusted'
 
     const result = isAuthorized(proof, stats)

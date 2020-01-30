@@ -1,7 +1,7 @@
 import { StatsBase } from "./StatsBase";
 
 export interface BasicStatsResponse {
-  id: string,
-  stats: StatsBase,
-  history?: number[]
+  readonly id: string,
+  readonly name: string,
+  readonly stats: StatsBase
 }

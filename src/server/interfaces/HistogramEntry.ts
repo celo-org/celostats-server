@@ -1,8 +1,8 @@
 export interface HistogramEntry {
-  x: number
-  dx: number
-  y: number
-  frequency: number
-  cumulative: number
-  cumpercent: number
+  readonly x: number
+  readonly dx: number
+  readonly y: number
+  readonly frequency: number
+  readonly cumulative: number
+  readonly cumpercent: number
 }

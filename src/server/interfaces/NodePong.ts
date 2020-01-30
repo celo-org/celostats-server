@@ -1,4 +1,4 @@
 export interface NodePong {
-  clientTime: string
-  serverTime: number
+  readonly clientTime: string
+  readonly serverTime: number
 }

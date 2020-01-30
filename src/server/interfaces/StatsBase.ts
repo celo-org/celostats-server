@@ -1,12 +1,13 @@
 export interface StatsBase {
   active: boolean
+  latency: number
+  uptime: number
   mining: boolean
   elected: boolean
-  proxy: boolean
   hashrate: number
   syncing: boolean
   peers: number
   gasPrice: number
-  latency: number
-  uptime: number
+  registered: boolean
+  proxy: boolean
 }

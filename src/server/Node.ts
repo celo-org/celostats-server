@@ -18,15 +18,26 @@ export default class Node {
 
   private id: string = null
   private spark: string
-  private address: string = null
-  private trusted: boolean = false
+
   private propagationHistory: number[] = []
   private info: Info = {
-    canUpdateHistory: false,
     name: null,
+    api: null,
+    client: null,
+    net: 0,
+    node: null,
+    os: null,
+    os_v: null,
+    port: 0,
+    protocol: null,
+    canUpdateHistory: false,
     contact: null
-  } as Info
+  }
+
   private stats: Stats = {
+    clientTime: 0,
+    registered: false,
+    signer: null,
     active: false,
     mining: false,
     elected: false,
@@ -78,7 +89,8 @@ export default class Node {
     affiliation: null,
     registered: false,
     elected: false,
-    signer: null
+    signer: null,
+    trusted: false
   }
 
   constructor(
@@ -89,10 +101,7 @@ export default class Node {
       this.setValidatorData(data as Validator)
     } else {
       this.init(data as NodeInformation)
-    }
-
-    if ('nodeData' in data) {
-      this.address = data.nodeData.address
+      this.validatorData.address = data.nodeData.address
     }
   }
 
@@ -128,7 +137,11 @@ export default class Node {
     nodeInformation: NodeInformation,
     callback: { (err: Error | string, nodeInfo: NodeInfo): void }
   ) {
-    if (nodeInformation.stats && nodeInformation.stats.info) {
+    if (
+      nodeInformation.stats &&
+      nodeInformation.stats.info
+    ) {
+
       this.info = nodeInformation.stats.info
 
       if (nodeInformation.stats.info.canUpdateHistory) {
@@ -137,13 +150,12 @@ export default class Node {
     }
 
     if (nodeInformation.nodeData.ip) {
-      if (trusted.indexOf(nodeInformation.nodeData.ip) >= 0) {
-        this.trusted = true
-      }
-      this.trusted = true
+      this.validatorData.trusted =
+        trusted.indexOf(nodeInformation.nodeData.ip) >= 0;
     }
 
     this.setState(true)
+
     this.validatorData.signer = this.id
     this.spark = nodeInformation.nodeData.spark
 
@@ -175,58 +187,18 @@ export default class Node {
   }
 
   public integrateValidatorData(data: Validator) {
+    this.id = data.address
+
     this.info.name = data.name || data.address
     this.info.contact = data.address
-    this.trusted = true
+
+    this.validatorData.trusted = true
     this.validatorData.signer = data.signer
-    this.id = data.address
-    this.address = data.address
+    this.validatorData.address = data.address
   }
 
   public getTrusted(): boolean {
-    return this.trusted
-  }
-
-  public setStats(
-    stats: Stats,
-    history: number[],
-    callback: { (err: Error | string, stats: NodeStats): void }
-  ) {
-    if (stats) {
-
-      const block = stats.block || this.stats.block
-
-      this.setBlock(
-        block,
-        history,
-        (err: Error | string, blockStats: BlockStats) => {
-          if (err) {
-            console.error(err)
-          }
-        })
-
-      this.setBasicStats(
-        stats,
-        (err: Error | string) => {
-          if (err) {
-            console.error(err)
-          }
-        })
-
-      const pending = stats.pending || this.stats.pending
-
-      if (pending) {
-        this.setPending(stats, (err: Error | string) => {
-          if (err) {
-            console.error(err)
-          }
-        })
-      }
-
-      callback(null, this.getStats())
-    }
-
-    callback('Stats undefined', null)
+    return this.validatorData.trusted
   }
 
   public setBlock(
@@ -310,6 +282,8 @@ export default class Node {
         this.stats.peers = stats.peers
         this.stats.gasPrice = stats.gasPrice
         this.stats.uptime = stats.uptime
+        this.stats.registered = stats.registered
+        this.stats.proxy = stats.proxy
 
         callback(null, this.getBasicStats())
       } else {
@@ -375,6 +349,9 @@ export default class Node {
       id: this.id,
       name: this.info.name,
       stats: {
+        clientTime: this.stats.clientTime,
+        signer: this.stats.signer,
+        registered: this.stats.registered,
         active: this.stats.active,
         mining: this.stats.mining,
         elected: this.stats.elected,
@@ -405,7 +382,9 @@ export default class Node {
   private getBasicStats(): BasicStatsResponse {
     return {
       id: this.id,
+      name: this.info.name,
       stats: {
+        registered: this.stats.registered,
         active: this.stats.active,
         mining: this.stats.mining,
         elected: this.stats.elected,
@@ -425,6 +404,9 @@ export default class Node {
       id: this.id,
       info: this.info,
       stats: {
+        clientTime: this.stats.clientTime,
+        signer: this.stats.signer,
+        registered: this.stats.registered,
         active: this.stats.active,
         mining: this.stats.mining,
         elected: this.stats.elected,

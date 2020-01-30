@@ -2,6 +2,6 @@ import { Proof } from "./Proof";
 import { InfoWrapped } from "./InfoWrapped";
 
 export interface NodeResponseInfo {
-  proof: Proof
-  stats: InfoWrapped
+  readonly proof: Proof
+  readonly stats: InfoWrapped
 }

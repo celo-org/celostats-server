@@ -1,3 +1,3 @@
 export interface Transaction {
-  hash: string
+  readonly hash: string
 }

@@ -1,6 +1,7 @@
 import assert from "assert"
 import Collection from "../../src/server/Collection";
 import { NodeInformation } from "../../src/server/interfaces/NodeInformation";
+import { dummyInfo } from "./constats"
 
 describe('Collection', () => {
 
@@ -16,7 +17,8 @@ describe('Collection', () => {
     },
     stats: {
       id: '11',
-      address: '0x12345'
+      address: '0x12345',
+      info: dummyInfo,
     }
   }
 
@@ -54,7 +56,8 @@ describe('Collection', () => {
         },
         stats: {
           id: '11',
-          address: '0x12345'
+          address: '0x12345',
+          info: dummyInfo
         }
       }
 

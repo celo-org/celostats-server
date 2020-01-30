@@ -1,14 +1,10 @@
 import { StatsBase } from "./StatsBase";
 import { Block } from "./Block";
-import { Info } from "./Info";
 
 export interface Stats extends StatsBase {
-  propagationAvg?: number
-  name?: string
-  registered?: boolean
-  signer?: string
+  propagationAvg: number
   pending: number
   block: Block
-  clientTime?: number
-  info?: Info
+  readonly signer: string
+  readonly clientTime: number
 }
