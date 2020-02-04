@@ -5,11 +5,11 @@ WORKDIR /celostats-server
 
 ENV NODE_ENV=production
 
-RUN npm install
-RUN npm install -g typescript
-RUN npm run build
+RUN yarn
+RUN yarn global add typescript
+RUN yarn run build
 RUN rm -rf ./src
 
 EXPOSE 3000
-CMD ["npm", "start"]
+CMD ["yarn", "start"]
 

@@ -6,8 +6,8 @@
   "scripts": {
     "clean": "rm -rf ./dist ./coverage ./.nyc_output",
     "test": "VERBOSITY=0 mocha",
-    "test:watch": "npm test -- --watch",
-    "test:cover": "nyc npm test",
+    "test:watch": "yarn test -- --watch",
+    "test:cover": "nyc yarn test",
     "build": "tsc -b ./src",
     "start": "node ./dist/app.js",
     "start:inspect": "node --inspect ./dist/app.js"
