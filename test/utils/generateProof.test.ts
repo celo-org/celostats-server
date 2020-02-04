@@ -5,7 +5,7 @@ import { ec as EC } from "elliptic"
 // @ts-ignore
 import { KeyPair } from "elliptic/lib/elliptic/ec"
 import { StatsWrapped } from "../../src/interfaces/StatsWrapped"
-import * as assert from "assert"
+import assert from "assert";
 
 const secp256k1 = new EC('secp256k1')
 
