@@ -7,7 +7,7 @@ ENV NODE_ENV=production
 
 RUN yarn
 RUN yarn global add typescript
-RUN yarn run build
+RUN yarn build
 RUN rm -rf ./src
 
 EXPOSE 3000
