@@ -137,10 +137,7 @@ export default class Node {
     }
 
     if (nodeInformation.nodeData.ip) {
-      if (trusted.indexOf(nodeInformation.nodeData.ip) >= 0) {
-        this.trusted = true
-      }
-      this.trusted = true
+      this.trusted = trusted.indexOf(nodeInformation.nodeData.ip) >= 0;
     }
 
     this.setState(true)
