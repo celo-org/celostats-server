@@ -25,8 +25,8 @@ export function generateProof(
   // sign
   const sig = key.sign(msgHash)
   const signature = (
-    sig.r.toString(16).padEnd(64, "0") +
-    sig.s.toString(16).padEnd(64, "0")
+    sig.r.toString(16).padStart(64) +
+    sig.s.toString(16).padEnd(64)
   )
 
   const proof = {
