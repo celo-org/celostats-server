@@ -27,7 +27,7 @@ yarn
 In order to build the static files you have to run compile which will generate dist directories containing the runnable version.
 
 ```bash
-npm run compile
+yarn compile
 ```
 
 #### Run
