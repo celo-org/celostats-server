@@ -308,6 +308,12 @@ export default class Controller {
         }
 
         if (latency) {
+          this.clientBroadcast({
+              action: 'latency',
+              data: latency
+            }
+          )
+
           console.info(
             'API', 'PIN',
             'Latency:', latency.latency,
