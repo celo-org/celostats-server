@@ -308,10 +308,9 @@ export default class Controller {
         }
 
         if (latency) {
-          this.clientBroadcast({
-              action: 'latency',
-              data: latency
-            }
+          this.clientBroadcast(
+            Events.Latency,
+            latency
           )
 
           console.info(

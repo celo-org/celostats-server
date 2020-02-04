@@ -1,15 +1,14 @@
 import { generateProof } from "./generateProof";
-import { StatsWrapped } from "../../../src/server/interfaces/StatsWrapped"
 import assert from "assert";
 import { hash } from "../../../src/server/utils/hash"
 // @ts-ignore
 import { ec as EC } from "elliptic"
 // @ts-ignore
 import { KeyPair } from "elliptic/lib/elliptic/ec"
-
-const secp256k1 = new EC('secp256k1')
 import { dummyInfo } from "../constats"
 import { InfoWrapped } from "../../../src/server/interfaces/InfoWrapped"
+
+const secp256k1 = new EC('secp256k1')
 
 describe('#generateProof()', () => {
 
@@ -29,8 +28,10 @@ describe('#generateProof()', () => {
   })
 
   it('must verify its own signature', () => {
-    const stats: StatsWrapped = {
-      id: 'lorem ipsum'
+    const stats: InfoWrapped = {
+      address: '0x0',
+      id: 'lorem ipsum',
+      info: dummyInfo
     }
 
     const msgHash = hash(JSON.stringify(stats))
