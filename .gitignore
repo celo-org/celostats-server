@@ -1,13 +1,12 @@
 # mac
-.DS_Store
-*/**/.DS_Store
+.DS_Store/
+*/**/.DS_Store/
 
 # npm
-node_modules
-npm-debug.log
+node_modules/
 
 ## build
-dist
+dist/
 
 # Unknown, fix me
 ansible/venv
@@ -20,8 +19,8 @@ ws_secret.json
 stats.json
 
 # NYC - code coverage
-coverage
-.nyc_output
+coverage/
+.nyc_output/
 
 # IdeaIDE
-.idea
+.idea/
