@@ -1,12 +1,18 @@
 steps:
   - name: 'node:13'
-    entrypoint: npm
+    entrypoint: 'yarn'
     args: ['install']
   - name: 'node:13'
-    entrypoint: npm
+    entrypoint: 'yarn'
     args: ['test']
-  - name: "gcr.io/cloud-builders/docker"
-    args: ["build", "-f", "Dockerfile", "-t", "gcr.io/$PROJECT_ID/celostats-server:$COMMIT_SHA", "."]
+  - name: "docker"
+    entrypoint: 'docker'
+    args: [
+      "build",
+      "-f", "Dockerfile",
+      "-t", "gcr.io/$PROJECT_ID/celostats-server:$COMMIT_SHA",
+      "."
+    ]
     waitFor: ["-"]
 timeout: 1200s
 images:
