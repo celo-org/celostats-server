@@ -1,9 +1,12 @@
 export interface Validator {
-  registered: boolean
-  address: string
-  name: string
-  signer: string
-  url: string
-  affiliation: string
-  elected: boolean
+  // node address
+  readonly address: string
+  // signer address
+  readonly signer: string
+  // validator group
+  readonly affiliation: string
+  // score
+  readonly score: string
+  readonly blsPublicKey: string
+  readonly ecdsaPublicKey: string
 }

@@ -30,6 +30,8 @@ import { NodePing } from "./interfaces/NodePing";
 import { NodePong } from "./interfaces/NodePong";
 import { isAuthorized } from "./utils/isAuthorized";
 import io from "socket.io"
+import { Validator } from "./interfaces/Validator"
+import { ValidatorData } from "./interfaces/ValidatorData"
 
 export default class Controller {
   private readonly collection: Collection
@@ -77,7 +79,7 @@ export default class Controller {
   }
 
   private clientBroadcast(payload: object) {
-    for (let i in this.client.sockets.connected) {
+    for (const i in this.client.sockets.connected) {
       this.client.sockets.connected[i].emit('b', payload);
       this.statistics.add(Sides.Client, Directions.Out)
     }
@@ -94,7 +96,6 @@ export default class Controller {
   ): void {
 
     const nodeData: NodeData = {
-      id,
       address: proof.address,
       ip: spark.address.ip,
       spark: spark.id,
@@ -102,6 +103,7 @@ export default class Controller {
     }
 
     this.collection.addNode(
+      id,
       <NodeInformation>{
         nodeData,
         stats
@@ -146,16 +148,6 @@ export default class Controller {
             'Block error:', err, updatedStats
           )
         } else if (updatedStats) {
-
-          // TODO: Change this and built this into a real data model
-          // TODO: THIS IS A HACK!
-
-          // @ts-ignore
-          updatedStats.block.validators.elected = updatedStats.block.validators.elected ? updatedStats.block.validators.elected.length : 0
-          // @ts-ignore
-          updatedStats.block.validators.registered = updatedStats.block.validators.registered ? updatedStats.block.validators.registered.length : 0
-
-          delete (updatedStats.block.transactions)
 
           this.clientBroadcast({
             action: 'block',
@@ -216,9 +208,12 @@ export default class Controller {
   public handleNodeBlockValidators(
     validators: Validators
   ): void {
-    if (validators && validators.registered) {
-      validators.registered.forEach(validator => {
-        validator.registered = true
+    if (
+      validators &&
+      validators.registered &&
+      validators.elected
+    ) {
+      validators.registered.forEach((validator: Validator) => {
 
         // trust registered validators and signers - not safe
         if (
@@ -235,10 +230,20 @@ export default class Controller {
           trusted.push(validator.signer)
         }
 
-        const isElected = validators.elected.indexOf(validator.address) > -1
-        this.collection.setValidator(
-          validator, isElected
-        )
+        const elected = validators.elected.indexOf(validator.address) > -1
+
+        const v: ValidatorData = {
+          address: validator.address,
+          affiliation: validator.affiliation,
+          ecdsaPublicKey: validator.ecdsaPublicKey,
+          score: validator.score,
+          signer: validator.signer,
+          blsPublicKey: validator.blsPublicKey,
+          registered: true,
+          elected
+        }
+
+        this.collection.setValidator(v)
       })
     }
   }

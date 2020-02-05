@@ -13,19 +13,31 @@ import { NodeStats } from "./interfaces/NodeStats";
 import { NodeDetails } from "./interfaces/NodeDetails";
 import { NodeInformation } from "./interfaces/NodeInformation";
 import deepEqual from "deep-equal";
+import { ValidatorData } from "./interfaces/ValidatorData"
 
 export default class Node {
 
   private id: string = null
   private spark: string
   private address: string = null
-  private trusted: boolean = false
+
   private propagationHistory: number[] = []
+
   private info: Info = {
+    api: null,
+    client: null,
+    net: null,
+    node: null,
+    os: null,
+    // eslint-disable-next-line @typescript-eslint/camelcase
+    os_v: null,
+    port: null,
+    protocol: null,
     canUpdateHistory: false,
     name: null,
     contact: null
-  } as Info
+  }
+
   private stats: Stats = {
     active: false,
     mining: false,
@@ -37,6 +49,8 @@ export default class Node {
     gasPrice: 0,
     block: {
       number: 0,
+      epochSize: 0,
+      blockRemain: 0,
       hash: '0x0000000000000000000000000000000000000000000000000000000000000000',
       parentHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
       difficulty: '0',
@@ -64,6 +78,7 @@ export default class Node {
     latency: 0,
     uptime: 100
   }
+
   private uptime: Uptime = {
     started: 0,
     up: 0,
@@ -71,9 +86,11 @@ export default class Node {
     lastStatus: false,
     lastUpdate: 0
   }
-  private validatorData: Validator = {
-    name: null,
-    url: null,
+
+  private validatorData: ValidatorData = {
+    blsPublicKey: null,
+    ecdsaPublicKey: null,
+    score: null,
     address: null,
     affiliation: null,
     registered: false,
@@ -81,25 +98,12 @@ export default class Node {
     signer: null
   }
 
-  constructor(
-    data: NodeInformation | Validator
-  ) {
-
-    if ("registered" in data) {
-      this.setValidatorData(data as Validator)
-    } else {
-      this.init(data as NodeInformation)
-    }
-
-    if ('nodeData' in data) {
-      this.address = data.nodeData.address
-    }
-  }
-
-  public init(
+  public initWithNodeInformation(
     nodeInformation: NodeInformation
   ) {
     this.propagationHistory.fill(-1, 0, cfg.maxPropagationHistory)
+
+    this.address = nodeInformation.nodeData.address
 
     if (
       this.id === null &&
@@ -107,8 +111,6 @@ export default class Node {
     ) {
       this.setState(true)
     }
-
-    this.id = nodeInformation.nodeData.id || this.id
 
     if (nodeInformation.nodeData.latency) {
       this.stats.latency = nodeInformation.nodeData.latency
@@ -136,27 +138,20 @@ export default class Node {
       }
     }
 
-    if (nodeInformation.nodeData.ip) {
-      this.trusted = trusted.indexOf(nodeInformation.nodeData.ip) >= 0;
-    }
-
     this.setState(true)
-    this.validatorData.signer = this.id
+
+    this.id = nodeInformation.nodeData.address || this.id
     this.spark = nodeInformation.nodeData.spark
 
     callback(null, this.getInfo())
   }
 
-  public setValidatorData(data: Validator) {
+  public setValidatorData(data: ValidatorData) {
     this.validatorData = data
   }
 
   public getValidatorData(): Validator {
     return this.validatorData;
-  }
-
-  public setValidatorElected(elected: boolean) {
-    this.validatorData.elected = elected;
   }
 
   public getSpark() {
@@ -167,21 +162,8 @@ export default class Node {
     return this.id
   }
 
-  public setValidatorRegistered(registered: boolean) {
-    this.validatorData.registered = registered;
-  }
-
-  public integrateValidatorData(data: Validator) {
-    this.info.name = data.name || data.address
-    this.info.contact = data.address
-    this.trusted = true
-    this.validatorData.signer = data.signer
-    this.id = data.address
-    this.address = data.address
-  }
-
   public getTrusted(): boolean {
-    return this.trusted
+    return trusted.indexOf(this.id) > -1
   }
 
   public setStats(
@@ -393,7 +375,31 @@ export default class Node {
   private getBlockStats(): BlockStats {
     return {
       id: this.id,
-      block: this.stats.block,
+      block: {
+        transactions: this.stats.block.transactions.length,
+        validators: {
+          elected: this.stats.block.validators.elected.length,
+          registered: this.stats.block.validators.elected.length,
+        },
+        epochSize: this.stats.block.epochSize,
+        blockRemain: this.stats.block.blockRemain,
+        number: this.stats.block.number,
+        hash: this.stats.block.hash,
+        parentHash: this.stats.block.parentHash,
+        miner: this.stats.block.miner,
+        difficulty: this.stats.block.difficulty,
+        totalDifficulty: this.stats.block.totalDifficulty,
+        gasLimit: this.stats.block.gasLimit,
+        gasUsed: this.stats.block.gasUsed,
+        timestamp: this.stats.block.timestamp,
+        time: this.stats.block.time,
+        arrival: this.stats.block.arrival,
+        received: this.stats.block.received,
+        trusted: this.stats.block.trusted,
+        arrived: this.stats.block.arrived,
+        fork: this.stats.block.fork,
+        propagation: this.stats.block.propagation
+      },
       propagationAvg: this.stats.propagationAvg,
       history: this.propagationHistory
     }

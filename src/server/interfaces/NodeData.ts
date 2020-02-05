@@ -1,7 +1,10 @@
 export interface NodeData {
-  id: string,
-  address: string,
-  ip: string,
+  // proof address
+  address: string
+  // node ip
+  ip: string
+  // node spark id
   spark: string
+  // node latency
   latency: number
 }

@@ -164,7 +164,7 @@ block content
               span(class="{{ node.readable.forkMessage ? node.readable.forkClass : '' }}") {{'#'}}{{ node.stats.block.number | number }}
             td(class="{{ node.stats | blockClass : bestBlock }}")
               span(ng-bind-html="node.stats.block.hash | hashFilter : node.stats.block.number")
-            td(style="padding-left: 14px;") {{node.stats.block.transactions.length || 0}}
+            td(style="padding-left: 14px;") {{node.stats.block.transactions || 0}}
             td(class="{{ node.stats.block.received | timeClass : node.stats.active }}") {{node.stats.block.received | blockTimeFilter }}
             td(class="{{ node.stats | propagationTimeClass : bestBlock }}")
               div.propagationBox

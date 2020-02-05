@@ -1,16 +1,16 @@
 import Node from "./Node"
 import { NodeInformation } from "./interfaces/NodeInformation";
-import { Validator } from "./interfaces/Validator";
+import { ValidatorData } from "./interfaces/ValidatorData"
 
 export default class Nodes extends Array<Node> {
 
-  public getIndex(
+  private getIndex(
     search: { (n: Node): boolean }
   ): number {
     return this.indexOf(this.find(search))
   }
 
-  public getNode(
+  private getNode(
     search: { (n: Node): boolean }
   ): Node {
     const index = this.getIndex(search)
@@ -22,32 +22,30 @@ export default class Nodes extends Array<Node> {
     return null
   }
 
-  public getByIndex(
-    index: number
-  ): Node {
-    if (this[index]) {
-      return this[index]
-    }
-
-    return
+  public getNodeBySigner(signer: string): Node {
+    return this.getNode((n: Node) => n.getValidatorData().signer === signer)
   }
 
-  private getIndexOrNew(
-    search: { (n: Node): boolean },
-    data: NodeInformation | Validator
-  ): number {
-    const index = this.getIndex(search)
-
-    return (index >= 0 ? index : this.push(new Node(data)) - 1)
+  public getNodeBySpark(spark: string): Node {
+    return this.getNode((n: Node) => n.getSpark() === spark)
   }
 
-  public getNodeOrNew(
-    search: { (n: Node): boolean },
-    data: NodeInformation | Validator
-  ): Node {
-    return this.getByIndex(
-      this.getIndexOrNew(search, data)
-    )
+  public getNodeByAddress(address: string) {
+    return this.getNode((n: Node) => n.getId() === address)
+  }
+
+  public createByValidatorData(validator: ValidatorData) {
+    const node = new Node()
+    node.setValidatorData(validator)
+    this.push(node)
+    return node;
+  }
+
+  public createByNodeInformation(nodeInformation: NodeInformation): Node {
+    const node = new Node()
+    node.initWithNodeInformation(nodeInformation)
+    this.push(node)
+    return node;
   }
 
   public all(): Node[] {
@@ -76,5 +74,4 @@ export default class Nodes extends Array<Node> {
       }
     }
   }
-
 }

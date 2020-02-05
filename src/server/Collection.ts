@@ -2,7 +2,6 @@ import History from "./History";
 import Node from "./Node"
 import Nodes from "./Nodes";
 import { Stats } from "./interfaces/Stats";
-import { Validator } from "./interfaces/Validator";
 import { Pending } from "./interfaces/Pending";
 import { Latency } from "./interfaces/Latency";
 import { NodeInfo } from "./interfaces/NodeInfo";
@@ -12,6 +11,7 @@ import { BasicStatsResponse } from "./interfaces/BasicStatsResponse";
 import { NodeStats } from "./interfaces/NodeStats";
 import { Block } from "./interfaces/Block";
 import { NodeInformation } from "./interfaces/NodeInformation";
+import { ValidatorData } from "./interfaces/ValidatorData"
 
 export default class Collection {
 
@@ -19,16 +19,21 @@ export default class Collection {
   private history: History = new History()
 
   // todo: move to history
-  private highestBlock: number = 1
+  private highestBlock = 1
 
   public addNode(
+    id: string,
     nodeInformation: NodeInformation,
     callback: { (err: Error | string, nodeInfo: NodeInfo): void }
   ): void {
-    const node: Node = this.nodes.getNodeOrNew(
-      (n: Node) => n.getValidatorData().signer === nodeInformation.nodeData.id,
-      nodeInformation
-    )
+    let node: Node = this.nodes.getNodeByAddress(id)
+
+    if (!node) {
+      node = this.nodes.createByNodeInformation(
+        nodeInformation
+      )
+    }
+
     node.setInfo(
       nodeInformation,
       callback
@@ -41,19 +46,14 @@ export default class Collection {
     callbackUpdatedStats: { (err: Error | string, blockStats: BlockStats): void },
     callbackHighestBlock: { (err: Error | string, highestBlock: number): void }
   ): void {
-    const node: Node = this.nodes.getNode((n: Node) => n.getValidatorData().signer === id)
+    const node: Node = this.nodes.getNodeByAddress(id)
 
     if (!node) {
-      console.error(
-        this.nodes.map(node => {
-          console.log(node.getValidatorData().signer)
-        })
-      )
-      callbackUpdatedStats(`Node ${id} not found`, null)
+      callbackUpdatedStats(`Node with address ${id} not found!`, null)
     } else {
 
       const newBlock = this.history.addBlock(
-        block, id,
+        id, block,
         node.getTrusted()
       )
 
@@ -101,7 +101,7 @@ export default class Collection {
     stats: Stats,
     callback: { (err: Error | string, pending: Pending | null): void }
   ): void {
-    const node: Node = this.nodes.getNode((n: Node) => n.getValidatorData().signer === id)
+    const node: Node = this.nodes.getNodeByAddress(id)
 
     if (!node) {
       return
@@ -115,7 +115,7 @@ export default class Collection {
     stats: Stats,
     callback: { (err: Error | string, basicStats: BasicStatsResponse | null): void }
   ): void {
-    const node: Node = this.nodes.getNode((n: Node) => n.getValidatorData().signer === id)
+    const node: Node = this.nodes.getNodeByAddress(id)
 
     if (!node) {
       callback('Node not found during update stats', null)
@@ -129,7 +129,7 @@ export default class Collection {
     latency: number,
     callback: { (err: Error | string, latency: Latency): void }
   ): void {
-    const node: Node = this.nodes.getNode((n: Node) => n.getValidatorData().signer === id)
+    const node: Node = this.nodes.getNodeByAddress(id)
 
     if (!node) {
       return
@@ -142,7 +142,7 @@ export default class Collection {
     spark: string,
     callback: { (err: Error | string, stats: NodeStats): void }
   ): void {
-    const node = this.nodes.getNode((n: Node) => n.getSpark() === spark)
+    const node = this.nodes.getNodeBySpark(spark)
 
     if (!node) {
       callback('Node not found during setting inactive', null)
@@ -160,24 +160,15 @@ export default class Collection {
   }
 
   public setValidator(
-    validator: Validator,
-    isElected: boolean
+    validator: ValidatorData
   ): void {
-    const search = (n: Node) => n.getId() === validator.address
-    const index: number = this.nodes.getIndex(search)
-    const node: Node = this.nodes.getNodeOrNew(search, validator)
 
-    if (index < 0) {
-      // only if new node
-      node.integrateValidatorData(validator)
+    const node: Node = this.nodes.getNodeByAddress(validator.address)
+
+    if (!node) {
+      this.nodes.createByValidatorData(validator)
     }
 
     node.setValidatorData(validator)
-
-    if (isElected) {
-      node.setValidatorElected(true)
-    }
-
-    node.setValidatorRegistered(true)
   }
 }
