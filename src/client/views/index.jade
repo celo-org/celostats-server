@@ -149,8 +149,8 @@ block content
               i(ng-click="pinNode(node.id)", class="{{ node.pinned | nodePinClass }}", data-toggle="tooltip", data-placement="right", data-original-title="Click to {{ node.pinned ? 'un' : '' }}pin")
             td.nodeInfo(rel="{{node.info.name}}")
               span.small(data-toggle="tooltip", data-placement="top", data-html="true", data-original-title="{{node | geoTooltip}}") {{node.info.name | nameFilter}}
-            td.nodeInfo(rel="{{node.address}}")
-              span(ng-bind-html="node.address | addressFilter")
+            td.nodeInfo(rel="{{node.id}}")
+              span(ng-bind-html="node.id | addressFilter")
             td(class="{{ node.readable.latencyClass }}")
               span.small {{ node.readable.latency }}
             td.nodeInfo(rel="{{node.validatorData.affiliation}}")

@@ -14,36 +14,19 @@ export default class Nodes extends Array<Node> {
     search: { (n: Node): boolean }
   ): Node {
     const index = this.getIndex(search)
-
-    if (index >= 0) {
-      return this[index]
-    }
-
-    return null
-  }
-
-  public getNodeBySigner(signer: string): Node {
-    return this.getNode((n: Node) => n.getValidatorData().signer === signer)
+    return index > -1 ? this[index] : null
   }
 
   public getNodeBySpark(spark: string): Node {
     return this.getNode((n: Node) => n.getSpark() === spark)
   }
 
-  public getNodeByAddress(address: string) {
-    return this.getNode((n: Node) => n.getId() === address)
+  public getNodeById(id: string): Node {
+    return this.getNode((n: Node) => n.getId() === id)
   }
 
-  public createByValidatorData(validator: ValidatorData) {
-    const node = new Node()
-    node.setValidatorData(validator)
-    this.push(node)
-    return node;
-  }
-
-  public createByNodeInformation(nodeInformation: NodeInformation): Node {
-    const node = new Node()
-    node.initWithNodeInformation(nodeInformation)
+  public createEmptyNode(id: string) {
+    const node = new Node(id)
     this.push(node)
     return node;
   }
@@ -69,6 +52,8 @@ export default class Nodes extends Array<Node> {
     }
 
     if (deleteList.length > 0) {
+      console.log(`Deleting ${deleteList.length} stale nodes!`)
+
       for (let i = 0; i < deleteList.length; i++) {
         this.splice(deleteList[i], 1)
       }

@@ -26,15 +26,13 @@ export default class Collection {
     nodeInformation: NodeInformation,
     callback: { (err: Error | string, nodeInfo: NodeInfo): void }
   ): void {
-    let node: Node = this.nodes.getNodeByAddress(id)
+    let node: Node = this.nodes.getNodeById(id)
 
     if (!node) {
-      node = this.nodes.createByNodeInformation(
-        nodeInformation
-      )
+      node = this.nodes.createEmptyNode(id)
     }
 
-    node.setInfo(
+    node.setNodeInformation(
       nodeInformation,
       callback
     )
@@ -46,7 +44,7 @@ export default class Collection {
     callbackUpdatedStats: { (err: Error | string, blockStats: BlockStats): void },
     callbackHighestBlock: { (err: Error | string, highestBlock: number): void }
   ): void {
-    const node: Node = this.nodes.getNodeByAddress(id)
+    const node: Node = this.nodes.getNodeById(id)
 
     if (!node) {
       callbackUpdatedStats(`Node with address ${id} not found!`, null)
@@ -101,7 +99,7 @@ export default class Collection {
     stats: Stats,
     callback: { (err: Error | string, pending: Pending | null): void }
   ): void {
-    const node: Node = this.nodes.getNodeByAddress(id)
+    const node: Node = this.nodes.getNodeById(id)
 
     if (!node) {
       return
@@ -115,7 +113,7 @@ export default class Collection {
     stats: Stats,
     callback: { (err: Error | string, basicStats: BasicStatsResponse | null): void }
   ): void {
-    const node: Node = this.nodes.getNodeByAddress(id)
+    const node: Node = this.nodes.getNodeById(id)
 
     if (!node) {
       callback('Node not found during update stats', null)
@@ -129,7 +127,7 @@ export default class Collection {
     latency: number,
     callback: { (err: Error | string, latency: Latency): void }
   ): void {
-    const node: Node = this.nodes.getNodeByAddress(id)
+    const node: Node = this.nodes.getNodeById(id)
 
     if (!node) {
       return
@@ -160,13 +158,14 @@ export default class Collection {
   }
 
   public setValidator(
+    id: string,
     validator: ValidatorData
   ): void {
 
-    const node: Node = this.nodes.getNodeByAddress(validator.address)
+    let node: Node = this.nodes.getNodeById(id)
 
     if (!node) {
-      this.nodes.createByValidatorData(validator)
+      node = this.nodes.createEmptyNode(id)
     }
 
     node.setValidatorData(validator)

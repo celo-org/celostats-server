@@ -17,11 +17,8 @@ import { ValidatorData } from "./interfaces/ValidatorData"
 
 export default class Node {
 
-  private id: string = null
+  private readonly id: string = null
   private spark: string
-  private address: string = null
-
-  private propagationHistory: number[] = []
 
   private info: Info = {
     api: null,
@@ -43,104 +40,97 @@ export default class Node {
     mining: false,
     elected: false,
     proxy: false,
-    hashrate: 0,
-    peers: 0,
-    pending: 0,
-    gasPrice: 0,
+    hashrate: null,
+    peers: null,
+    pending: null,
+    gasPrice: null,
     block: {
-      number: 0,
-      epochSize: 0,
-      blockRemain: 0,
-      hash: '0x0000000000000000000000000000000000000000000000000000000000000000',
-      parentHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
-      difficulty: '0',
-      totalDifficulty: '0',
-      gasLimit: 0,
-      gasUsed: 0,
-      timestamp: 0,
-      time: 0,
-      miner: '0x0000000000000000000000000000000000000000000000000000000000000000',
+      number: null,
+      epochSize: null,
+      blockRemain: null,
+      hash: null,
+      parentHash: null,
+      difficulty: null,
+      totalDifficulty: null,
+      gasLimit: null,
+      gasUsed: null,
+      timestamp: null,
+      time: null,
+      miner: null,
       validators: {
         registered: [],
         elected: []
       },
       trusted: false,
-      arrival: 0,
-      received: 0,
-      arrived: 0,
-      fork: 0,
-      propagation: 0,
+      arrival: null,
+      received: null,
+      arrived: null,
+      fork: null,
+      propagation: null,
       transactions: [],
       uncles: []
     },
     syncing: false,
-    propagationAvg: 0,
-    latency: 0,
-    uptime: 100
+    propagationAvg: null,
+    propagationHistory: [],
+    latency: null,
+    uptime: null
   }
 
   private uptime: Uptime = {
-    started: 0,
-    up: 0,
-    down: 0,
+    started: null,
+    up: null,
+    down: null,
     lastStatus: false,
-    lastUpdate: 0
+    lastUpdate: null
   }
 
   private validatorData: ValidatorData = {
     blsPublicKey: null,
     ecdsaPublicKey: null,
     score: null,
-    address: null,
     affiliation: null,
     registered: false,
     elected: false,
     signer: null
   }
 
-  public initWithNodeInformation(
-    nodeInformation: NodeInformation
+  public constructor(id: string) {
+    this.id = id
+  }
+
+  public setNodeInformation(
+    nodeInformation: NodeInformation,
+    callback: { (err: Error | string, nodeInfo: NodeInfo): void }
   ) {
-    this.propagationHistory.fill(-1, 0, cfg.maxPropagationHistory)
+    // preset propagation history
+    this.stats.propagationHistory.fill(-1, 0, cfg.maxPropagationHistory)
 
-    this.address = nodeInformation.nodeData.address
-
-    if (
-      this.id === null &&
-      this.uptime.started === null
-    ) {
+    // activage node
+    if (this.uptime.started === null) {
       this.setState(true)
     }
 
+    // unpack latency
     if (nodeInformation.nodeData.latency) {
       this.stats.latency = nodeInformation.nodeData.latency
     }
 
-    this.setInfo(
-      nodeInformation,
-      (err: Error | string) => {
-        if (err) {
-          console.log(err)
-        }
-      }
-    )
-  }
-
-  public setInfo(
-    nodeInformation: NodeInformation,
-    callback: { (err: Error | string, nodeInfo: NodeInfo): void }
-  ) {
-    if (nodeInformation.stats && nodeInformation.stats.info) {
+    // do we have info in the stats?
+    if (
+      nodeInformation.stats &&
+      nodeInformation.stats.info
+    ) {
+      // yep, set it
       this.info = nodeInformation.stats.info
 
+      // can this node update the history?
       if (nodeInformation.stats.info.canUpdateHistory) {
         this.info.canUpdateHistory = nodeInformation.stats.info.canUpdateHistory || false
       }
     }
 
-    this.setState(true)
-
-    this.id = nodeInformation.nodeData.address || this.id
+    // store spark
     this.spark = nodeInformation.nodeData.spark
 
     callback(null, this.getInfo())
@@ -148,10 +138,6 @@ export default class Node {
 
   public setValidatorData(data: ValidatorData) {
     this.validatorData = data
-  }
-
-  public getValidatorData(): Validator {
-    return this.validatorData;
   }
 
   public getSpark() {
@@ -163,7 +149,7 @@ export default class Node {
   }
 
   public getTrusted(): boolean {
-    return trusted.indexOf(this.id) > -1
+    return trusted.indexOf(this.getId()) > -1
   }
 
   public setStats(
@@ -216,7 +202,7 @@ export default class Node {
     if (block && !isNaN(block.number)) {
 
       const propagationHistoryChanged =
-        !deepEqual(propagationHistory, this.propagationHistory)
+        !deepEqual(propagationHistory, this.stats.propagationHistory)
 
       const blockDataChanged =
         !deepEqual(block, this.stats.block)
@@ -254,7 +240,7 @@ export default class Node {
         this.stats.pending = stats.pending
 
         callback(null, {
-          id: this.id,
+          id: this.getId(),
           pending: this.stats.pending
         })
       } else {
@@ -308,7 +294,7 @@ export default class Node {
         this.stats.latency = latency
 
         callback(null, {
-          id: this.id,
+          id: this.getId(),
           latency: latency
         })
       } else {
@@ -334,10 +320,10 @@ export default class Node {
       this.uptime.started = now
     }
 
-    this.stats.active = active
     this.uptime.lastStatus = active
     this.uptime.lastUpdate = now
 
+    this.stats.active = active
     this.stats.uptime = this.calculateUptime()
   }
 
@@ -351,7 +337,7 @@ export default class Node {
 
   public getStats(): NodeStats {
     return {
-      id: this.id,
+      id: this.getId(),
       name: this.info.name,
       stats: {
         active: this.stats.active,
@@ -368,13 +354,13 @@ export default class Node {
         pending: this.stats.pending,
         latency: this.stats.latency
       },
-      history: this.propagationHistory
+      history: this.stats.propagationHistory
     }
   }
 
   private getBlockStats(): BlockStats {
     return {
-      id: this.id,
+      id: this.getId(),
       block: {
         transactions: this.stats.block.transactions.length,
         validators: {
@@ -401,13 +387,13 @@ export default class Node {
         propagation: this.stats.block.propagation
       },
       propagationAvg: this.stats.propagationAvg,
-      history: this.propagationHistory
+      history: this.stats.propagationHistory
     }
   }
 
   private getBasicStats(): BasicStatsResponse {
     return {
-      id: this.id,
+      id: this.getId(),
       stats: {
         active: this.stats.active,
         mining: this.stats.mining,
@@ -425,7 +411,7 @@ export default class Node {
 
   private getInfo(): NodeDetails {
     return {
-      id: this.id,
+      id: this.getId(),
       info: this.info,
       stats: {
         active: this.stats.active,
@@ -442,7 +428,7 @@ export default class Node {
         latency: this.stats.latency,
         pending: this.stats.pending,
       },
-      history: this.propagationHistory,
+      history: this.stats.propagationHistory,
     }
   }
 
@@ -458,21 +444,21 @@ export default class Node {
     propagationHistory: number[]
   ) {
     // anything new?
-    if (deepEqual(propagationHistory, this.propagationHistory)) {
+    if (deepEqual(propagationHistory, this.stats.propagationHistory)) {
       // no, nothing to set
       return false
     }
 
     if (!propagationHistory) {
-      this.propagationHistory = [].fill(-1, 0, cfg.maxPropagationHistory)
+      this.stats.propagationHistory = [].fill(-1, 0, cfg.maxPropagationHistory)
       this.stats.propagationAvg = 0
 
       return true
     }
 
-    this.propagationHistory = propagationHistory
+    this.stats.propagationHistory = propagationHistory
 
-    const positives: number[] = this.propagationHistory
+    const positives: number[] = this.stats.propagationHistory
       .filter((p: number) => {
         return p >= 0
       })

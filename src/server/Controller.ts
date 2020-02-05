@@ -90,13 +90,11 @@ export default class Controller {
    *************************************/
   private handleNodeInfo(
     id: string,
-    proof: Proof,
     stats: InfoWrapped,
     spark: Primus.spark
   ): void {
 
     const nodeData: NodeData = {
-      address: proof.address,
       ip: spark.address.ip,
       spark: spark.id,
       latency: spark.latency || 0
@@ -233,7 +231,6 @@ export default class Controller {
         const elected = validators.elected.indexOf(validator.address) > -1
 
         const v: ValidatorData = {
-          address: validator.address,
           affiliation: validator.affiliation,
           ecdsaPublicKey: validator.ecdsaPublicKey,
           score: validator.score,
@@ -243,7 +240,8 @@ export default class Controller {
           elected
         }
 
-        this.collection.setValidator(v)
+        const id = validator.address
+        this.collection.setValidator(id, v)
       })
     }
   }
@@ -398,7 +396,7 @@ export default class Controller {
     )
 
     if (isAuthed && stats.info) {
-      this.handleNodeInfo(id, proof, stats, spark)
+      this.handleNodeInfo(id, stats, spark)
     }
 
     return isAuthed
