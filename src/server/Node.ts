@@ -100,13 +100,12 @@ export default class Node {
   }
 
   public setNodeInformation(
-    nodeInformation: NodeInformation,
-    callback: { (err: Error | string, nodeInfo: NodeInfo): void }
-  ) {
+    nodeInformation: NodeInformation
+  ): NodeDetails {
     // preset propagation history
     this.stats.propagationHistory.fill(-1, 0, cfg.maxPropagationHistory)
 
-    // activage node
+    // activate node
     if (this.uptime.started === null) {
       this.setState(true)
     }
@@ -133,7 +132,7 @@ export default class Node {
     // store spark
     this.spark = nodeInformation.nodeData.spark
 
-    callback(null, this.getInfo())
+    return this.getInfo()
   }
 
   public setValidatorData(data: ValidatorData) {
@@ -152,53 +151,10 @@ export default class Node {
     return trusted.indexOf(this.getId()) > -1
   }
 
-  public setStats(
-    stats: Stats,
-    history: number[],
-    callback: { (err: Error | string, stats: NodeStats): void }
-  ) {
-    if (stats) {
-
-      const block = stats.block || this.stats.block
-
-      this.setBlock(
-        block,
-        history,
-        (err: Error | string, blockStats: BlockStats) => {
-          if (err) {
-            console.error(err)
-          }
-        })
-
-      this.setBasicStats(
-        stats,
-        (err: Error | string) => {
-          if (err) {
-            console.error(err)
-          }
-        })
-
-      const pending = stats.pending || this.stats.pending
-
-      if (pending) {
-        this.setPending(stats, (err: Error | string) => {
-          if (err) {
-            console.error(err)
-          }
-        })
-      }
-
-      callback(null, this.getStats())
-    }
-
-    callback('Stats undefined', null)
-  }
-
   public setBlock(
     block: Block,
     propagationHistory: number[],
-    callback: { (err: Error | string, blockStats: BlockStats): void }
-  ) {
+  ): BlockStats | null {
     if (block && !isNaN(block.number)) {
 
       const propagationHistoryChanged =
@@ -220,18 +176,15 @@ export default class Node {
           }
           this.stats.block = block
 
-          callback(null, this.getBlockStats())
+          return this.getBlockStats()
         }
       }
-    } else {
-      callback('Block undefined', null)
     }
   }
 
   public setPending(
-    stats: Stats,
-    callback: { (err: Error | string, pending: Pending | null): void }
-  ) {
+    stats: Stats
+  ): Pending {
     // bad request
     if (stats && !isNaN(stats.pending)) {
       // nothing pending
@@ -239,22 +192,17 @@ export default class Node {
         // pending
         this.stats.pending = stats.pending
 
-        callback(null, {
+        return {
           id: this.getId(),
           pending: this.stats.pending
-        })
-      } else {
-        callback(null, null)
+        }
       }
-    } else {
-      callback('Stats undefined in pending', null)
     }
   }
 
   public setBasicStats(
     stats: Stats,
-    callback: { (err: Error | string, basicStats: BasicStatsResponse | null): void }
-  ) {
+  ): BasicStatsResponse {
     if (stats) {
       if (!deepEqual(stats,
         {
@@ -276,32 +224,23 @@ export default class Node {
         this.stats.gasPrice = stats.gasPrice
         this.stats.uptime = stats.uptime
 
-        callback(null, this.getBasicStats())
-      } else {
-        callback(null, null)
+        return this.getBasicStats()
       }
-    } else {
-      callback('Stats undefined in basic stats', null)
     }
   }
 
   public setLatency(
-    latency: number,
-    callback: { (err: Error | string, latency: Latency): void }
-  ) {
+    latency: number
+  ): Latency {
     if (!isNaN(latency)) {
       if (latency !== this.stats.latency) {
         this.stats.latency = latency
 
-        callback(null, {
+        return {
           id: this.getId(),
           latency: latency
-        })
-      } else {
-        callback(null, null)
+        }
       }
-    } else {
-      callback('Latency undefined', null)
     }
   }
 

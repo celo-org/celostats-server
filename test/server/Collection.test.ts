@@ -28,19 +28,14 @@ describe('Collection', () => {
 
       const id = '0xnode11244'
 
-      collection.addNode(
-        id, node,
-        (err: Error | string) => {
-          if (err) {
-            throw err
-          }
+      const n = collection.addNode(id, node)
+      assert(n)
 
-          const all = collection.getAll()
-          console.log(all)
-          assert.equal(all.length, 1)
-          assert.equal(all[0].getId(), id)
-          done()
-        })
+      const all = collection.getAll()
+
+      assert.equal(all.length, 1)
+      assert.equal(all[0].getId(), id)
+      done()
 
     })
 
@@ -60,27 +55,15 @@ describe('Collection', () => {
 
       const id = "node1";
 
-      collection.addNode(
-        id, node1,
-        (err) => {
-          if (err) {
-            throw err
-          }
+      const n1 = collection.addNode(id, node1)
+      assert(n1)
 
-          const node2 = {...node1}
+      const node2 = {...node1}
+      const n2 = collection.addNode(id, node2)
+      assert(n2)
 
-          collection.addNode(
-            id, node2,
-            (err) => {
-              if (err) {
-                throw err
-              }
-
-              assert.equal(collection.getAll().length, 1)
-              done()
-            })
-
-        })
+      assert.equal(collection.getAll().length, 1)
+      done()
 
     })
 

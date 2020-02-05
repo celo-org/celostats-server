@@ -4,26 +4,20 @@ import Primus from "primus"
 import Collection from "./Collection";
 import Node from "./Node";
 import { Statistics } from "./statistics/Statistics";
-import { ChartData } from "./interfaces/ChartData";
 import { Sides } from "./statistics/Sides";
 import { Directions } from "./statistics/Directions";
 import { Proof } from "./interfaces/Proof";
 import { InfoWrapped } from "./interfaces/InfoWrapped";
 import { NodeData } from "./interfaces/NodeData";
 import { NodeInformation } from "./interfaces/NodeInformation";
-import { NodeInfo } from "./interfaces/NodeInfo";
 import { Block } from "./interfaces/Block";
-import { BlockStats } from "./interfaces/BlockStats";
 import { Stats } from "./interfaces/Stats";
-import { Pending } from "./interfaces/Pending";
 import { Validators } from "./interfaces/Validators";
 import {
   banned,
   cfg,
   trusted
 } from "./utils/config";
-import { BasicStatsResponse } from "./interfaces/BasicStatsResponse";
-import { Latency } from "./interfaces/Latency";
 import { NodeStats } from "./interfaces/NodeStats";
 import { ClientPong } from "./interfaces/ClientPong";
 import { NodePing } from "./interfaces/NodePing";
@@ -32,6 +26,7 @@ import { isAuthorized } from "./utils/isAuthorized";
 import io from "socket.io"
 import { Validator } from "./interfaces/Validator"
 import { ValidatorData } from "./interfaces/ValidatorData"
+import { NodeDetails } from "./interfaces/NodeDetails"
 
 export default class Controller {
   private readonly collection: Collection
@@ -100,36 +95,27 @@ export default class Controller {
       latency: spark.latency || 0
     }
 
-    this.collection.addNode(
+    const nodeDetails: NodeDetails = this.collection.addNode(
       id,
       <NodeInformation>{
         nodeData,
         stats
-      },
-      (err: Error | string, info: NodeInfo): void => {
-        if (err) {
-          console.error(
-            'API', 'CON',
-            'Connection error:', err
-          )
-          return
-        }
-
-        if (info) {
-          spark.emit('ready')
-
-          this.statistics.add(Sides.Node, Directions.Out)
-
-          console.success(
-            'API', 'CON', 'Node',
-            `'${info.info.name}'`, `(${spark.id})`, 'Connected')
-
-          this.clientBroadcast({
-            action: 'add',
-            data: info
-          })
-        }
       })
+
+    if (nodeDetails) {
+      spark.emit('ready')
+
+      this.statistics.add(Sides.Node, Directions.Out)
+
+      console.success(
+        'API', 'CON', 'Node',
+        `'${nodeDetails.info.name}'`, `(${spark.id})`, 'Connected')
+
+      this.clientBroadcast({
+        action: 'add',
+        data: nodeDetails
+      })
+    }
   }
 
   public handleNodeBlock(
@@ -137,70 +123,56 @@ export default class Controller {
     ip: string,
     block: Block
   ): void {
-    this.collection.addBlock(
-      id, block,
-      (err: Error | string, updatedStats: BlockStats) => {
-        if (err) {
-          console.error(
-            'API', 'BLK',
-            'Block error:', err, updatedStats
-          )
-        } else if (updatedStats) {
+    const res = this.collection.addBlock(
+      id, block)
 
-          this.clientBroadcast({
-            action: 'block',
-            data: updatedStats
-          })
+    if (res) {
+      if (res.blockStats) {
+        this.clientBroadcast({
+          action: 'block',
+          data: res.blockStats
+        })
 
-          console.info(
-            'API', 'BLK',
-            'Block:', updatedStats.block['number'],
-            'td:', updatedStats.block['totalDifficulty'],
-            'from:', updatedStats.id, 'ip:', ip
-          )
-        }
-      },
-      (err: Error | string, highestBlock: number) => {
-        if (err) {
-          console.error(err)
-        } else {
-          this.clientBroadcast({
-            action: 'lastBlock',
-            number: highestBlock
-          })
-
-          // propagate to all the clients
-          this.handleGetCharts()
-        }
+        console.info(
+          'API', 'BLK',
+          'Block:', res.blockStats.block['number'],
+          'td:', res.blockStats.block['totalDifficulty'],
+          'from:', res.blockStats.id, 'ip:', ip
+        )
       }
-    )
+
+      if (res.highestBlock) {
+        this.clientBroadcast({
+          action: 'lastBlock',
+          number: res.highestBlock
+        })
+
+        // propagate to all the clients
+        this.handleGetCharts()
+      }
+    }
   }
 
   public handleNodePending(
     id: string,
     stats: Stats
   ): void {
-    this.collection.updatePending(
-      id, stats,
-      (err: Error | string, pending: Pending) => {
-        if (err) {
-          console.error('API', 'TXS', 'Pending error:', err)
-        }
-
-        if (pending) {
-          this.clientBroadcast({
-            action: 'pending',
-            data: pending
-          })
-
-          console.success(
-            'API', 'TXS', 'Pending:',
-            pending['pending'],
-            'from:', pending.id
-          )
-        }
-      }
+    const pending = this.collection.updatePending(
+      id, stats
     )
+
+    if (pending) {
+      this.clientBroadcast({
+        action: 'pending',
+        data: pending
+      })
+
+      console.success(
+        'API', 'TXS', 'Pending:',
+        pending['pending'],
+        'from:', pending.id
+      )
+    }
   }
 
   public handleNodeBlockValidators(
@@ -250,86 +222,61 @@ export default class Controller {
     id: string,
     stats: Stats
   ): void {
-    this.collection.updateStats(
-      id, stats,
-      (err: Error | string, basicStats: BasicStatsResponse) => {
-        if (err) {
-          console.error(
-            'API', 'STA',
-            'Stats error:', err
-          )
-        } else {
+    const basicStats = this.collection.updateStats(id, stats)
 
-          if (basicStats) {
-            this.clientBroadcast({
-              action: 'stats',
-              data: basicStats
-            })
-
-            console.info(
-              'API', 'STA',
-              'Stats from:', id
-            )
-          }
-        }
+    if (basicStats) {
+      this.clientBroadcast({
+        action: 'stats',
+        data: basicStats
       })
+
+      console.info(
+        'API', 'STA',
+        'Stats from:', id
+      )
+    }
+
   }
 
   public handleNodeLatency(
     id: string,
     latency: number
   ): void {
-    this.collection.updateLatency(
-      id, latency,
-      (err: Error | string, latency: Latency): void => {
-        if (err) {
-          console.error('API', 'PIN', 'Latency error:', err)
-        }
+    const lat = this.collection.updateLatency(id, latency)
 
-        if (latency) {
-          this.clientBroadcast({
-              action: 'latency',
-              data: latency
-            }
-          )
-
-          console.info(
-            'API', 'PIN',
-            'Latency:', latency.latency,
-            'from:', id
-          )
+    if (lat) {
+      this.clientBroadcast({
+          action: 'latency',
+          data: lat
         }
-      }
-    )
+      )
+
+      console.info(
+        'API', 'PIN',
+        'Latency:', lat.latency,
+        'from:', id
+      )
+    }
   }
 
   public handleNodeEnd(
     id: string
   ): void {
 
-    this.collection.setInactive(
-      id,
-      (err: Error | string, nodeStats: NodeStats
-      ) => {
-        if (err) {
-          console.error(
-            'API', 'CON',
-            'Connection with:', id,
-            'ended.', 'Error:', err
-          )
-        } else {
-          this.clientBroadcast({
-            action: 'inactive',
-            data: nodeStats
-          })
+    const nodeStats: NodeStats = this.collection.setInactive(id)
 
-          console.success(
-            'API', 'CON', 'Node:',
-            `'${nodeStats.name}'`, `(${id})`,
-            'disconnected.'
-          )
-        }
+    if (nodeStats) {
+      this.clientBroadcast({
+        action: 'inactive',
+        data: nodeStats
       })
+
+      console.success(
+        'API', 'CON', 'Node:',
+        `'${nodeStats.name}'`, `(${id})`,
+        'disconnected.'
+      )
+    }
   }
 
   public handleNodePing(
@@ -408,31 +355,23 @@ export default class Controller {
   private handleGetCharts(
     socket?: io.Socket
   ): void {
-    this.collection.getCharts(
-      (err: Error | string, charts: ChartData): void => {
-        if (err) {
-          console.error(
-            'COL', 'CHR',
-            'Charts error:', err
-          )
-        } else {
+    const charts = this.collection.getCharts()
 
-          if (socket) {
-            socket.emit('charts', charts)
+    if (charts) {
+      if (socket) {
+        socket.emit('charts', charts)
 
-            this.statistics.add(Sides.Client, Directions.Out)
-          } else {
+        this.statistics.add(Sides.Client, Directions.Out)
+      } else {
 
-            const chartsResponse = {
-              action: 'charts',
-              data: charts
-            }
-            // propagate to all clients
-            this.clientBroadcast(chartsResponse)
-          }
+        const chartsResponse = {
+          action: 'charts',
+          data: charts
         }
+        // propagate to all clients
+        this.clientBroadcast(chartsResponse)
       }
-    )
+    }
   }
 
   public handleClientPong(

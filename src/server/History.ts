@@ -308,9 +308,7 @@ export default class History {
       })
   }
 
-  public getCharts(
-    callback: { (err: Error | string, charts: ChartData): void }
-  ): void {
+  public getCharts(): ChartData {
     const chartHistory = this.blocks
       .slice(0, cfg.maxBins)
       .map((blockWrapper: BlockWrapper): {
@@ -335,7 +333,7 @@ export default class History {
         }
       })
 
-    callback(null, {
+    return {
       height: chartHistory.map((h) => h.height),
       blocktime: padArray(chartHistory.map((h) => h.blocktime), cfg.maxBins, 0),
       avgBlocktime: this.getAvgBlocktime(),
@@ -346,7 +344,7 @@ export default class History {
       gasLimit: padArray(chartHistory.map((h) => h.gasLimit), cfg.maxBins, 0),
       miners: this.getMinersCount(),
       propagation: this.getBlockPropagation(),
-    })
+    }
   }
 
 }
