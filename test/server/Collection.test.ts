@@ -8,8 +8,6 @@ describe('Collection', () => {
 
   const node: NodeInformation = {
     nodeData: {
-      id: 'node1',
-      address: '0x12345',
       ip: '',
       spark: '',
       latency: 0
@@ -28,17 +26,16 @@ describe('Collection', () => {
 
     it('should return the inserted node', (done) => {
 
-      collection.addNode(node, (err) => {
-        if (err) {
-          throw err
-        }
+      const id = '0xnode11244'
 
-        const all = collection.getAll()
-        assert.equal(all.length, 1)
-        assert.equal(all[0].getId(), node.nodeData.id)
-        done()
+      const n = collection.addNode(id, node)
+      assert(n)
 
-      })
+      const all = collection.getAll()
+
+      assert.equal(all.length, 1)
+      assert.equal(all[0].getId(), id)
+      done()
 
     })
 
@@ -46,8 +43,6 @@ describe('Collection', () => {
 
       const node1: NodeInformation = {
         nodeData: {
-          id: 'node1',
-          address: '0x12345',
           ip: '',
           spark: '',
           latency: 0
@@ -58,23 +53,17 @@ describe('Collection', () => {
         }
       }
 
-      collection.addNode(node1, (err) => {
-        if (err) {
-          throw err
-        }
+      const id = "node1";
 
-        const node2 = Object.assign({}, node1)
+      const n1 = collection.addNode(id, node1)
+      assert(n1)
 
-        collection.addNode(node2, (err) => {
-          if (err) {
-            throw err
-          }
+      const node2 = {...node1}
+      const n2 = collection.addNode(id, node2)
+      assert(n2)
 
-          assert.equal(collection.getAll().length, 1)
-          done()
-        })
-
-      })
+      assert.equal(collection.getAll().length, 1)
+      done()
 
     })
 

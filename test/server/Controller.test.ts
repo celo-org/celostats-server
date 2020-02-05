@@ -87,6 +87,7 @@ describe('Controller', () => {
       // mock spark
       const socket = <io.Socket>{
         emit: (name: string, payload: any): void => {
+          // stub, do not remove
         }
       }
 

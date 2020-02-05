@@ -1,53 +1,34 @@
 import Node from "./Node"
 import { NodeInformation } from "./interfaces/NodeInformation";
-import { Validator } from "./interfaces/Validator";
+import { ValidatorData } from "./interfaces/ValidatorData"
 
 export default class Nodes extends Array<Node> {
 
-  public getIndex(
+  private getIndex(
     search: { (n: Node): boolean }
   ): number {
     return this.indexOf(this.find(search))
   }
 
-  public getNode(
+  private getNode(
     search: { (n: Node): boolean }
   ): Node {
     const index = this.getIndex(search)
-
-    if (index >= 0) {
-      return this[index]
-    }
-
-    return null
+    return index > -1 ? this[index] : null
   }
 
-  public getByIndex(
-    index: number
-  ): Node {
-    if (this[index]) {
-      return this[index]
-    }
-
-    return
+  public getNodeBySpark(spark: string): Node {
+    return this.getNode((n: Node) => n.getSpark() === spark)
   }
 
-  private getIndexOrNew(
-    search: { (n: Node): boolean },
-    data: NodeInformation | Validator
-  ): number {
-    const index = this.getIndex(search)
-
-    return (index >= 0 ? index : this.push(new Node(data)) - 1)
+  public getNodeById(id: string): Node {
+    return this.getNode((n: Node) => n.getId() === id)
   }
 
-  public getNodeOrNew(
-    search: { (n: Node): boolean },
-    data: NodeInformation | Validator
-  ): Node {
-    return this.getByIndex(
-      this.getIndexOrNew(search, data)
-    )
+  public createEmptyNode(id: string) {
+    const node = new Node(id)
+    this.push(node)
+    return node;
   }
 
   public all(): Node[] {
@@ -71,10 +52,11 @@ export default class Nodes extends Array<Node> {
     }
 
     if (deleteList.length > 0) {
+      console.log(`Deleting ${deleteList.length} stale nodes!`)
+
       for (let i = 0; i < deleteList.length; i++) {
         this.splice(deleteList[i], 1)
       }
     }
   }
-
 }
