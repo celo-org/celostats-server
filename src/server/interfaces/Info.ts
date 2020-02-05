@@ -1,7 +1,6 @@
 export interface Info {
-  name: string
-  contact: string
-  canUpdateHistory: boolean
+  readonly name: string
+  readonly contact: string
   readonly node: string
   readonly port: number
   readonly net: number
@@ -10,4 +9,5 @@ export interface Info {
   readonly os: string
   readonly os_v: string
   readonly client: string
+  canUpdateHistory: boolean
 }

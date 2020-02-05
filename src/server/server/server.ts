@@ -209,7 +209,10 @@ export default class Server {
               proof: Proof
             } = data;
 
-            if (isInputValid(stats) && stats.stats) {
+            if (
+              isInputValid(stats) &&
+              stats.stats
+            ) {
 
               // why? why not spark.id like everywhere?
               const id = proof.address

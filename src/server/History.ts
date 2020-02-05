@@ -18,8 +18,8 @@ export default class History {
   private blocks: Blocks = new Blocks()
 
   public addBlock(
-    block: Block,
     id: string,
+    block: Block,
     trusted: boolean,
     addingHistory = false
   ): {
@@ -218,7 +218,7 @@ export default class History {
 
   public getBlockPropagation(): Histogram {
     const propagation: number[] = []
-    let avgPropagation: number = 0
+    let avgPropagation = 0
 
     this.blocks.forEach((block: BlockWrapper) => {
       block.propagTimes.forEach((propagationTime: PropagationTime) => {
@@ -292,9 +292,7 @@ export default class History {
       })
   }
 
-  public getCharts(
-    callback: { (err: Error | string, charts: ChartData): void }
-  ): void {
+  public getCharts(): ChartData {
     const chartHistory = this.blocks
       .slice(0, cfg.maxBins)
       .map((blockWrapper: BlockWrapper): {
@@ -319,7 +317,7 @@ export default class History {
         }
       })
 
-    callback(null, {
+    return {
       height: chartHistory.map((h) => h.height),
       blocktime: padArray(chartHistory.map((h) => h.blocktime), cfg.maxBins, 0),
       avgBlocktime: this.getAvgBlocktime(),
@@ -330,7 +328,7 @@ export default class History {
       gasLimit: padArray(chartHistory.map((h) => h.gasLimit), cfg.maxBins, 0),
       miners: this.getMinersCount(),
       propagation: this.getBlockPropagation(),
-    })
+    }
   }
 
 }

@@ -1,53 +1,37 @@
 import assert from "assert"
 import Node from "../../src/server/Node";
-import { NodeInformation } from "../../src/server/interfaces/NodeInformation";
 import Nodes from "../../src/server/Nodes";
-import { dummyInfo } from "./constats"
 
-describe('Collection', () => {
+describe('Nodes', () => {
 
   let nodes: Nodes;
-
-  const node: NodeInformation = {
-    nodeData: {
-      id: 'node1',
-      address: '0x12345',
-      ip: '',
-      spark: '',
-      latency: 0
-    },
-    stats: {
-      id: '11',
-      address: '0x12345',
-      info: dummyInfo
-    }
-  }
 
   beforeEach(() => {
     nodes = new Nodes();
   })
 
-  describe('#getIndex()', () => {
+  describe('#getNodeById()', () => {
 
-    it('should get node by search criteria', (done) => {
-      nodes.push(new Node(node))
+    it('should get node by id', (done) => {
+      const id = '0xnode1'
+      const node = new Node(id)
+      nodes.push(node)
 
-      const index = nodes.getIndex(
-        (n: Node) => n.getId() === node.nodeData.id
-      )
+      const n = nodes.getNodeById(id)
 
-      assert.equal(index, 0)
+      assert(n)
+      assert.equal(n.getId(), id)
       done()
     })
 
-    it('should return -1 when node was not found', (done) => {
-      nodes.push(new Node(node))
+    it('should return null when node was not found with given id', (done) => {
+      const id = '0xnode2'
+      const node = new Node(id)
+      nodes.push(node)
 
-      const index = nodes.getIndex(
-        (n: Node) => n.getId() === "xxxFindMeNotxxx"
-      )
+      const n = nodes.getNodeById("xxxFindMeNotxxx")
 
-      assert.equal(index, -1)
+      assert.equal(n, null)
       done()
     })
 

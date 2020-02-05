@@ -50,7 +50,7 @@ describe('#generateProof()', () => {
 
       const pubkeyNoZeroX = proof.publicKey.substr(2)
 
-      let pubkey: KeyPair = secp256k1.keyFromPublic(pubkeyNoZeroX, 'hex')
+      const pubkey: KeyPair = secp256k1.keyFromPublic(pubkeyNoZeroX, 'hex')
 
       // validate sig
       const isAuthorized = pubkey.verify(msgHash, signature)

@@ -7,6 +7,7 @@
     "node": ">=10.0.0"
   },
   "scripts": {
+    "lint": "eslint --ext .ts ./src ./test/server",
     "clean": "rm -rf ./dist ./coverage ./.nyc_output",
     "test": "VERBOSITY=0 mocha",
     "test:watch": "yarn test -- --watch",
@@ -29,6 +30,8 @@
     "@types/mocha": "^5.2.7",
     "@types/node": "^13.1.7",
     "@types/socket.io": "^2.1.4",
+    "@typescript-eslint/eslint-plugin": "^2.19.0",
+    "@typescript-eslint/parser": "^2.19.0",
     "angular": "^1.7.9",
     "body-parser": "^1.18.3",
     "bootstrap": "^4.4.1",
@@ -42,6 +45,8 @@
     "debounce": "^1.2.0",
     "deep-equal": "^2.0.1",
     "elliptic": "^6.5.1",
+    "eslint": "^6.8.0",
+    "eslint-config-prettier": "^6.10.0",
     "express": "^4.16.4",
     "grunt": "^1.0.3",
     "grunt-contrib-clean": "^2.0.0",
@@ -56,6 +61,7 @@
     "moment": "^2.24.0",
     "ngstorage": "^0.3.11",
     "popper.js": "^1.16.0",
+    "prettier": "^1.19.1",
     "primus": "^7.3.4",
     "primus-emit": "^1.0.0",
     "primus-spark-latency": "^0.1.1",
