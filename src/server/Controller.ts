@@ -122,7 +122,7 @@ export default class Controller {
 
           console.success(
             'API', 'CON', 'Node',
-            `'${stats.id}'`, `(${spark.id})`, 'Connected')
+            `'${info.info.name}'`, `(${spark.id})`, 'Connected')
 
           this.clientBroadcast({
             action: 'add',
