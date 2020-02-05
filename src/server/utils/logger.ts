@@ -118,7 +118,7 @@ styles.forEach(function (item) {
     let type = null,
       sign,
       time,
-      section: string = 'API',
+      section = 'API',
       message = ''
 
     const now = Date.now()
@@ -155,6 +155,7 @@ styles.forEach(function (item) {
       message = util.inspect(args[0], {depth: null, colors: true})
     } else {
       // @ts-ignore
+      // eslint-disable-next-line prefer-spread
       message = item.messageColor(util.format.apply(util, args))
     }
 
