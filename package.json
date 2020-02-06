@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "private": false,
   "scripts": {
-    "lint": "eslint --ext .ts ./src ./test/server",
+    "lint": "eslint --ext .ts ./src ./test",
     "clean": "rm -rf ./dist ./coverage ./.nyc_output",
     "test": "VERBOSITY=0 mocha",
     "test:watch": "yarn test -- --watch",
