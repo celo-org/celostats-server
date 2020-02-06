@@ -1,9 +1,7 @@
 import { cfg, trusted } from "./utils/config"
 import { Stats } from "./interfaces/Stats";
 import { Block } from "./interfaces/Block";
-import { Validator } from "./interfaces/Validator";
 import { Pending } from "./interfaces/Pending";
-import { NodeInfo } from "./interfaces/NodeInfo"
 import { BasicStatsResponse } from "./interfaces/BasicStatsResponse";
 import { Latency } from "./interfaces/Latency";
 import { BlockStats } from "./interfaces/BlockStats";
