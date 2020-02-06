@@ -1,6 +1,6 @@
 import assert from "assert"
-import Node from "../../src/server/Node";
-import Nodes from "../../src/server/Nodes";
+import Node from "../src/Node";
+import Nodes from "../src/Nodes";
 
 describe('Nodes', () => {
 
