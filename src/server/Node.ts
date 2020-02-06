@@ -1,9 +1,7 @@
 import { cfg, trusted } from "./utils/config"
 import { Stats } from "./interfaces/Stats";
 import { Block } from "./interfaces/Block";
-import { Validator } from "./interfaces/Validator";
 import { Pending } from "./interfaces/Pending";
-import { NodeInfo } from "./interfaces/NodeInfo"
 import { BasicStatsResponse } from "./interfaces/BasicStatsResponse";
 import { Latency } from "./interfaces/Latency";
 import { BlockStats } from "./interfaces/BlockStats";
@@ -35,8 +33,12 @@ export default class Node {
     contact: null
   }
 
-  private stats: Stats = {
+  private readonly stats: Stats = {
+    name: null,
+    registered: false,
+    signer: null,
     active: false,
+    clientTime: null,
     mining: false,
     elected: false,
     proxy: false,
@@ -77,7 +79,7 @@ export default class Node {
     uptime: null
   }
 
-  private uptime: Uptime = {
+  private readonly uptime: Uptime = {
     started: null,
     up: null,
     down: null,
@@ -279,6 +281,7 @@ export default class Node {
       id: this.getId(),
       name: this.info.name,
       stats: {
+        registered: this.stats.registered,
         active: this.stats.active,
         mining: this.stats.mining,
         elected: this.stats.elected,
@@ -334,6 +337,7 @@ export default class Node {
     return {
       id: this.getId(),
       stats: {
+        registered: this.stats.registered,
         active: this.stats.active,
         mining: this.stats.mining,
         elected: this.stats.elected,
@@ -353,6 +357,7 @@ export default class Node {
       id: this.getId(),
       info: this.info,
       stats: {
+        registered: this.stats.registered,
         active: this.stats.active,
         mining: this.stats.mining,
         elected: this.stats.elected,
@@ -371,7 +376,7 @@ export default class Node {
     }
   }
 
-  private calculateUptime() {
+  private calculateUptime(): number {
     if (this.uptime.lastUpdate === this.uptime.started) {
       return 100
     }
@@ -381,7 +386,7 @@ export default class Node {
 
   private setPropagationHistory(
     propagationHistory: number[]
-  ) {
+  ): boolean {
     // anything new?
     if (deepEqual(propagationHistory, this.stats.propagationHistory)) {
       // no, nothing to set

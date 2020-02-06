@@ -4,6 +4,6 @@ import { BlockBase } from "./BlockBase"
 
 export interface Block extends BlockBase {
   validators: Validators
-  transactions: Transaction[]
-  uncles: any[]
+  readonly transactions: Transaction[]
+  readonly uncles: any[]
 }
