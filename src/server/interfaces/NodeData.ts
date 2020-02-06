@@ -1,8 +1,8 @@
 export interface NodeData {
   // node ip
-  ip: string
+  readonly ip: string
   // node spark id
-  spark: string
+  readonly spark: string
   // node latency
-  latency: number
+  readonly latency: number
 }

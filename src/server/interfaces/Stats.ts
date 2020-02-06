@@ -1,15 +1,15 @@
-import { StatsBase } from "./StatsBase";
-import { Block } from "./Block";
-import { Info } from "./Info";
-
-export interface Stats extends StatsBase {
-  propagationAvg?: number
-  propagationHistory?: number[]
-  name?: string
-  registered?: boolean
-  signer?: string
+export interface Stats {
+  active: boolean
+  mining: boolean
+  elected: boolean
+  proxy: boolean
   pending: number
-  block: Block
-  clientTime?: number
-  info?: Info
+  hashrate: number
+  registered: boolean
+  syncing: boolean
+  peers: number
+  propagationAvg: number
+  gasPrice: number
+  latency: number
+  uptime: number
 }

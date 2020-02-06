@@ -1,7 +1,7 @@
 export interface PropagationTime {
-  node: string,
-  trusted: boolean,
+  readonly node: string,
+  readonly trusted: boolean,
   fork: number,
-  received: number,
+  readonly received: number,
   propagation: number
 }

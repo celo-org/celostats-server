@@ -1,4 +1,4 @@
 export interface Latency {
-  id: string,
-  latency: number
+  readonly id: string,
+  readonly latency: number
 }

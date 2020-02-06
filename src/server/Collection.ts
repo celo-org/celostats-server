@@ -6,12 +6,13 @@ import { Pending } from "./interfaces/Pending";
 import { Latency } from "./interfaces/Latency";
 import { ChartData } from "./interfaces/ChartData";
 import { BlockStats } from "./interfaces/BlockStats";
-import { BasicStatsResponse } from "./interfaces/BasicStatsResponse";
+import { StatsResponse } from "./interfaces/StatsResponse";
 import { NodeStats } from "./interfaces/NodeStats";
 import { Block } from "./interfaces/Block";
 import { NodeInformation } from "./interfaces/NodeInformation";
 import { ValidatorData } from "./interfaces/ValidatorData"
 import { NodeDetails } from "./interfaces/NodeDetails"
+import { NodeSummary } from "./interfaces/NodeSummary"
 
 export default class Collection {
 
@@ -84,7 +85,7 @@ export default class Collection {
     }
   }
 
-  public getAll(): Node[] {
+  public getAll(): NodeSummary[] {
     return this.nodes.all()
   }
 
@@ -106,11 +107,11 @@ export default class Collection {
   public updateStats(
     id: string,
     stats: Stats,
-  ): BasicStatsResponse {
+  ): StatsResponse {
     const node: Node = this.nodes.getNodeById(id)
 
     if (node) {
-      return node.setBasicStats(stats)
+      return node.setStats(stats)
     }
   }
 
@@ -132,7 +133,7 @@ export default class Collection {
 
     if (node) {
       node.setState(false)
-      return node.getStats()
+      return node.getNodeStats()
     }
   }
 

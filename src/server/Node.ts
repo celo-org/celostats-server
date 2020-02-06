@@ -1,10 +1,8 @@
+import deepEqual from "deep-equal";
 import { cfg, trusted } from "./utils/config"
-import { Stats } from "./interfaces/Stats";
 import { Block } from "./interfaces/Block";
-import { Validator } from "./interfaces/Validator";
 import { Pending } from "./interfaces/Pending";
-import { NodeInfo } from "./interfaces/NodeInfo"
-import { BasicStatsResponse } from "./interfaces/BasicStatsResponse";
+import { StatsResponse } from "./interfaces/StatsResponse";
 import { Latency } from "./interfaces/Latency";
 import { BlockStats } from "./interfaces/BlockStats";
 import { Info } from "./interfaces/Info";
@@ -12,15 +10,17 @@ import { Uptime } from "./interfaces/Uptime";
 import { NodeStats } from "./interfaces/NodeStats";
 import { NodeDetails } from "./interfaces/NodeDetails";
 import { NodeInformation } from "./interfaces/NodeInformation";
-import deepEqual from "deep-equal";
 import { ValidatorData } from "./interfaces/ValidatorData"
+import { BlockSummary } from "./interfaces/BlockSummary"
+import { NodeSummary } from "./interfaces/NodeSummary"
+import { Stats } from "./interfaces/Stats"
 
 export default class Node {
 
-  private readonly id: string = null
-  private spark: string
+  private readonly _id: string = null
+  private _spark: string
 
-  private info: Info = {
+  private _info: Info = {
     api: null,
     client: null,
     net: null,
@@ -35,8 +35,38 @@ export default class Node {
     contact: null
   }
 
-  private stats: Stats = {
+  private _propagationHistory: number[] = []
+
+  private _block: Block = {
+    number: null,
+    epochSize: null,
+    blockRemain: null,
+    hash: null,
+    parentHash: null,
+    difficulty: null,
+    totalDifficulty: null,
+    gasLimit: null,
+    gasUsed: null,
+    timestamp: null,
+    time: null,
+    miner: null,
+    validators: {
+      registered: [],
+      elected: []
+    },
+    trusted: false,
+    arrival: null,
+    received: null,
+    arrived: null,
+    fork: null,
+    propagation: null,
+    transactions: [],
+    uncles: []
+  }
+
+  private _stats: Stats = {
     active: false,
+    registered: false,
     mining: false,
     elected: false,
     proxy: false,
@@ -44,40 +74,13 @@ export default class Node {
     peers: null,
     pending: null,
     gasPrice: null,
-    block: {
-      number: null,
-      epochSize: null,
-      blockRemain: null,
-      hash: null,
-      parentHash: null,
-      difficulty: null,
-      totalDifficulty: null,
-      gasLimit: null,
-      gasUsed: null,
-      timestamp: null,
-      time: null,
-      miner: null,
-      validators: {
-        registered: [],
-        elected: []
-      },
-      trusted: false,
-      arrival: null,
-      received: null,
-      arrived: null,
-      fork: null,
-      propagation: null,
-      transactions: [],
-      uncles: []
-    },
     syncing: false,
     propagationAvg: null,
-    propagationHistory: [],
     latency: null,
     uptime: null
   }
 
-  private uptime: Uptime = {
+  private _uptime: Uptime = {
     started: null,
     up: null,
     down: null,
@@ -85,7 +88,7 @@ export default class Node {
     lastUpdate: null
   }
 
-  private validatorData: ValidatorData = {
+  private _validatorData: ValidatorData = {
     blsPublicKey: null,
     ecdsaPublicKey: null,
     score: null,
@@ -96,23 +99,23 @@ export default class Node {
   }
 
   public constructor(id: string) {
-    this.id = id
+    this._id = id
   }
 
   public setNodeInformation(
     nodeInformation: NodeInformation
   ): NodeDetails {
     // preset propagation history
-    this.stats.propagationHistory.fill(-1, 0, cfg.maxPropagationHistory)
+    this._propagationHistory.fill(-1, 0, cfg.maxPropagationHistory)
 
     // activate node
-    if (this.uptime.started === null) {
+    if (this._uptime.started === null) {
       this.setState(true)
     }
 
     // unpack latency
     if (nodeInformation.nodeData.latency) {
-      this.stats.latency = nodeInformation.nodeData.latency
+      this._stats.latency = nodeInformation.nodeData.latency
     }
 
     // do we have info in the stats?
@@ -121,30 +124,30 @@ export default class Node {
       nodeInformation.stats.info
     ) {
       // yep, set it
-      this.info = nodeInformation.stats.info
+      this._info = nodeInformation.stats.info
 
       // can this node update the history?
       if (nodeInformation.stats.info.canUpdateHistory) {
-        this.info.canUpdateHistory = nodeInformation.stats.info.canUpdateHistory || false
+        this._info.canUpdateHistory = nodeInformation.stats.info.canUpdateHistory || false
       }
     }
 
     // store spark
-    this.spark = nodeInformation.nodeData.spark
+    this._spark = nodeInformation.nodeData.spark
 
     return this.getInfo()
   }
 
   public setValidatorData(data: ValidatorData) {
-    this.validatorData = data
+    this._validatorData = data
   }
 
   public getSpark() {
-    return this.spark;
+    return this._spark;
   }
 
   public getId(): string {
-    return this.id
+    return this._id
   }
 
   public getTrusted(): boolean {
@@ -158,23 +161,23 @@ export default class Node {
     if (block && !isNaN(block.number)) {
 
       const propagationHistoryChanged =
-        !deepEqual(propagationHistory, this.stats.propagationHistory)
+        !deepEqual(propagationHistory, this._propagationHistory)
 
       const blockDataChanged =
-        !deepEqual(block, this.stats.block)
+        !deepEqual(block, this._block)
 
       if (propagationHistoryChanged || blockDataChanged) {
 
         this.setPropagationHistory(propagationHistory)
 
-        const blockNumberChanged = block.number !== this.stats.block.number
-        const blockHashChanged = block.hash !== this.stats.block.hash
+        const blockNumberChanged = block.number !== this._block.number
+        const blockHashChanged = block.hash !== this._block.hash
 
         if (blockNumberChanged || blockHashChanged) {
           if (!block.validators.registered) {
-            block.validators = this.stats.block.validators
+            block.validators = this._block.validators
           }
-          this.stats.block = block
+          this._block = block
 
           return this.getBlockStats()
         }
@@ -188,43 +191,42 @@ export default class Node {
     // bad request
     if (stats && !isNaN(stats.pending)) {
       // nothing pending
-      if (stats.pending !== this.stats.pending) {
+      if (stats.pending !== this._stats.pending) {
         // pending
-        this.stats.pending = stats.pending
+        this._stats.pending = stats.pending
 
         return {
           id: this.getId(),
-          pending: this.stats.pending
+          pending: this._stats.pending
         }
       }
     }
   }
 
-  public setBasicStats(
+  public setStats(
     stats: Stats,
-  ): BasicStatsResponse {
+  ): StatsResponse {
     if (stats) {
-      if (!deepEqual(stats,
-        {
-          active: this.stats.active,
-          mining: this.stats.mining,
-          elected: this.stats.elected,
-          hashrate: this.stats.hashrate,
-          peers: this.stats.peers,
-          gasPrice: this.stats.gasPrice,
-          uptime: this.stats.uptime
-        })
+      if (!deepEqual(stats, {
+        active: this._stats.active,
+        mining: this._stats.mining,
+        elected: this._stats.elected,
+        hashrate: this._stats.hashrate,
+        peers: this._stats.peers,
+        gasPrice: this._stats.gasPrice,
+        uptime: this._stats.uptime
+      })
       ) {
-        this.stats.active = stats.active
-        this.stats.mining = stats.mining
-        this.stats.elected = stats.elected
-        this.stats.syncing = stats.syncing || false
-        this.stats.hashrate = stats.hashrate
-        this.stats.peers = stats.peers
-        this.stats.gasPrice = stats.gasPrice
-        this.stats.uptime = stats.uptime
+        this._stats.active = stats.active
+        this._stats.mining = stats.mining
+        this._stats.elected = stats.elected
+        this._stats.syncing = stats.syncing || false
+        this._stats.hashrate = stats.hashrate
+        this._stats.peers = stats.peers
+        this._stats.gasPrice = stats.gasPrice
+        this._stats.uptime = stats.uptime
 
-        return this.getBasicStats()
+        return this.getStatsResponse()
       }
     }
   }
@@ -233,8 +235,8 @@ export default class Node {
     latency: number
   ): Latency {
     if (!isNaN(latency)) {
-      if (latency !== this.stats.latency) {
-        this.stats.latency = latency
+      if (latency !== this._stats.latency) {
+        this._stats.latency = latency
 
         return {
           id: this.getId(),
@@ -249,101 +251,134 @@ export default class Node {
   ) {
     const now = Date.now()
 
-    if (this.uptime.started !== null) {
-      if (this.uptime.lastStatus === active) {
-        this.uptime[(active ? 'up' : 'down')] += now - this.uptime.lastUpdate
+    if (this._uptime.started !== null) {
+      if (this._uptime.lastStatus === active) {
+        this._uptime[(active ? 'up' : 'down')] += now - this._uptime.lastUpdate
       } else {
-        this.uptime[(active ? 'down' : 'up')] += now - this.uptime.lastUpdate
+        this._uptime[(active ? 'down' : 'up')] += now - this._uptime.lastUpdate
       }
     } else {
-      this.uptime.started = now
+      this._uptime.started = now
     }
 
-    this.uptime.lastStatus = active
-    this.uptime.lastUpdate = now
+    this._uptime.lastStatus = active
+    this._uptime.lastUpdate = now
 
-    this.stats.active = active
-    this.stats.uptime = this.calculateUptime()
+    this._stats.active = active
+    this._stats.uptime = this.calculateUptime()
   }
 
   public isInactiveAndOld() {
     return (
-      !this.uptime.lastStatus &&
-      this.uptime.lastUpdate !== null &&
-      (Date.now() - this.uptime.lastUpdate) > cfg.maxInactiveTime
+      !this._uptime.lastStatus &&
+      this._uptime.lastUpdate !== null &&
+      (Date.now() - this._uptime.lastUpdate) > cfg.maxInactiveTime
     )
   }
 
-  public getStats(): NodeStats {
+  public getSummary(): NodeSummary {
     return {
       id: this.getId(),
-      name: this.info.name,
+      validatorData: this._validatorData,
       stats: {
-        active: this.stats.active,
-        mining: this.stats.mining,
-        elected: this.stats.elected,
-        proxy: this.stats.proxy,
-        syncing: this.stats.syncing,
-        hashrate: this.stats.hashrate,
-        peers: this.stats.peers,
-        gasPrice: this.stats.gasPrice,
-        block: this.stats.block,
-        propagationAvg: this.stats.propagationAvg,
-        uptime: this.stats.uptime,
-        pending: this.stats.pending,
-        latency: this.stats.latency
+        registered: this._stats.registered,
+        active: this._stats.active,
+        mining: this._stats.mining,
+        elected: this._stats.elected,
+        proxy: this._stats.proxy,
+        block: this.getBlockSummary(),
+        hashrate: this._stats.hashrate,
+        peers: this._stats.peers,
+        pending: this._stats.pending,
+        gasPrice: this._stats.gasPrice,
+        syncing: this._stats.syncing,
+        propagationAvg: this._stats.propagationAvg,
+        latency: this._stats.latency,
+        uptime: this._stats.uptime
       },
-      history: this.stats.propagationHistory
+      info: this._info,
+      uptime: this._uptime
+    }
+  }
+
+  public getNodeStats(): NodeStats {
+    return {
+      id: this.getId(),
+      name: this._info.name,
+      stats: {
+        registered: this._stats.registered,
+        active: this._stats.active,
+        mining: this._stats.mining,
+        elected: this._stats.elected,
+        proxy: this._stats.proxy,
+        syncing: this._stats.syncing,
+        hashrate: this._stats.hashrate,
+        peers: this._stats.peers,
+        gasPrice: this._stats.gasPrice,
+        block: this.getBlockSummary(),
+        propagationAvg: this._stats.propagationAvg,
+        uptime: this._stats.uptime,
+        pending: this._stats.pending,
+        latency: this._stats.latency
+      },
+      history: this._propagationHistory
+    }
+  }
+
+  private getBlockSummary(): BlockSummary {
+    return {
+      transactions: this._block.transactions.length,
+      validators: {
+        elected: this._block.validators.elected.length,
+        registered: this._block.validators.elected.length,
+      },
+      epochSize: this._block.epochSize,
+      blockRemain: this._block.blockRemain,
+      number: this._block.number,
+      hash: this._block.hash,
+      parentHash: this._block.parentHash,
+      miner: this._block.miner,
+      difficulty: this._block.difficulty,
+      totalDifficulty: this._block.totalDifficulty,
+      gasLimit: this._block.gasLimit,
+      gasUsed: this._block.gasUsed,
+      timestamp: this._block.timestamp,
+      time: this._block.time,
+      arrival: this._block.arrival,
+      received: this._block.received,
+      trusted: this._block.trusted,
+      arrived: this._block.arrived,
+      fork: this._block.fork,
+      propagation: this._block.propagation
     }
   }
 
   private getBlockStats(): BlockStats {
     return {
       id: this.getId(),
-      block: {
-        transactions: this.stats.block.transactions.length,
-        validators: {
-          elected: this.stats.block.validators.elected.length,
-          registered: this.stats.block.validators.elected.length,
-        },
-        epochSize: this.stats.block.epochSize,
-        blockRemain: this.stats.block.blockRemain,
-        number: this.stats.block.number,
-        hash: this.stats.block.hash,
-        parentHash: this.stats.block.parentHash,
-        miner: this.stats.block.miner,
-        difficulty: this.stats.block.difficulty,
-        totalDifficulty: this.stats.block.totalDifficulty,
-        gasLimit: this.stats.block.gasLimit,
-        gasUsed: this.stats.block.gasUsed,
-        timestamp: this.stats.block.timestamp,
-        time: this.stats.block.time,
-        arrival: this.stats.block.arrival,
-        received: this.stats.block.received,
-        trusted: this.stats.block.trusted,
-        arrived: this.stats.block.arrived,
-        fork: this.stats.block.fork,
-        propagation: this.stats.block.propagation
-      },
-      propagationAvg: this.stats.propagationAvg,
-      history: this.stats.propagationHistory
+      block: this.getBlockSummary(),
+      propagationAvg: this._stats.propagationAvg,
+      history: this._propagationHistory
     }
   }
 
-  private getBasicStats(): BasicStatsResponse {
+  private getStatsResponse(): StatsResponse {
     return {
       id: this.getId(),
       stats: {
-        active: this.stats.active,
-        mining: this.stats.mining,
-        elected: this.stats.elected,
-        proxy: this.stats.proxy,
-        syncing: this.stats.syncing,
-        hashrate: this.stats.hashrate,
-        peers: this.stats.peers,
-        gasPrice: this.stats.gasPrice,
-        uptime: this.stats.uptime,
-        latency: this.stats.latency
+        registered: this._stats.registered,
+        active: this._stats.active,
+        pending: this._stats.pending,
+        mining: this._stats.mining,
+        elected: this._stats.elected,
+        proxy: this._stats.proxy,
+        syncing: this._stats.syncing,
+        hashrate: this._stats.hashrate,
+        propagationAvg: this._stats.propagationAvg,
+        peers: this._stats.peers,
+        gasPrice: this._stats.gasPrice,
+        uptime: this._stats.uptime,
+        latency: this._stats.latency
       }
     }
   }
@@ -351,62 +386,62 @@ export default class Node {
   private getInfo(): NodeDetails {
     return {
       id: this.getId(),
-      info: this.info,
+      info: this._info,
       stats: {
-        active: this.stats.active,
-        mining: this.stats.mining,
-        elected: this.stats.elected,
-        proxy: this.stats.proxy,
-        syncing: this.stats.syncing,
-        hashrate: this.stats.hashrate,
-        peers: this.stats.peers,
-        gasPrice: this.stats.gasPrice,
-        block: this.stats.block,
-        propagationAvg: this.stats.propagationAvg,
-        uptime: this.stats.uptime,
-        latency: this.stats.latency,
-        pending: this.stats.pending,
+        registered: this._stats.registered,
+        active: this._stats.active,
+        mining: this._stats.mining,
+        elected: this._stats.elected,
+        proxy: this._stats.proxy,
+        syncing: this._stats.syncing,
+        hashrate: this._stats.hashrate,
+        peers: this._stats.peers,
+        gasPrice: this._stats.gasPrice,
+        block: this.getBlockSummary(),
+        propagationAvg: this._stats.propagationAvg,
+        uptime: this._stats.uptime,
+        latency: this._stats.latency,
+        pending: this._stats.pending,
       },
-      history: this.stats.propagationHistory,
+      history: this._propagationHistory,
     }
   }
 
   private calculateUptime() {
-    if (this.uptime.lastUpdate === this.uptime.started) {
+    if (this._uptime.lastUpdate === this._uptime.started) {
       return 100
     }
 
-    return Math.round(this.uptime.up / (this.uptime.lastUpdate - this.uptime.started) * 100)
+    return Math.round(this._uptime.up / (this._uptime.lastUpdate - this._uptime.started) * 100)
   }
 
   private setPropagationHistory(
     propagationHistory: number[]
   ) {
     // anything new?
-    if (deepEqual(propagationHistory, this.stats.propagationHistory)) {
+    if (deepEqual(propagationHistory, this._propagationHistory)) {
       // no, nothing to set
       return false
     }
 
     if (!propagationHistory) {
-      this.stats.propagationHistory = [].fill(-1, 0, cfg.maxPropagationHistory)
-      this.stats.propagationAvg = 0
+      this._propagationHistory = [].fill(-1, 0, cfg.maxPropagationHistory)
+      this._stats.propagationAvg = 0
 
       return true
     }
 
-    this.stats.propagationHistory = propagationHistory
+    this._propagationHistory = propagationHistory
 
-    const positives: number[] = this.stats.propagationHistory
+    const positives: number[] = this._propagationHistory
       .filter((p: number) => {
         return p >= 0
       })
 
     const sum = positives.reduce((sum, h) => sum + h, 0)
 
-    this.stats.propagationAvg = (positives.length > 0 ? Math.round(sum / positives.length) : 0)
+    this._stats.propagationAvg = (positives.length > 0 ? Math.round(sum / positives.length) : 0)
 
     return true
   }
 }
-
