@@ -2,16 +2,16 @@ import History from "./History";
 import Node from "./Node"
 import Nodes from "./Nodes";
 import { Stats } from "./interfaces/Stats";
-import { Validator } from "./interfaces/Validator";
 import { Pending } from "./interfaces/Pending";
 import { Latency } from "./interfaces/Latency";
-import { NodeInfo } from "./interfaces/NodeInfo";
 import { ChartData } from "./interfaces/ChartData";
 import { BlockStats } from "./interfaces/BlockStats";
 import { BasicStatsResponse } from "./interfaces/BasicStatsResponse";
 import { NodeStats } from "./interfaces/NodeStats";
 import { Block } from "./interfaces/Block";
 import { NodeInformation } from "./interfaces/NodeInformation";
+import { ValidatorData } from "./interfaces/ValidatorData"
+import { NodeDetails } from "./interfaces/NodeDetails"
 
 export default class Collection {
 
@@ -19,47 +19,40 @@ export default class Collection {
   private history: History = new History()
 
   // todo: move to history
-  private highestBlock: number = 1
+  private highestBlock = 1
 
   public addNode(
-    nodeInformation: NodeInformation,
-    callback: { (err: Error | string, nodeInfo: NodeInfo): void }
-  ): void {
-    const node: Node = this.nodes.getNodeOrNew(
-      (n: Node) => n.getValidatorData().signer === nodeInformation.nodeData.id,
+    id: string,
+    nodeInformation: NodeInformation
+  ): NodeDetails {
+    let node: Node = this.nodes.getNodeById(id)
+
+    if (!node) {
+      node = this.nodes.createEmptyNode(id)
+    }
+
+    return node.setNodeInformation(
       nodeInformation
-    )
-    node.setInfo(
-      nodeInformation,
-      callback
     )
   }
 
   public addBlock(
     id: string,
-    block: Block,
-    callbackUpdatedStats: { (err: Error | string, blockStats: BlockStats): void },
-    callbackHighestBlock: { (err: Error | string, highestBlock: number): void }
-  ): void {
-    const node: Node = this.nodes.getNode((n: Node) => n.getValidatorData().signer === id)
+    block: Block
+  ): {
+    highestBlock: number | null,
+    blockStats: BlockStats | null
+  } {
+    const node: Node = this.nodes.getNodeById(id)
 
-    if (!node) {
-      console.error(
-        this.nodes.map(node => {
-          console.log(node.getValidatorData().signer)
-        })
-      )
-      callbackUpdatedStats(`Node ${id} not found`, null)
-    } else {
+    if (node) {
 
       const newBlock = this.history.addBlock(
-        block, id,
+        id, block,
         node.getTrusted()
       )
 
-      if (!newBlock) {
-        callbackUpdatedStats('Block undefined', null)
-      } else {
+      if (newBlock) {
         const propagationHistory: number[] = this.history.getNodePropagation(id)
 
         block.arrived = newBlock.block.arrived
@@ -67,13 +60,16 @@ export default class Collection {
         block.propagation = newBlock.block.propagation
         block.validators = newBlock.block.validators
 
+        let highestBlock = null
         if (newBlock.block.number > this.highestBlock) {
           this.highestBlock = newBlock.block.number
-
-          callbackHighestBlock(null, this.highestBlock)
+          highestBlock = this.highestBlock
         }
 
-        node.setBlock(block, propagationHistory, callbackUpdatedStats)
+        return {
+          highestBlock,
+          blockStats: node.setBlock(block, propagationHistory)
+        }
       }
     }
   }
@@ -98,86 +94,64 @@ export default class Collection {
 
   public updatePending(
     id: string,
-    stats: Stats,
-    callback: { (err: Error | string, pending: Pending | null): void }
-  ): void {
-    const node: Node = this.nodes.getNode((n: Node) => n.getValidatorData().signer === id)
+    stats: Stats
+  ): Pending {
+    const node: Node = this.nodes.getNodeById(id)
 
-    if (!node) {
-      return
+    if (node) {
+      return node.setPending(stats)
     }
-
-    node.setPending(stats, callback)
   }
 
   public updateStats(
     id: string,
     stats: Stats,
-    callback: { (err: Error | string, basicStats: BasicStatsResponse | null): void }
-  ): void {
-    const node: Node = this.nodes.getNode((n: Node) => n.getValidatorData().signer === id)
+  ): BasicStatsResponse {
+    const node: Node = this.nodes.getNodeById(id)
 
-    if (!node) {
-      callback('Node not found during update stats', null)
-    } else {
-      node.setBasicStats(stats, callback)
+    if (node) {
+      return node.setBasicStats(stats)
     }
   }
 
   public updateLatency(
     id: string,
     latency: number,
-    callback: { (err: Error | string, latency: Latency): void }
-  ): void {
-    const node: Node = this.nodes.getNode((n: Node) => n.getValidatorData().signer === id)
+  ): Latency {
+    const node: Node = this.nodes.getNodeById(id)
 
-    if (!node) {
-      return
+    if (node) {
+      return node.setLatency(latency)
     }
-
-    node.setLatency(latency, callback)
   }
 
   public setInactive(
-    spark: string,
-    callback: { (err: Error | string, stats: NodeStats): void }
-  ): void {
-    const node = this.nodes.getNode((n: Node) => n.getSpark() === spark)
+    spark: string
+  ): NodeStats {
+    const node = this.nodes.getNodeBySpark(spark)
 
-    if (!node) {
-      callback('Node not found during setting inactive', null)
-    } else {
+    if (node) {
       node.setState(false)
-      callback(null, node.getStats())
+      return node.getStats()
     }
   }
 
-  public getCharts(
-    callback: { (err: Error | string, charts: ChartData): void }
-  ): void {
+  public getCharts(): ChartData {
 
-    this.history.getCharts(callback);
+    return this.history.getCharts();
   }
 
   public setValidator(
-    validator: Validator,
-    isElected: boolean
+    id: string,
+    validator: ValidatorData
   ): void {
-    const search = (n: Node) => n.getId() === validator.address
-    const index: number = this.nodes.getIndex(search)
-    const node: Node = this.nodes.getNodeOrNew(search, validator)
 
-    if (index < 0) {
-      // only if new node
-      node.integrateValidatorData(validator)
+    let node: Node = this.nodes.getNodeById(id)
+
+    if (!node) {
+      node = this.nodes.createEmptyNode(id)
     }
 
     node.setValidatorData(validator)
-
-    if (isElected) {
-      node.setValidatorElected(true)
-    }
-
-    node.setValidatorRegistered(true)
   }
 }

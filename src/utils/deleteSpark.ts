@@ -16,7 +16,7 @@ export function deleteSpark(
         delete spark[key]
       })
 
-    for (let key in spark) {
+    for (const key in spark) {
       delete (spark[key])
     }
 

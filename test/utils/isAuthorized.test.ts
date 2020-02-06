@@ -25,11 +25,14 @@ describe('isAuthorized', () => {
       id: 'lorem ipsum'
     }
 
-    const proof: Proof = generateProof(stats)
-    // put fake sig
-    proof.signature = '0x' + new Array(130)
-      .fill('d', 0, 130)
-      .join('')
+    const proof: Proof = {
+      ...generateProof(stats),
+      // put fake sig
+      signature: '0x' + new Array(130)
+        .fill('d', 0, 130)
+        .join('')
+    }
+
     const result = isAuthorized(proof, stats)
 
     assert(!result)
@@ -43,9 +46,13 @@ describe('isAuthorized', () => {
 
     const proof: Proof = generateProof(stats)
 
-    // change the payload to force a different signature
-    stats.id = 'asdfg'
-    const result = isAuthorized(proof, stats)
+    const stats2 = {
+      ...stats,
+      // change the payload to force a different signature
+      id: 'asdfg'
+    }
+
+    const result = isAuthorized(proof, stats2)
 
     assert(!result)
   })
@@ -56,9 +63,11 @@ describe('isAuthorized', () => {
       id: 'lorem ipsum'
     }
 
-    const proof: Proof = generateProof(stats)
+    const proof: Proof = {
+      ...generateProof(stats),
+      address: 'lorem ipsum'
+    }
 
-    proof.address = 'lorem ipsum'
     trusted.push(proof.address)
 
     const result = isAuthorized(proof, stats)
@@ -72,9 +81,10 @@ describe('isAuthorized', () => {
       id: 'lorem ipsum'
     }
 
-    const proof: Proof = generateProof(stats)
-
-    proof.address = '0xuntrusted'
+    const proof: Proof = {
+      ...generateProof(stats),
+      address: '0xuntrusted'
+    }
 
     const result = isAuthorized(proof, stats)
 
