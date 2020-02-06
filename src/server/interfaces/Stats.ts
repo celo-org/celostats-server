@@ -5,8 +5,8 @@ export interface Stats extends StatsBase {
   propagationAvg: number
   propagationHistory?: number[]
   name?: string
+  readonly signer?: string
   pending: number
   block: Block
-  readonly signer?: string
   readonly clientTime?: number
 }
