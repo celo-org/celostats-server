@@ -8,6 +8,17 @@ steps:
       "."
     ]
     waitFor: ["-"]
+  - name: "gcr.io/cloud-builders/kubectl"
+    args: [
+      "set",
+      "image",
+      "deployment/baklavastaging-ethstats",
+      "ethstats=gcr.io/$PROJECT_ID/celostats-server:$BRANCH_NAME"
+    ]
+    env:
+    - "CLOUDSDK_COMPUTE_ZONE=us-west1-a"
+    - "CLOUDSDK_CONTAINER_CLUSTER=baklavastaging"
+    waitFor: ["docker"]
 timeout: 1200s
 images:
   - "gcr.io/$PROJECT_ID/celostats-server:$BRANCH_NAME"
