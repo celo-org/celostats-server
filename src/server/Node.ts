@@ -66,9 +66,7 @@ export default class Node {
 
   private _stats: Stats = {
     active: false,
-    registered: false,
     mining: false,
-    elected: false,
     proxy: false,
     hashrate: null,
     peers: null,
@@ -215,7 +213,6 @@ export default class Node {
       if (!deepEqual(stats, {
         active: this._stats.active,
         mining: this._stats.mining,
-        elected: this._stats.elected,
         hashrate: this._stats.hashrate,
         peers: this._stats.peers,
         gasPrice: this._stats.gasPrice,
@@ -224,7 +221,6 @@ export default class Node {
       ) {
         this._stats.active = stats.active
         this._stats.mining = stats.mining
-        this._stats.elected = stats.elected
         this._stats.syncing = stats.syncing || false
         this._stats.hashrate = stats.hashrate
         this._stats.peers = stats.peers
@@ -286,10 +282,8 @@ export default class Node {
       id: this.getId(),
       validatorData: this._validatorData,
       stats: {
-        registered: this._stats.registered,
         active: this._stats.active,
         mining: this._stats.mining,
-        elected: this._stats.elected,
         proxy: this._stats.proxy,
         block: this.getBlockSummary(),
         hashrate: this._stats.hashrate,
@@ -311,10 +305,8 @@ export default class Node {
       id: this.getId(),
       name: this._info.name,
       stats: {
-        registered: this._stats.registered,
         active: this._stats.active,
         mining: this._stats.mining,
-        elected: this._stats.elected,
         proxy: this._stats.proxy,
         syncing: this._stats.syncing,
         hashrate: this._stats.hashrate,
@@ -371,11 +363,9 @@ export default class Node {
     return {
       id: this.getId(),
       stats: {
-        registered: this._stats.registered,
         active: this._stats.active,
         pending: this._stats.pending,
         mining: this._stats.mining,
-        elected: this._stats.elected,
         proxy: this._stats.proxy,
         syncing: this._stats.syncing,
         hashrate: this._stats.hashrate,
@@ -393,10 +383,8 @@ export default class Node {
       id: this.getId(),
       info: this._info,
       stats: {
-        registered: this._stats.registered,
         active: this._stats.active,
         mining: this._stats.mining,
-        elected: this._stats.elected,
         proxy: this._stats.proxy,
         syncing: this._stats.syncing,
         hashrate: this._stats.hashrate,
