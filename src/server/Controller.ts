@@ -212,7 +212,8 @@ export default class Controller {
           elected
         }
 
-        const id = validator.address
+        // correlate via signer here
+        const id = v.signer
         this.collection.setValidator(id, v)
       })
     }
