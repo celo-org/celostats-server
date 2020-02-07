@@ -55,15 +55,19 @@ function blockTimeClass (diff) {
 }
 
 function latencyFilter (node) {
-  if (_.isUndefined(node.readable))
+  if (_.isNil(node.readable)) {
     node.readable = {};
-
-  if (_.isUndefined(node.stats)) {
-    node.readable.latencyClass = 'text-danger';
-    node.readable.latency = 'offline';
   }
 
-  if (node.stats.active === false || isNaN(node.stats.latency)) {
+  if (
+    // we do not have stats
+    _.isNil(node.stats) || (
+      // or it is inactive
+      !node.stats.active ||
+      // or latency is unset or lower 0
+      (_.isNil(node.stats.latency) || node.stats.latency < 0)
+    )
+  ) {
     node.readable.latencyClass = 'text-danger';
     node.readable.latency = 'offline';
   } else {
