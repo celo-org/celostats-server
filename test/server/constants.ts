@@ -50,10 +50,8 @@ export const dummyBlock: BlockSummary = {
 export const dummyStats: Stats = {
   uptime: 0,
   mining: false,
-  registered: false,
   proxy: false,
   gasPrice: 0,
-  elected: false,
   active: false,
   hashrate: 0,
   syncing: false,
