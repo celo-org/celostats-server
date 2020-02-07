@@ -194,7 +194,7 @@ angular.module('netStatsApp.filters', [])
   })
   .filter('hashFilter', ['$sce', '$filter', function ($sce, filter) {
     function hashFilter (hash, number) {
-      if (typeof hash === 'undefined')
+      if (!hash || typeof hash === 'undefined')
         return '?';
 
       if (hash.substr(0, 2) === '0x') {
