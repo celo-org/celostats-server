@@ -30,7 +30,7 @@ export default class Node {
     os_v: null,
     port: null,
     protocol: null,
-    canUpdateHistory: false,
+    canUpdateHistory: null,
     name: null,
     contact: null
   }
@@ -54,7 +54,7 @@ export default class Node {
       registered: [],
       elected: []
     },
-    trusted: false,
+    trusted: null,
     arrival: null,
     received: null,
     arrived: null,
@@ -65,16 +65,16 @@ export default class Node {
   }
 
   private _stats: Stats = {
-    active: false,
-    registered: false,
-    mining: false,
-    elected: false,
-    proxy: false,
+    active: null,
+    registered: null,
+    mining: null,
+    elected: null,
+    proxy: null,
     hashrate: null,
     peers: null,
     pending: null,
     gasPrice: null,
-    syncing: false,
+    syncing: null,
     propagationAvg: null,
     latency: null,
     uptime: null
@@ -84,7 +84,7 @@ export default class Node {
     started: null,
     up: null,
     down: null,
-    lastStatus: false,
+    lastStatus: null,
     lastUpdate: null
   }
 
@@ -93,8 +93,8 @@ export default class Node {
     ecdsaPublicKey: null,
     score: null,
     affiliation: null,
-    registered: false,
-    elected: false,
+    registered: null,
+    elected: null,
     signer: null
   }
 
@@ -143,6 +143,7 @@ export default class Node {
     this.setState(true)
     // set data
     this._validatorData = data
+
     // replicate to stats
     this._stats.elected = data.elected
     this._stats.registered = data.registered
@@ -235,7 +236,8 @@ export default class Node {
       ) {
         this._stats.active = stats.active
         this._stats.mining = stats.mining
-        this._stats.elected = stats.elected
+        // only set this here when unset, usually comes from validator sets
+        this._stats.elected = this._stats.elected === null ? stats.elected : this._stats.elected
         this._stats.proxy = stats.proxy
         this._stats.hashrate = stats.hashrate
         this._stats.syncing = stats.syncing || false
