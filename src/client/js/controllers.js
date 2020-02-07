@@ -88,9 +88,11 @@ netStatsApp.controller('StatsCtrl', function (
     $localStorage.pinned = $scope.pinned;
   };
 
-  setInterval(function () {
-    $scope.$apply();
-  }, 750);
+  $scope.getDisplayNodes = function() {
+    return _.filter($scope.nodes, function (node) {
+      return !_.isUndefined(node.info.name)
+    })
+  };
 
   $scope.getNumber = function (num) {
     return new Array(num);
@@ -124,6 +126,10 @@ netStatsApp.controller('StatsCtrl', function (
     .on('client-latency', function (data) {
       $scope.latency = data.latency;
     });
+
+  setInterval(function () {
+    $scope.$apply();
+  }, 750);
 
   function handleInit (data) {
     $scope.nodes = data;

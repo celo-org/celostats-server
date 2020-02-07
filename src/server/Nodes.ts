@@ -36,7 +36,6 @@ export default class Nodes extends Array<Node> {
     this.removeOldNodes()
 
     return this
-      .filter((node: Node) => node.getName() !== null)
       .filter((node: Node, index: number, self: Node[]) => self.findIndex(
         (t: Node) => {
           return (t.getId() === node.getId())
