@@ -63,7 +63,7 @@ function latencyFilter (node) {
     node.readable.latency = 'offline';
   }
 
-  if (node.stats.active === false || !node.stats.latency) {
+  if (node.stats.active === false || isNaN(node.stats.latency)) {
     node.readable.latencyClass = 'text-danger';
     node.readable.latency = 'offline';
   } else {
