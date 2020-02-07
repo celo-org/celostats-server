@@ -225,8 +225,9 @@ export default class Node {
         active: this._stats.active,
         mining: this._stats.mining,
         elected: this._stats.elected,
-        registered: this._stats.registered,
+        proxy: this._stats.proxy,
         hashrate: this._stats.hashrate,
+        syncing: this._stats.syncing,
         peers: this._stats.peers,
         gasPrice: this._stats.gasPrice,
         uptime: this._stats.uptime
@@ -235,10 +236,9 @@ export default class Node {
         this._stats.active = stats.active
         this._stats.mining = stats.mining
         this._stats.elected = stats.elected
-        this._stats.registered = stats.registered
         this._stats.proxy = stats.proxy
-        this._stats.syncing = stats.syncing || false
         this._stats.hashrate = stats.hashrate
+        this._stats.syncing = stats.syncing || false
         this._stats.peers = stats.peers
         this._stats.gasPrice = stats.gasPrice
         this._stats.uptime = stats.uptime
