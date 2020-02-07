@@ -124,7 +124,7 @@ block content
             th.th-validatorgroup
               i.icon-group(data-toggle="tooltip", data-placement="top", title="Validator Group", ng-click="orderTable(['validatorData.affiliation'], false)")
             th
-              i.icon-check-o(data-toggle="tooltip", data-placement="top", title="Elected", ng-click="orderTable(['validatorData.elected', 'validatorData.registered'], false)")
+              i.icon-check-o(data-toggle="tooltip", data-placement="top", title="Elected", ng-click="orderTable(['stats.elected', 'stats.registered'], false)")
             th
               i.icon-group(data-toggle="tooltip", data-placement="top", title="Peers", ng-click="orderTable(['-stats.peers'], false)")
             th
@@ -156,8 +156,8 @@ block content
             td.nodeInfo(rel="{{node.validatorData.affiliation}}")
               span(ng-bind-html="node.validatorData.affiliation || '' | addressFilter")
             td
-              span(data-toggle="tooltip", data-placement="top", data-html="true", data-original-title="{{node.validatorData | stakingString}}")
-                span(class="{{ node.validatorData | stakingClass }}", ng-bind-html="node.validatorData | stakingFilter")
+              span(data-toggle="tooltip", data-placement="top", data-html="true", data-original-title="{{node.stats | stakingString}}")
+                span(class="{{ node.stats | stakingClass }}", ng-bind-html="node.stats | stakingFilter")
             td(class="{{ node.stats.peers | peerClass : node.stats.active }}", style="padding-left: 11px;") {{node.stats.peers}}
             td(style="padding-left: 15px;") {{node.stats.pending}}
             td(class="{{ node.stats | blockClass : bestBlock }}")

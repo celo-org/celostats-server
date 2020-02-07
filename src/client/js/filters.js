@@ -50,11 +50,11 @@ angular.module('netStatsApp.filters', [])
     };
   })
   .filter('stakingClass', function () {
-    var stakingClass = function (validatorData) {
-      if (validatorData) {
-        if (validatorData.elected)
+    var stakingClass = function (stats) {
+      if (stats) {
+        if (stats.elected)
           return 'text-success';
-        if (validatorData.registered)
+        if (stats.registered)
           return 'text-warning';
       }
       return 'text-info';
@@ -81,11 +81,11 @@ angular.module('netStatsApp.filters', [])
     };
   }])
   .filter('stakingFilter', ['$sce', '$filter', function ($sce, filter) {
-    var stakingFilter = function (validatorData) {
-      if (validatorData) {
-        if (validatorData.elected)
+    var stakingFilter = function (stats) {
+      if (stats) {
+        if (stats.elected)
           return $sce.trustAsHtml('<i class="icon-check-o"></i>');
-        if (validatorData.registered)
+        if (stats.registered)
           return $sce.trustAsHtml('<i class="icon-check"></i>');
       }
       return $sce.trustAsHtml('<i class="icon-block"></i>');
@@ -94,11 +94,11 @@ angular.module('netStatsApp.filters', [])
     return stakingFilter;
   }])
   .filter('stakingString', function () {
-    var stakingString = function (validatorData) {
-      if (validatorData) {
-        if (validatorData.elected)
+    var stakingString = function (stats) {
+      if (stats) {
+        if (stats.elected)
           return 'Elected';
-        if (validatorData.registered)
+        if (stats.registered)
           return 'Registered';
       }
       return 'Full node';

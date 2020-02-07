@@ -51,6 +51,8 @@ export const dummyStats: Stats = {
   uptime: 0,
   mining: false,
   proxy: false,
+  registered: false,
+  elected: false,
   gasPrice: 0,
   active: false,
   hashrate: 0,

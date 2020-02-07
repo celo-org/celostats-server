@@ -90,7 +90,10 @@ netStatsApp.controller('StatsCtrl', function (
 
   $scope.getDisplayNodes = function() {
     return _.filter($scope.nodes, function (node) {
-      return !_.isUndefined(node.info.name) && node.info.name
+      return (
+        (!_.isNil(node.info.name) && node.info.name) ||
+        (!_.isNil(node.stats.elected) && node.stats.elected)
+      )
     })
   };
 
