@@ -1,5 +1,6 @@
 steps:
   - name: "docker"
+    id: "docker"
     entrypoint: "docker"
     args: [
       "build",
@@ -9,6 +10,7 @@ steps:
     ]
     waitFor: ["-"]
   - name: "gcr.io/cloud-builders/kubectl"
+    id: "kubectl"
     args: [
       "set",
       "image",
