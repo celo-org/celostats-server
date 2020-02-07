@@ -1,16 +1,19 @@
 import assert from "assert"
 import { isAuthorized } from "../../../src/server/utils/isAuthorized"
 import { Proof } from "../../../src/server/interfaces/Proof";
-import { StatsWrapped } from "../../../src/server/interfaces/StatsWrapped";
 import { trusted } from "../../../src/server/utils/config";
 import { generateProof } from "./generateProof";
+import { InfoWrapped } from "../../../src/server/interfaces/InfoWrapped"
+import { dummyInfo } from "../constants"
 
 describe('isAuthorized', () => {
 
   it('should authorize with valid sig', () => {
 
-    const stats: StatsWrapped = {
-      id: 'lorem ipsum'
+    const stats: InfoWrapped = {
+      id: 'lorem ipsum',
+      address: "0x012",
+      info: dummyInfo,
     }
 
     const proof: Proof = generateProof(stats)
@@ -21,8 +24,10 @@ describe('isAuthorized', () => {
 
   it('should not authorize with invalid sig', () => {
 
-    const stats: StatsWrapped = {
-      id: 'lorem ipsum'
+    const stats: InfoWrapped = {
+      id: 'lorem ipsum',
+      address: "0x012",
+      info: dummyInfo,
     }
 
     const proof: Proof = {
@@ -40,8 +45,10 @@ describe('isAuthorized', () => {
 
   it('should not authorize with different valid sig', () => {
 
-    const stats: StatsWrapped = {
-      id: 'lorem ipsum'
+    const stats: InfoWrapped = {
+      id: 'lorem ipsum',
+      address: "0x012",
+      info: dummyInfo,
     }
 
     const proof: Proof = generateProof(stats)
@@ -59,8 +66,10 @@ describe('isAuthorized', () => {
 
   it('should not authorize with different address', () => {
 
-    const stats: StatsWrapped = {
-      id: 'lorem ipsum'
+    const stats: InfoWrapped = {
+      id: 'lorem ipsum',
+      address: "0x012",
+      info: dummyInfo,
     }
 
     const proof: Proof = {
@@ -77,8 +86,10 @@ describe('isAuthorized', () => {
 
   it('should not authorize from untrusted address', () => {
 
-    const stats: StatsWrapped = {
-      id: 'lorem ipsum'
+    const stats: InfoWrapped = {
+      id: 'lorem ipsum',
+      address: "0x012",
+      info: dummyInfo,
     }
 
     const proof: Proof = {

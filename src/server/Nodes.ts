@@ -1,6 +1,7 @@
 import Node from "./Node"
 import { NodeInformation } from "./interfaces/NodeInformation";
 import { ValidatorData } from "./interfaces/ValidatorData"
+import { NodeSummary } from "./interfaces/NodeSummary"
 
 export default class Nodes extends Array<Node> {
 
@@ -31,7 +32,7 @@ export default class Nodes extends Array<Node> {
     return node;
   }
 
-  public all(): Node[] {
+  public all(): NodeSummary[] {
     this.removeOldNodes()
 
     return this
@@ -40,6 +41,7 @@ export default class Nodes extends Array<Node> {
           return (t.getId() === elem.getId())
         }) === index
       )
+      .map((n) => n.getSummary())
   }
 
   private removeOldNodes(): void {

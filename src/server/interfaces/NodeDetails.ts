@@ -1,9 +1,9 @@
-import { Stats } from "./Stats";
 import { Info } from "./Info";
+import { StatsSummary } from "./StatsSummary"
 
 export interface NodeDetails {
-  id: string,
-  stats: Stats
-  info: Info
-  history: number[]
+  readonly id: string,
+  readonly stats: StatsSummary
+  readonly info: Info
+  readonly history: number[]
 }

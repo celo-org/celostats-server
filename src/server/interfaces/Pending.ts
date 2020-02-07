@@ -1,4 +1,4 @@
 export interface Pending {
-  id: string,
-  pending: number
+  readonly id: string,
+  readonly pending: number
 }

@@ -1,4 +1,4 @@
 export interface Miner {
-  miner: string;
-  number: number
+  readonly miner: string;
+  readonly number: number
 }
