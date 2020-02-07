@@ -139,6 +139,7 @@ export default class Node {
   }
 
   public setValidatorData(data: ValidatorData) {
+    this.setState(true)
     this._validatorData = data
   }
 
@@ -148,6 +149,10 @@ export default class Node {
 
   public getId(): string {
     return this._id
+  }
+
+  public getName(): string {
+    return this._info.name
   }
 
   public getTrusted(): boolean {

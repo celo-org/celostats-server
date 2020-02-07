@@ -36,9 +36,10 @@ export default class Nodes extends Array<Node> {
     this.removeOldNodes()
 
     return this
-      .filter((elem: Node, index, self) => self.findIndex(
+      .filter((node: Node) => node.getName() !== null)
+      .filter((node: Node, index: number, self: Node[]) => self.findIndex(
         (t: Node) => {
-          return (t.getId() === elem.getId())
+          return (t.getId() === node.getId())
         }) === index
       )
       .map((n) => n.getSummary())
