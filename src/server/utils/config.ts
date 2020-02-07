@@ -25,7 +25,7 @@ export const cfg = {
   headersTimeout: 0.9 * 1000,
   maxHeadersCount: 0,
   timeout: 0.6 * 1000,
-  maxBlockHistory: 100,
+  maxBlockHistory: 250,
   maxPropagationHistory: 40,
   maxInactiveTime: 1000 * 60 * 60 * 4,
   maxBins: 40,

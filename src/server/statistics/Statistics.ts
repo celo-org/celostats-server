@@ -1,6 +1,7 @@
 import { Sides } from "./Sides";
 import { Directions } from "./Directions";
 import Collection from "../Collection";
+import { cfg } from "../utils/config"
 
 export class Statistics {
 
@@ -67,7 +68,7 @@ export class Statistics {
       `\nCurrent date: ${new Date().toLocaleString()}`,
       `\nDB size: ${(dbSize / 1024 / 1024).toFixed(2)}mb`,
       `\nNodes in DB: ${amount.nodes}`,
-      `\nBlocks in DB: ${amount.blocks}`,
+      `\nBlocks in DB: ${amount.blocks}/${cfg.maxBlockHistory}`,
       `\nHighest block: ${height}`,
       `\nMessages to/from nodes: ${serverMessages.toLocaleString()} / ${(Number(serverMessages) / durationInSeconds).toFixed(messagePrecession)} per second`,
       `\nMessages to/from clients: ${clientMessages.toLocaleString()} / ${(Number(clientMessages) / durationInSeconds).toFixed(messagePrecession)} per second`,
