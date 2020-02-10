@@ -146,10 +146,12 @@ export default class Collection {
     id: string,
     validator: ValidatorData
   ): void {
-    const node: Node = this.nodes.getNodeById(id)
+    let node: Node = this.nodes.getNodeById(id)
 
-    if (node) {
-      node.setValidatorData(validator)
+    if (!node) {
+      node = this.nodes.createEmptyNode(id)
     }
+
+    node.setValidatorData(validator)
   }
 }
