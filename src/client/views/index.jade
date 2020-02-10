@@ -144,7 +144,7 @@ block content
             th
               i.icon-bulb(data-toggle="tooltip", data-placement="top", title="Reporting stats", ng-click="orderTable(['-stats.uptime'], false)")
         tbody(ng-cloak)
-          tr(ng-repeat='node in getDisplayNodes() | orderBy:predicate track by node.id', class="{{ node.stats | mainClass : bestBlock }}", id="node_{{node.id}}")
+          tr(ng-repeat='node in nodes | orderBy:predicate track by node.id', class="{{ node.stats | mainClass : bestBlock }}", id="node_{{node.id}}")
             td.td-nodecheck
               i(ng-click="pinNode(node.id)", class="{{ node.pinned | nodePinClass }}", data-toggle="tooltip", data-placement="right", data-original-title="Click to {{ node.pinned ? 'un' : '' }}pin")
             td.nodeInfo(rel="{{node.info.name}}")

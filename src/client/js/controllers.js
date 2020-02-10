@@ -88,15 +88,6 @@ netStatsApp.controller('StatsCtrl', function (
     $localStorage.pinned = $scope.pinned;
   };
 
-  $scope.getDisplayNodes = function() {
-    return _.filter($scope.nodes, function (node) {
-      return (
-        (!_.isNil(node.info.name) && node.info.name) ||
-        (!_.isNil(node.stats.elected) && node.stats.elected)
-      )
-    })
-  };
-
   $scope.getNumber = function (num) {
     return new Array(num);
   };
