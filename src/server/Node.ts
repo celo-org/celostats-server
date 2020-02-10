@@ -139,8 +139,6 @@ export default class Node {
   }
 
   public setValidatorData(data: ValidatorData) {
-    // activate node
-    this.setState(true)
     // set data
     this._validatorData = data
   }
