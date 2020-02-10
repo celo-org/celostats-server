@@ -29,8 +29,9 @@ function mainClass (node) {
 }
 
 function peerClass (peers, active) {
-  if (!active)
+  if (_.isNil(peers) || !active) {
     return 'text-gray';
+  }
 
   return (peers <= 1 ? 'text-danger' : (peers > 1 && peers < 4 ? 'text-warning' : 'text-success'));
 }

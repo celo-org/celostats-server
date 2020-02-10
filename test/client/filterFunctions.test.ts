@@ -18,13 +18,19 @@ describe("filterFunctions", () => {
       assert.equal(pc, "text-gray")
     })
 
-    it("should return text-gray if active", () => {
+    it("should return text-gray if active and null peers", () => {
       // @ts-ignore
 
       const pc = angular.peerClass(null, true)
-      assert.equal(pc, "text-danger")
+      assert.equal(pc, "text-gray")
     })
 
+    it("should return text-danger if active and 0 peers", () => {
+      // @ts-ignore
+
+      const pc = angular.peerClass(0, true)
+      assert.equal(pc, "text-danger")
+    })
   })
 
   describe("#xssFilter()", () => {

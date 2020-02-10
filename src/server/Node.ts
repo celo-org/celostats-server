@@ -163,8 +163,10 @@ export default class Node {
     block: Block,
     propagationHistory: number[],
   ): BlockStats | null {
-    if (block && !isNaN(block.number)) {
-
+    if (
+      block &&
+      !isNaN(block.number)
+    ) {
       const propagationHistoryChanged =
         !deepEqual(propagationHistory, this._propagationHistory)
 
@@ -198,7 +200,10 @@ export default class Node {
     stats: Stats
   ): Pending {
     // bad request
-    if (stats && !isNaN(stats.pending)) {
+    if (
+      stats &&
+      !isNaN(stats.pending)
+    ) {
       // nothing pending
       if (stats.pending !== this._stats.pending) {
         // pending
