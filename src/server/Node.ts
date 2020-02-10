@@ -342,7 +342,7 @@ export default class Node {
       transactions: this._block.transactions.length,
       validators: {
         elected: this._block.validators.elected.length,
-        registered: this._block.validators.elected.length,
+        registered: this._block.validators.registered.length,
       },
       epochSize: this._block.epochSize,
       blockRemain: this._block.blockRemain,
