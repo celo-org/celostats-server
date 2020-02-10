@@ -200,7 +200,7 @@ export default class Controller {
           trusted.push(validator.signer)
         }
 
-        const elected = validators.elected.indexOf(validator.address) > -1
+        const elected = validators.elected.indexOf(validator.signer) > -1;
 
         const v: ValidatorData = {
           affiliation: validator.affiliation,

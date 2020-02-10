@@ -1,6 +1,4 @@
 import Node from "./Node"
-import { NodeInformation } from "./interfaces/NodeInformation";
-import { ValidatorData } from "./interfaces/ValidatorData"
 import { NodeSummary } from "./interfaces/NodeSummary"
 
 export default class Nodes extends Array<Node> {
