@@ -146,7 +146,6 @@ export default class Collection {
     id: string,
     validator: ValidatorData
   ): void {
-
     const node: Node = this.nodes.getNodeById(id)
 
     if (node) {

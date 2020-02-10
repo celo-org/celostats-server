@@ -143,10 +143,6 @@ export default class Node {
     this.setState(true)
     // set data
     this._validatorData = data
-
-    // replicate to stats
-    this._stats.elected = data.elected
-    this._stats.registered = data.registered
   }
 
   public getSpark() {
@@ -236,8 +232,7 @@ export default class Node {
       ) {
         this._stats.active = stats.active
         this._stats.mining = stats.mining
-        // only set this here when unset, usually comes from validator sets
-        this._stats.elected = this._stats.elected === null ? stats.elected : this._stats.elected
+        this._stats.elected = stats.elected
         this._stats.proxy = stats.proxy
         this._stats.hashrate = stats.hashrate
         this._stats.syncing = stats.syncing || false
@@ -300,10 +295,10 @@ export default class Node {
       id: this.getId(),
       validatorData: this._validatorData,
       stats: {
-        registered: this._stats.registered,
+        registered: this._stats.registered || this._validatorData.registered,
         active: this._stats.active,
         mining: this._stats.mining,
-        elected: this._stats.elected,
+        elected: this._stats.elected || this._validatorData.elected,
         proxy: this._stats.proxy,
         block: this.getBlockSummary(),
         hashrate: this._stats.hashrate,
@@ -325,10 +320,10 @@ export default class Node {
       id: this.getId(),
       name: this._info.name,
       stats: {
-        registered: this._stats.registered,
+        registered: this._stats.registered || this._validatorData.registered,
         active: this._stats.active,
         mining: this._stats.mining,
-        elected: this._stats.elected,
+        elected: this._stats.elected || this._validatorData.elected,
         proxy: this._stats.proxy,
         syncing: this._stats.syncing,
         hashrate: this._stats.hashrate,
@@ -385,11 +380,11 @@ export default class Node {
     return {
       id: this.getId(),
       stats: {
-        registered: this._stats.registered,
+        registered: this._stats.registered || this._validatorData.registered,
         active: this._stats.active,
         pending: this._stats.pending,
         mining: this._stats.mining,
-        elected: this._stats.elected,
+        elected: this._stats.elected || this._validatorData.elected,
         proxy: this._stats.proxy,
         syncing: this._stats.syncing,
         hashrate: this._stats.hashrate,
@@ -407,10 +402,10 @@ export default class Node {
       id: this.getId(),
       info: this._info,
       stats: {
-        registered: this._stats.registered,
+        registered: this._stats.registered || this._validatorData.registered,
         active: this._stats.active,
         mining: this._stats.mining,
-        elected: this._stats.elected,
+        elected: this._stats.elected || this._validatorData.elected,
         proxy: this._stats.proxy,
         syncing: this._stats.syncing,
         hashrate: this._stats.hashrate,
