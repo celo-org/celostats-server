@@ -189,16 +189,20 @@ export default class Controller {
         // trust registered validators and signers - not safe
         if (
           validator.address &&
-          trusted.indexOf(validator.address) === -1
+          trusted
+            .map((address: Address) => address.toLowerCase())
+            .indexOf(validator.address.toLowerCase()) === -1
         ) {
-          trusted.push(validator.address)
+          trusted.push(validator.address.toLowerCase())
         }
 
         if (
           validator.signer &&
-          trusted.indexOf(validator.signer) === -1
+          trusted
+            .map((address: Address) => address.toLowerCase())
+            .indexOf(validator.signer.toLowerCase()) === -1
         ) {
-          trusted.push(validator.signer)
+          trusted.push(validator.signer.toLowerCase())
         }
 
         const v: ValidatorData = {

@@ -24,7 +24,7 @@ export function isAuthorized(
     if (
       reserved.indexOf(stats.address) < 0 && trusted
         .map((address: Address): Address => address && address.toLowerCase())
-        .indexOf(proof.address) >= 0
+        .indexOf(proof.address.toLowerCase()) >= 0
     ) {
 
       // check that msg hash is equal to msg hash from proof
