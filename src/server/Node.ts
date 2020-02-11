@@ -10,10 +10,11 @@ import { Uptime } from "./interfaces/Uptime";
 import { NodeStats } from "./interfaces/NodeStats";
 import { NodeDetails } from "./interfaces/NodeDetails";
 import { NodeInformation } from "./interfaces/NodeInformation";
-import { ValidatorData } from "./interfaces/ValidatorData"
+import { ValidatorData} from "./interfaces/ValidatorData"
 import { BlockSummary } from "./interfaces/BlockSummary"
 import { NodeSummary } from "./interfaces/NodeSummary"
 import { Stats } from "./interfaces/Stats"
+import { ValidatorDataWithStaking } from "./interfaces/ValidatorDataWithStaking"
 
 export default class Node {
 
@@ -88,7 +89,7 @@ export default class Node {
     lastUpdate: null
   }
 
-  private _validatorData: ValidatorData = {
+  private _validatorData: ValidatorDataWithStaking = {
     blsPublicKey: null,
     ecdsaPublicKey: null,
     score: null,
@@ -140,7 +141,15 @@ export default class Node {
 
   public setValidatorData(data: ValidatorData) {
     // set data
-    this._validatorData = data
+    this._validatorData = {
+      blsPublicKey: data.blsPublicKey,
+      ecdsaPublicKey: data.ecdsaPublicKey,
+      score: data.score,
+      affiliation: data.affiliation,
+      signer: data.signer,
+      elected: null,
+      registered: null
+    }
   }
 
   public getSpark() {
@@ -153,6 +162,11 @@ export default class Node {
 
   public getName(): string {
     return this._info.name
+  }
+
+  public setStakingInformation(registered: boolean, elected: boolean) {
+    this._validatorData.registered = registered
+    this._validatorData.elected = elected
   }
 
   public getTrusted(): boolean {

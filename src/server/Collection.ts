@@ -154,4 +154,16 @@ export default class Collection {
 
     node.setValidatorData(validator)
   }
+
+  public updateStakingInformation(
+    registered: string[],
+    elected: string[]
+  ): void {
+    for (const node of this.nodes) {
+      const elec = elected.indexOf(node.getId()) > -1
+      const reg = registered.indexOf(node.getId()) > -1
+
+      node.setStakingInformation(reg, elec)
+    }
+  }
 }

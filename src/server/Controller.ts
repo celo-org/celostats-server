@@ -3,6 +3,7 @@ import './utils/logger'
 import Primus from "primus"
 import Collection from "./Collection";
 import Node from "./Node";
+import io from "socket.io"
 import { Statistics } from "./statistics/Statistics";
 import { Sides } from "./statistics/Sides";
 import { Directions } from "./statistics/Directions";
@@ -23,7 +24,6 @@ import { ClientPong } from "./interfaces/ClientPong";
 import { NodePing } from "./interfaces/NodePing";
 import { NodePong } from "./interfaces/NodePong";
 import { isAuthorized } from "./utils/isAuthorized";
-import io from "socket.io"
 import { Validator } from "./interfaces/Validator"
 import { ValidatorData } from "./interfaces/ValidatorData"
 import { NodeDetails } from "./interfaces/NodeDetails"
@@ -200,22 +200,23 @@ export default class Controller {
           trusted.push(validator.signer)
         }
 
-        const elected = validators.elected.indexOf(validator.signer) > -1;
-
         const v: ValidatorData = {
           affiliation: validator.affiliation,
           ecdsaPublicKey: validator.ecdsaPublicKey,
           score: validator.score,
           signer: validator.signer,
-          blsPublicKey: validator.blsPublicKey,
-          registered: true,
-          elected
+          blsPublicKey: validator.blsPublicKey
         }
 
         // correlate via signer here
         const id = v.signer
         this.collection.setValidator(id, v)
       })
+
+      this.collection.updateStakingInformation(
+        validators.registered.map((validator: Validator) => validator.signer),
+        validators.elected
+      )
     }
   }
 
