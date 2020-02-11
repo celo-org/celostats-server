@@ -161,8 +161,10 @@ export default class Collection {
     elected: Address[]
   ): void {
     for (const node of this.nodes) {
-      const elec = elected.indexOf(node.getId().toLowerCase()) > -1
-      const reg = registered.indexOf(node.getId().toLowerCase()) > -1
+      const id: Address = node.getId().toLowerCase()
+
+      const elec = elected.indexOf(id) > -1
+      const reg = registered.indexOf(id) > -1
 
       node.setStakingInformation(reg, elec)
     }
