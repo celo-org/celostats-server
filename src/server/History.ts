@@ -237,8 +237,8 @@ export default class History {
     const propagation: number[] = []
     let avgPropagation = 0
 
-    this.blocks.forEach((block: BlockWrapper) => {
-      block.propagTimes.forEach((propagationTime: PropagationTime) => {
+    for (const block of this.blocks) {
+      for (const propagationTime of block.propagTimes) {
         const prop = Math.min(
           cfg.maxPropagationRange,
           propagationTime.propagation || -1
@@ -247,8 +247,8 @@ export default class History {
         if (prop >= 0) {
           propagation.push(prop)
         }
-      })
-    })
+      }
+    }
 
     if (propagation.length > 0) {
       const sum = propagation.reduce((sum, p) => sum + p, 0)

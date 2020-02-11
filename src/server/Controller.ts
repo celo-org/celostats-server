@@ -184,7 +184,7 @@ export default class Controller {
       validators.registered &&
       validators.elected
     ) {
-      validators.registered.forEach((validator: Validator) => {
+      for (const validator of validators.registered) {
 
         // trust registered validators and signers - not safe
         if (
@@ -216,7 +216,7 @@ export default class Controller {
         // correlate via signer here
         const id = v.signer
         this.collection.setValidator(id, v)
-      })
+      }
 
       this.collection.updateStakingInformation(
         validators.registered.map((validator: Validator): Address => validator.signer.toLowerCase()),
