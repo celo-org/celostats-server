@@ -1,7 +1,7 @@
 import { Address } from "./Address"
 
 export interface ValidatorData {
-  readonly score: string,
+  readonly score: number
   readonly blsPublicKey: string
   readonly ecdsaPublicKey: string
   readonly affiliation: Address

@@ -208,7 +208,7 @@ export default class Controller {
         const v: ValidatorData = {
           affiliation: validator.affiliation,
           ecdsaPublicKey: validator.ecdsaPublicKey,
-          score: validator.score,
+          score: parseFloat(validator.score) / 10000000000000000000000,
           signer: validator.signer,
           blsPublicKey: validator.blsPublicKey,
           address: validator.address
