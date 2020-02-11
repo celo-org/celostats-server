@@ -210,7 +210,8 @@ export default class Controller {
           ecdsaPublicKey: validator.ecdsaPublicKey,
           score: validator.score,
           signer: validator.signer,
-          blsPublicKey: validator.blsPublicKey
+          blsPublicKey: validator.blsPublicKey,
+          address: validator.address
         }
 
         // correlate via signer here

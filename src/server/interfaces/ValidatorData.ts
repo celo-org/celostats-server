@@ -6,4 +6,5 @@ export interface ValidatorData {
   readonly ecdsaPublicKey: string
   readonly affiliation: Address
   readonly signer: Address
+  readonly address: Address
 }

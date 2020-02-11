@@ -91,6 +91,7 @@ export default class Node {
   }
 
   private _validatorData: ValidatorDataWithStaking = {
+    address: null,
     blsPublicKey: null,
     ecdsaPublicKey: null,
     score: null,
@@ -148,6 +149,7 @@ export default class Node {
       score: data.score,
       affiliation: data.affiliation,
       signer: data.signer,
+      address: data.address,
       elected: null,
       registered: null
     }
