@@ -27,6 +27,7 @@ import { isAuthorized } from "./utils/isAuthorized";
 import { Validator } from "./interfaces/Validator"
 import { ValidatorData } from "./interfaces/ValidatorData"
 import { NodeDetails } from "./interfaces/NodeDetails"
+import { Address } from "./interfaces/Address"
 
 export default class Controller {
   private readonly collection: Collection
@@ -84,7 +85,7 @@ export default class Controller {
    * Node handlers
    *************************************/
   private handleNodeInfo(
-    id: string,
+    id: Address,
     stats: InfoWrapped,
     spark: Primus.spark
   ): void {
@@ -119,7 +120,7 @@ export default class Controller {
   }
 
   public handleNodeBlock(
-    id: string,
+    id: Address,
     ip: string,
     block: Block
   ): void {
@@ -154,7 +155,7 @@ export default class Controller {
   }
 
   public handleNodePending(
-    id: string,
+    id: Address,
     stats: Stats
   ): void {
     const pending = this.collection.updatePending(
@@ -214,14 +215,14 @@ export default class Controller {
       })
 
       this.collection.updateStakingInformation(
-        validators.registered.map((validator: Validator) => validator.signer),
-        validators.elected
+        validators.registered.map((validator: Validator): Address => validator.signer.toLowerCase()),
+        validators.elected.map((elected: Address): Address => elected.toLowerCase())
       )
     }
   }
 
   public handleNodeStats(
-    id: string,
+    id: Address,
     stats: Stats
   ): void {
     const basicStats = this.collection.updateStats(id, stats)
@@ -241,7 +242,7 @@ export default class Controller {
   }
 
   public handleNodeLatency(
-    id: string,
+    id: Address,
     latency: number
   ): void {
     const lat = this.collection.updateLatency(id, latency)
@@ -282,7 +283,7 @@ export default class Controller {
   }
 
   public handleNodePing(
-    id: string,
+    id: Address,
     stats: NodePing,
     spark: Primus.spark
   ): void {
@@ -335,7 +336,7 @@ export default class Controller {
   }
 
   public handleNodeHello(
-    id: string,
+    id: Address,
     proof: Proof,
     stats: InfoWrapped,
     spark: Primus.spark

@@ -13,6 +13,7 @@ import { NodeInformation } from "./interfaces/NodeInformation";
 import { ValidatorData } from "./interfaces/ValidatorData"
 import { NodeDetails } from "./interfaces/NodeDetails"
 import { NodeSummary } from "./interfaces/NodeSummary"
+import { Address } from "./interfaces/Address"
 
 export default class Collection {
 
@@ -23,7 +24,7 @@ export default class Collection {
   private highestBlock = 1
 
   public addNode(
-    id: string,
+    id: Address,
     nodeInformation: NodeInformation
   ): NodeDetails {
     let node: Node = this.nodes.getNodeById(id)
@@ -38,7 +39,7 @@ export default class Collection {
   }
 
   public addBlock(
-    id: string,
+    id: Address,
     block: Block
   ): {
     highestBlock: number | null,
@@ -94,7 +95,7 @@ export default class Collection {
   }
 
   public updatePending(
-    id: string,
+    id: Address,
     stats: Stats
   ): Pending {
     const node: Node = this.nodes.getNodeById(id)
@@ -105,7 +106,7 @@ export default class Collection {
   }
 
   public updateStats(
-    id: string,
+    id: Address,
     stats: Stats,
   ): StatsResponse {
     const node: Node = this.nodes.getNodeById(id)
@@ -116,7 +117,7 @@ export default class Collection {
   }
 
   public updateLatency(
-    id: string,
+    id: Address,
     latency: number,
   ): Latency {
     const node: Node = this.nodes.getNodeById(id)
@@ -143,7 +144,7 @@ export default class Collection {
   }
 
   public setValidator(
-    id: string,
+    id: Address,
     validator: ValidatorData
   ): void {
     let node: Node = this.nodes.getNodeById(id)
@@ -156,12 +157,12 @@ export default class Collection {
   }
 
   public updateStakingInformation(
-    registered: string[],
-    elected: string[]
+    registered: Address[],
+    elected: Address[]
   ): void {
     for (const node of this.nodes) {
-      const elec = elected.indexOf(node.getId()) > -1
-      const reg = registered.indexOf(node.getId()) > -1
+      const elec = elected.indexOf(node.getId().toLowerCase()) > -1
+      const reg = registered.indexOf(node.getId().toLowerCase()) > -1
 
       node.setStakingInformation(reg, elec)
     }

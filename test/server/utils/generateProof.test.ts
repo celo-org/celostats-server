@@ -6,14 +6,18 @@ import { hash } from "../../../src/server/utils/hash"
 import { ec as EC } from "elliptic"
 // @ts-ignore
 import { KeyPair } from "elliptic/lib/elliptic/ec"
+import { InfoWrapped } from "../../../src/server/interfaces/InfoWrapped"
+import { dummyInfo } from "../constants"
 
 const secp256k1 = new EC('secp256k1')
 
 describe('#generateProof()', () => {
 
   it('should generate 130 bytes long 0x prefixed signatures always', () => {
-    const stats: StatsWrapped = {
-      id: 'lorem ipsum'
+    const stats: InfoWrapped = {
+      id: 'lorem ipsum',
+      address: "0x0",
+      info: dummyInfo
     }
 
     for (let x = 0; x < 50; x++) {
@@ -24,8 +28,10 @@ describe('#generateProof()', () => {
   })
 
   it('must verify its own signature', () => {
-    const stats: StatsWrapped = {
-      id: 'lorem ipsum'
+    const stats: InfoWrapped = {
+      id: 'lorem ipsum',
+      address: "0x0",
+      info: dummyInfo
     }
 
     const msgHash = hash(JSON.stringify(stats))

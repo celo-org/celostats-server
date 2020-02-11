@@ -1,5 +1,6 @@
 import Node from "./Node"
 import { NodeSummary } from "./interfaces/NodeSummary"
+import { Address } from "./interfaces/Address"
 
 export default class Nodes extends Array<Node> {
 
@@ -20,11 +21,13 @@ export default class Nodes extends Array<Node> {
     return this.getNode((n: Node) => n.getSpark() === spark)
   }
 
-  public getNodeById(id: string): Node {
+  public getNodeById(id: Address): Node {
     return this.getNode((n: Node) => n.getId() === id)
   }
 
-  public createEmptyNode(id: string) {
+  public createEmptyNode(
+    id: Address
+  ): Node {
     const node = new Node(id)
     this.push(node)
     return node;

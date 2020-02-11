@@ -1,7 +1,8 @@
 import { Stats } from "./Stats"
+import { Address } from "./Address"
 
 export interface StatsResponse {
-  id: string,
-  stats: Stats,
-  history?: number[]
+  readonly id: Address,
+  readonly stats: Stats,
+  readonly history?: number[]
 }

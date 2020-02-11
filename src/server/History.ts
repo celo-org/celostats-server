@@ -12,13 +12,14 @@ import { padArray } from "./utils/padArray";
 import { cfg } from "./utils/config";
 import { compareBlocks } from "./utils/compareBlocks";
 import { compareForks } from "./utils/compareForks";
+import { Address } from "./interfaces/Address"
 
 export default class History {
 
   private blocks: Blocks = new Blocks()
 
   public addBlock(
-    id: string,
+    id: Address,
     block: Block,
     trusted: boolean,
     addingHistory = false
@@ -210,7 +211,7 @@ export default class History {
   }
 
   public getNodePropagation(
-    id: string
+    id: Address
   ): number[] {
     return this.blocks
       .slice(0, cfg.maxPeerPropagation)
@@ -228,7 +229,7 @@ export default class History {
       })
   }
 
-  public getLength() {
+  public getLength(): number {
     return this.blocks.length;
   }
 

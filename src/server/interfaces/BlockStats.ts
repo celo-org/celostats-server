@@ -1,8 +1,9 @@
 import { BlockSummary } from "./BlockSummary"
+import { Address } from "./Address"
 
 export interface BlockStats {
-  id: string
+  id: Address
   block: BlockSummary
-  propagationAvg: number,
+  propagationAvg: number
   history: number[]
 }

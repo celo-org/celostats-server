@@ -15,10 +15,11 @@ import { BlockSummary } from "./interfaces/BlockSummary"
 import { NodeSummary } from "./interfaces/NodeSummary"
 import { Stats } from "./interfaces/Stats"
 import { ValidatorDataWithStaking } from "./interfaces/ValidatorDataWithStaking"
+import { Address } from "./interfaces/Address"
 
 export default class Node {
 
-  private readonly _id: string = null
+  private readonly _id: Address = null
   private _spark: string
 
   private _info: Info = {
@@ -99,7 +100,7 @@ export default class Node {
     signer: null
   }
 
-  public constructor(id: string) {
+  public constructor(id: Address) {
     this._id = id
   }
 
@@ -156,7 +157,7 @@ export default class Node {
     return this._spark;
   }
 
-  public getId(): string {
+  public getId(): Address {
     return this._id
   }
 
@@ -164,7 +165,10 @@ export default class Node {
     return this._info.name
   }
 
-  public setStakingInformation(registered: boolean, elected: boolean) {
+  public setStakingInformation(
+    registered: boolean,
+    elected: boolean
+  ) {
     this._validatorData.registered = registered
     this._validatorData.elected = elected
   }

@@ -1,8 +1,10 @@
-export const trusted: string[] = []
+import { Address } from "../interfaces/Address"
 
-export const banned: string[] = []
+export const trusted: Address[] = []
 
-export const reserved: string[] = []
+export const banned: Address[] = []
+
+export const reserved: Address[] = []
 
 // add trusted from env
 if (process.env.TRUSTED_ADDRESSES) {
