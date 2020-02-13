@@ -3,6 +3,7 @@ import './utils/logger'
 import Primus from "primus"
 import Collection from "./Collection";
 import Node from "./Node";
+import io from "socket.io"
 import { Statistics } from "./statistics/Statistics";
 import { Sides } from "./statistics/Sides";
 import { Directions } from "./statistics/Directions";
@@ -23,11 +24,11 @@ import { ClientPong } from "./interfaces/ClientPong";
 import { NodePing } from "./interfaces/NodePing";
 import { NodePong } from "./interfaces/NodePong";
 import { isAuthorized } from "./utils/isAuthorized";
-import io from "socket.io"
 import { Validator } from "./interfaces/Validator"
 import { ValidatorData } from "./interfaces/ValidatorData"
 import { NodeDetails } from "./interfaces/NodeDetails"
 import { Events } from "./server/Events"
+import { Address } from "./interfaces/Address"
 
 export default class Controller {
   private readonly collection: Collection
@@ -102,7 +103,7 @@ export default class Controller {
    * Node handlers
    *************************************/
   private handleNodeInfo(
-    id: string,
+    id: Address,
     stats: InfoWrapped,
     spark: Primus.spark
   ): void {
@@ -141,7 +142,7 @@ export default class Controller {
   }
 
   public handleNodeBlock(
-    id: string,
+    id: Address,
     ip: string,
     block: Block
   ): void {
@@ -176,7 +177,7 @@ export default class Controller {
   }
 
   public handleNodePending(
-    id: string,
+    id: Address,
     stats: Stats
   ): void {
     const pending = this.collection.updatePending(
@@ -205,43 +206,50 @@ export default class Controller {
       validators.registered &&
       validators.elected
     ) {
-      validators.registered.forEach((validator: Validator) => {
+      for (const validator of validators.registered) {
 
         // trust registered validators and signers - not safe
         if (
           validator.address &&
-          trusted.indexOf(validator.address) === -1
+          trusted
+            .map((address: Address) => address.toLowerCase())
+            .indexOf(validator.address.toLowerCase()) === -1
         ) {
-          trusted.push(validator.address)
+          trusted.push(validator.address.toLowerCase())
         }
 
         if (
           validator.signer &&
-          trusted.indexOf(validator.signer) === -1
+          trusted
+            .map((address: Address) => address.toLowerCase())
+            .indexOf(validator.signer.toLowerCase()) === -1
         ) {
-          trusted.push(validator.signer)
+          trusted.push(validator.signer.toLowerCase())
         }
-
-        const elected = validators.elected.indexOf(validator.address) > -1
 
         const v: ValidatorData = {
           affiliation: validator.affiliation,
           ecdsaPublicKey: validator.ecdsaPublicKey,
-          score: validator.score,
+          score: parseFloat(validator.score) / 10000000000000000000000,
           signer: validator.signer,
           blsPublicKey: validator.blsPublicKey,
-          registered: true,
-          elected
+          address: validator.address
         }
 
-        const id = validator.address
+        // correlate via signer here
+        const id = v.signer
         this.collection.setValidator(id, v)
-      })
+      }
+
+      this.collection.updateStakingInformation(
+        validators.registered.map((validator: Validator): Address => validator.signer.toLowerCase()),
+        validators.elected.map((elected: Address): Address => elected.toLowerCase())
+      )
     }
   }
 
   public handleNodeStats(
-    id: string,
+    id: Address,
     stats: Stats
   ): void {
     const basicStats = this.collection.updateStats(id, stats)
@@ -261,7 +269,7 @@ export default class Controller {
   }
 
   public handleNodeLatency(
-    id: string,
+    id: Address,
     latency: number
   ): void {
     const lat = this.collection.updateLatency(id, latency)
@@ -301,7 +309,7 @@ export default class Controller {
   }
 
   public handleNodePing(
-    id: string,
+    id: Address,
     stats: NodePing,
     spark: Primus.spark
   ): void {
@@ -355,7 +363,7 @@ export default class Controller {
   }
 
   public handleNodeHello(
-    id: string,
+    id: Address,
     proof: Proof,
     stats: InfoWrapped,
     spark: Primus.spark

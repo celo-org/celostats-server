@@ -29,8 +29,9 @@ function mainClass (node) {
 }
 
 function peerClass (peers, active) {
-  if (!active)
+  if (_.isNil(peers) || !active) {
     return 'text-gray';
+  }
 
   return (peers <= 1 ? 'text-danger' : (peers > 1 && peers < 4 ? 'text-warning' : 'text-success'));
 }
@@ -55,15 +56,19 @@ function blockTimeClass (diff) {
 }
 
 function latencyFilter (node) {
-  if (_.isUndefined(node.readable))
+  if (_.isNil(node.readable)) {
     node.readable = {};
-
-  if (_.isUndefined(node.stats)) {
-    node.readable.latencyClass = 'text-danger';
-    node.readable.latency = 'offline';
   }
 
-  if (node.stats.active === false) {
+  if (
+    // we do not have stats
+    _.isNil(node.stats) || (
+      // or it is inactive
+      !node.stats.active ||
+      // or latency is unset or lower 0
+      (_.isNil(node.stats.latency) || node.stats.latency < 0)
+    )
+  ) {
     node.readable.latencyClass = 'text-danger';
     node.readable.latency = 'offline';
   } else {

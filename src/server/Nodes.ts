@@ -1,6 +1,6 @@
 import Node from "./Node"
-import { NodeInformation } from "./interfaces/NodeInformation";
-import { ValidatorData } from "./interfaces/ValidatorData"
+import { NodeSummary } from "./interfaces/NodeSummary"
+import { Address } from "./interfaces/Address"
 
 export default class Nodes extends Array<Node> {
 
@@ -21,25 +21,28 @@ export default class Nodes extends Array<Node> {
     return this.getNode((n: Node) => n.getSpark() === spark)
   }
 
-  public getNodeById(id: string): Node {
+  public getNodeById(id: Address): Node {
     return this.getNode((n: Node) => n.getId() === id)
   }
 
-  public createEmptyNode(id: string) {
+  public createEmptyNode(
+    id: Address
+  ): Node {
     const node = new Node(id)
     this.push(node)
     return node;
   }
 
-  public all(): Node[] {
+  public all(): NodeSummary[] {
     this.removeOldNodes()
 
     return this
-      .filter((elem: Node, index, self) => self.findIndex(
+      .filter((node: Node, index: number, self: Node[]) => self.findIndex(
         (t: Node) => {
-          return (t.getId() === elem.getId())
+          return (t.getId() === node.getId())
         }) === index
       )
+      .map((n) => n.getSummary())
   }
 
   private removeOldNodes(): void {

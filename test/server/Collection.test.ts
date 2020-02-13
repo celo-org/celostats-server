@@ -36,33 +36,19 @@ describe('Collection', () => {
       const all = collection.getAll()
 
       assert.equal(all.length, 1)
-      assert.equal(all[0].getId(), id)
+      assert.equal(all[0].id, id)
       done()
 
     })
 
     it('should return all deduplicated', (done) => {
 
-      const node1: NodeInformation = {
-        nodeData: {
-          ip: '',
-          spark: '',
-          latency: 0
-        },
-        stats: {
-          id: '11',
-          address: '0x12345',
-          info: dummyInfo
-        }
-      }
-
       const id = "node1";
 
-      const n1 = collection.addNode(id, node1)
+      const n1 = collection.addNode(id, node)
       assert(n1)
 
-      const node2 = {...node1}
-      const n2 = collection.addNode(id, node2)
+      const n2 = collection.addNode(id, node)
       assert(n2)
 
       assert.equal(collection.getAll().length, 1)

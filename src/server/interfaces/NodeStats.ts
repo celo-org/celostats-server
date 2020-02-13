@@ -1,8 +1,9 @@
-import { Stats } from "./Stats";
+import { StatsSummary } from "./StatsSummary"
+import { Address } from "./Address"
 
 export interface NodeStats {
-  readonly id: string,
+  readonly id: Address,
   readonly name: string
-  readonly stats: Stats
+  readonly stats: StatsSummary
   readonly history: number[]
 }

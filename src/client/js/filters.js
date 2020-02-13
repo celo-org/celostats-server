@@ -50,11 +50,11 @@ angular.module('netStatsApp.filters', [])
     };
   })
   .filter('stakingClass', function () {
-    var stakingClass = function (validatorData) {
-      if (validatorData) {
-        if (validatorData.elected)
+    var stakingClass = function (stats) {
+      if (stats) {
+        if (stats.elected)
           return 'text-success';
-        if (validatorData.registered)
+        if (stats.registered)
           return 'text-warning';
       }
       return 'text-info';
@@ -81,11 +81,11 @@ angular.module('netStatsApp.filters', [])
     };
   }])
   .filter('stakingFilter', ['$sce', '$filter', function ($sce, filter) {
-    var stakingFilter = function (validatorData) {
-      if (validatorData) {
-        if (validatorData.elected)
+    var stakingFilter = function (stats) {
+      if (stats) {
+        if (stats.elected)
           return $sce.trustAsHtml('<i class="icon-check-o"></i>');
-        if (validatorData.registered)
+        if (stats.registered)
           return $sce.trustAsHtml('<i class="icon-check"></i>');
       }
       return $sce.trustAsHtml('<i class="icon-block"></i>');
@@ -94,11 +94,11 @@ angular.module('netStatsApp.filters', [])
     return stakingFilter;
   }])
   .filter('stakingString', function () {
-    var stakingString = function (validatorData) {
-      if (validatorData) {
-        if (validatorData.elected)
+    var stakingString = function (stats) {
+      if (stats) {
+        if (stats.elected)
           return 'Elected';
-        if (validatorData.registered)
+        if (stats.registered)
           return 'Registered';
       }
       return 'Full node';
@@ -163,7 +163,7 @@ angular.module('netStatsApp.filters', [])
   .filter('gasPriceFilter', ['$filter', function (filter) {
     var numberFilter = filter('number');
     return function (price) {
-      if (typeof price === 'undefined')
+      if (!price)
         return '0 wei';
 
       if (price.length < 4)
@@ -189,13 +189,14 @@ angular.module('netStatsApp.filters', [])
   }])
   .filter('gasFilter', function () {
     return function (gas) {
-      return (typeof gas !== 'undefined' ? parseInt(gas) : '?');
+      return (!gas ? parseInt(gas) : '?');
     };
   })
-  .filter('hashFilter', ['$sce', '$filter', function ($sce, filter) {
+  .filter('hashFilter', ['$sce', function ($sce) {
     function hashFilter (hash, number) {
-      if (typeof hash === 'undefined')
-        return '?';
+      if (!hash || !number) {
+        return $sce.trustAsHtml('<span>?</span>');
+      }
 
       if (hash.substr(0, 2) === '0x') {
         hash = hash.substr(2);
@@ -212,9 +213,9 @@ angular.module('netStatsApp.filters', [])
     hashFilter.$stateful = true;
     return hashFilter;
   }])
-  .filter('blockNumberFilter', ['$sce', '$filter', function ($sce, filter) {
-    return function (number) {
-      if (typeof number === 'undefined')
+  .filter('blockNumberFilter', ['$sce', function ($sce) {
+    function blockNumberFilter(number) {
+      if (!number)
         return '?';
 
       return $sce.trustAsHtml('' +
@@ -222,17 +223,21 @@ angular.module('netStatsApp.filters', [])
         + number +
         '</a>');
     };
+    blockNumberFilter.$stateful = true;
+    return blockNumberFilter;
   }])
   .filter('nameFilter', function () {
-    return function (name) {
-      if (typeof name === 'undefined')
+    function nameFilter(name) {
+      if (!name)
         return '?';
       return name;
     };
+    nameFilter.$stateful = true;
+    return nameFilter
   })
-  .filter('addressFilter', ['$sce', '$filter', function ($sce, filter) {
+  .filter('addressFilter', ['$sce', function ($sce) {
     return function (address) {
-      if (typeof address === 'undefined' || !address)
+      if (!address)
         return '';
       return $sce.trustAsHtml('' +
         '<a class="blockhash" href="' + blockscoutUrl + '/address/' + address + '" target="_blank">'
@@ -240,9 +245,9 @@ angular.module('netStatsApp.filters', [])
         '</a>');
     };
   }])
-  .filter('longAddressFilter', ['$sce', '$filter', function ($sce, filter) {
+  .filter('longAddressFilter', ['$sce', function ($sce) {
     return function (address) {
-      if (typeof address === 'undefined')
+      if (!address)
         return '?';
 
       if (address.substr(0, 2) === '0x')
@@ -256,7 +261,7 @@ angular.module('netStatsApp.filters', [])
   }])
   .filter('minerHistoryFilter', ['$sce', '$filter', function ($sce, filter) {
     return function (miners, miner) {
-      if (typeof miner === 'undefined')
+      if (!miner)
         return '?';
 
       var htmlStr = '';
@@ -369,7 +374,7 @@ angular.module('netStatsApp.filters', [])
   })
   .filter('blockTimeFilter', function () {
     var blockTimeFilter = function (timestamp) {
-      if (timestamp === 0) {
+      if (!timestamp || timestamp === 0) {
         return '∞';
       }
 
@@ -411,10 +416,14 @@ angular.module('netStatsApp.filters', [])
   }])
   .filter('blockPropagationFilter', function () {
     var blockPropagationFilter = function (ms, prefix) {
-      if (typeof prefix === 'undefined')
+      if (!prefix)
         prefix = '+';
 
       var result = 0;
+
+      if (_.isNil(ms)) {
+        return "∞ ms"
+      }
 
       if (ms < 1000) {
         return (ms === 0 ? '' : prefix) + ms + ' ms';
@@ -453,6 +462,10 @@ angular.module('netStatsApp.filters', [])
 
       var prefix = '';
       var result = 0;
+
+      if (_.isNil(ms)) {
+        return "∞ ms"
+      }
 
       if (ms < 1000) {
         return (ms === 0 ? '' : prefix) + ms + ' ms';
@@ -536,19 +549,19 @@ angular.module('netStatsApp.filters', [])
       }
 
       if (node.info.net !== '') {
-        string = 'Network: <b>' + (typeof node.info.net !== 'undefined' ? node.info.net : '-') + '</b>';
+        string = 'Network: <b>' + (!node.info.net ? node.info.net : '-') + '</b>';
 
         tooltip.push(string);
       }
 
       if (node.info.protocol !== '') {
-        string = 'Protocol: <b>' + (typeof node.info.protocol !== 'undefined' ? node.info.protocol : '-') + '</b>';
+        string = 'Protocol: <b>' + (!node.info.protocol ? node.info.protocol : '-') + '</b>';
 
         tooltip.push(string);
       }
 
       if (node.info.port !== '') {
-        string = 'Port: <b>' + (typeof node.info.port !== 'undefined' ? node.info.port : '30303') + '</b>';
+        string = 'Port: <b>' + (node.info.port ? node.info.port : '30303') + '</b>';
 
         tooltip.push(string);
       }
@@ -560,19 +573,19 @@ angular.module('netStatsApp.filters', [])
       }
 
       if (node.info.client !== '') {
-        string = 'API: <b>' + (typeof node.info.client !== 'undefined' ? node.info.client : '<= 0.0.3') + '</b>';
+        string = 'API: <b>' + (!node.info.client ? node.info.client : '<= 0.0.3') + '</b>';
 
         tooltip.push(string);
       }
 
       if (node.info.os !== '') {
-        string = 'OS: <b>' + (typeof node.info.os !== 'undefined' ? node.info.os + ' ' + node.info.os_v : '?') + '</b>';
+        string = 'OS: <b>' + (!node.info.os ? node.info.os + ' ' + node.info.os_v : '?') + '</b>';
 
         tooltip.push(string);
       }
 
       if (node.info.contact !== '') {
-        string = 'Contact: <b>' + (typeof node.info.contact !== 'undefined' ? node.info.contact : '-') + '</b>';
+        string = 'Contact: <b>' + (!node.info.contact  ? node.info.contact : '-') + '</b>';
 
         tooltip.push(string);
       }
@@ -587,7 +600,7 @@ angular.module('netStatsApp.filters', [])
   })
   .filter('minerNameFilter', function () {
     return function (address, name) {
-      if (typeof name !== 'undefined' && name !== false && name.length > 0)
+      if (!name && name !== false && name.length > 0)
         return name;
 
       return address.replace('0x', '');
@@ -595,7 +608,7 @@ angular.module('netStatsApp.filters', [])
   })
   .filter('minerBlocksClass', function () {
     return function (blocks, prefix) {
-      if (typeof prefix === 'undefined')
+      if (!prefix)
         prefix = 'bg-';
       if (blocks <= 6)
         return prefix + 'success';
@@ -611,7 +624,7 @@ angular.module('netStatsApp.filters', [])
   })
   .filter('nodeClientClass', function () {
     return function (info, current) {
-      if (typeof info === 'undefined' || typeof info.client === 'undefined' || typeof info.client === '')
+      if (!info || !info.client)
         return 'text-danger';
 
       if (compareVersions(info.client, '<', current))

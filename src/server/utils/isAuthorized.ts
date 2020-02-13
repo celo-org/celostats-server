@@ -7,6 +7,7 @@ import { ec as EC } from "elliptic"
 import { KeyPair } from "elliptic/lib/elliptic/ec"
 import { isInputValid } from "./isInputValid";
 import { hash } from "./hash";
+import { Address } from "../interfaces/Address"
 
 const secp256k1 = new EC('secp256k1')
 
@@ -21,9 +22,10 @@ export function isAuthorized(
     proof && proof.publicKey && proof.signature
   ) {
     if (
-      reserved.indexOf(stats.address) < 0 && trusted
-        .map(address => address && address.toLowerCase())
-        .indexOf(proof.address) >= 0
+      reserved.indexOf(stats.address) < 0 &&
+      trusted
+        .map((address: Address): Address => address.toLowerCase())
+        .indexOf(proof.address.toLowerCase()) > -1
     ) {
 
       // check that msg hash is equal to msg hash from proof

@@ -6,15 +6,13 @@ export function deleteSpark(
 ): void {
   setTimeout((): void => {
 
-    Object.keys(spark)
-      .forEach((key) => {
-        delete spark[key]
-      })
+    for (const key of Object.keys(spark)) {
+      delete spark[key]
+    }
 
-    Object.getOwnPropertyNames(spark)
-      .forEach((key) => {
-        delete spark[key]
-      })
+    for (const key of Object.getOwnPropertyNames(spark)) {
+      delete spark[key]
+    }
 
     for (const key in spark) {
       delete (spark[key])

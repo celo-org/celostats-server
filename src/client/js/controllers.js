@@ -44,11 +44,18 @@ netStatsApp.controller('StatsCtrl', function (
   $scope.coinbases = [];
   $scope.latency = 0;
   $scope.currentApiVersion = '0.1.1';
-  $scope.predicate = $localStorage.predicate || ['-pinned', '-stats.active', '-stats.block.number', 'stats.block.propagation'];
+
+  $scope.originalPredicate = [
+    '-pinned',
+    '!stats.active'
+  ];
+
+  $scope.predicate = $localStorage.predicate || $scope.originalPredicate;
   $scope.reverse = $localStorage.reverse || false;
   $scope.pinned = $localStorage.pinned || [];
-  $scope.prefixPredicate = ['-pinned', '-stats.active'];
-  $scope.originalPredicate = ['-stats.block.number', 'stats.block.propagation'];
+  $scope.prefixPredicate = [
+    '-pinned'
+  ];
 
   $scope.orderTable = function (predicate, reverse) {
     if (!_.isEqual(predicate, $scope.originalPredicate)) {
@@ -243,9 +250,6 @@ netStatsApp.controller('StatsCtrl', function (
         node.stats.gasPrice = data.stats.gasPrice;
         node.stats.uptime = data.stats.uptime;
         node.stats.address = data.stats.address;
-
-        // todo optimize data model to update validatorData properly
-        node.validatorData.elected = data.stats.elected;
 
         if (
           !_.isUndefined(data.stats.latency) &&

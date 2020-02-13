@@ -1,7 +1,9 @@
+import { Address } from "./Address"
+
 export interface PropagationTime {
-  fork: number
-  propagation: number
-  readonly node: string
+  readonly node: Address
   readonly trusted: boolean
+  fork: number
   readonly received: number
+  propagation: number
 }

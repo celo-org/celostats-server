@@ -1,4 +1,6 @@
+import { Address } from "./Address"
+
 export interface Pending {
-  readonly id: string,
+  readonly id: Address
   readonly pending: number
 }

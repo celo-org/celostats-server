@@ -6,12 +6,14 @@ import { Pending } from "./interfaces/Pending";
 import { Latency } from "./interfaces/Latency";
 import { ChartData } from "./interfaces/ChartData";
 import { BlockStats } from "./interfaces/BlockStats";
-import { BasicStatsResponse } from "./interfaces/BasicStatsResponse";
+import { StatsResponse } from "./interfaces/StatsResponse";
 import { NodeStats } from "./interfaces/NodeStats";
 import { Block } from "./interfaces/Block";
 import { NodeInformation } from "./interfaces/NodeInformation";
 import { ValidatorData } from "./interfaces/ValidatorData"
 import { NodeDetails } from "./interfaces/NodeDetails"
+import { NodeSummary } from "./interfaces/NodeSummary"
+import { Address } from "./interfaces/Address"
 
 export default class Collection {
 
@@ -22,7 +24,7 @@ export default class Collection {
   private highestBlock = 1
 
   public addNode(
-    id: string,
+    id: Address,
     nodeInformation: NodeInformation
   ): NodeDetails {
     let node: Node = this.nodes.getNodeById(id)
@@ -37,7 +39,7 @@ export default class Collection {
   }
 
   public addBlock(
-    id: string,
+    id: Address,
     block: Block
   ): {
     highestBlock: number | null,
@@ -84,7 +86,7 @@ export default class Collection {
     }
   }
 
-  public getAll(): Node[] {
+  public getAll(): NodeSummary[] {
     return this.nodes.all()
   }
 
@@ -93,7 +95,7 @@ export default class Collection {
   }
 
   public updatePending(
-    id: string,
+    id: Address,
     stats: Stats
   ): Pending {
     const node: Node = this.nodes.getNodeById(id)
@@ -104,18 +106,18 @@ export default class Collection {
   }
 
   public updateStats(
-    id: string,
+    id: Address,
     stats: Stats,
-  ): BasicStatsResponse {
+  ): StatsResponse {
     const node: Node = this.nodes.getNodeById(id)
 
     if (node) {
-      return node.setBasicStats(stats)
+      return node.setStats(stats)
     }
   }
 
   public updateLatency(
-    id: string,
+    id: Address,
     latency: number,
   ): Latency {
     const node: Node = this.nodes.getNodeById(id)
@@ -132,7 +134,7 @@ export default class Collection {
 
     if (node) {
       node.setState(false)
-      return node.getStats()
+      return node.getNodeStats()
     }
   }
 
@@ -142,10 +144,9 @@ export default class Collection {
   }
 
   public setValidator(
-    id: string,
+    id: Address,
     validator: ValidatorData
   ): void {
-
     let node: Node = this.nodes.getNodeById(id)
 
     if (!node) {
@@ -153,5 +154,19 @@ export default class Collection {
     }
 
     node.setValidatorData(validator)
+  }
+
+  public updateStakingInformation(
+    registered: Address[],
+    elected: Address[]
+  ): void {
+    for (const node of this.nodes) {
+      const id: Address = node.getId().toLowerCase()
+
+      const elec = elected.indexOf(id) > -1
+      const reg = registered.indexOf(id) > -1
+
+      node.setStakingInformation(reg, elec)
+    }
   }
 }

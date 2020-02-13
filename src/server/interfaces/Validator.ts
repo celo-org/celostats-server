@@ -1,10 +1,12 @@
+import { Address } from "./Address"
+
 export interface Validator {
   // node address
-  readonly address: string
+  readonly address: Address
   // signer address
-  readonly signer: string
+  readonly signer: Address
   // validator group
-  readonly affiliation: string
+  readonly affiliation: Address
   // score
   readonly score: string
   readonly blsPublicKey: string

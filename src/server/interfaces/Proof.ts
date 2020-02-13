@@ -1,6 +1,8 @@
+import { Address } from "./Address"
+
 export interface Proof {
   // ether base of the node
-  readonly address: string
+  readonly address: Address
   // hash of the msg
   readonly msgHash: string
   // public key of the ether base of the node
