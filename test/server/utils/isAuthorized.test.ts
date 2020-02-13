@@ -3,7 +3,7 @@ import { isAuthorized } from "../../../src/server/utils/isAuthorized"
 import { Proof } from "../../../src/server/interfaces/Proof";
 import { trusted } from "../../../src/server/utils/config";
 import { generateProof } from "./generateProof";
-import { dummyInfo } from "../constats"
+import { dummyInfo } from "../constants"
 import { InfoWrapped } from "../../../src/server/interfaces/InfoWrapped"
 
 describe('isAuthorized', () => {

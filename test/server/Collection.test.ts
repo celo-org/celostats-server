@@ -1,7 +1,7 @@
 import assert from "assert"
 import Collection from "../../src/server/Collection";
 import { NodeInformation } from "../../src/server/interfaces/NodeInformation";
-import { dummyInfo } from "./constats"
+import { dummyInfo } from "./constants"
 
 describe('Collection', () => {
 

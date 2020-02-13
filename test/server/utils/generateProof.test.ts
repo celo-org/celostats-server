@@ -5,7 +5,7 @@ import { hash } from "../../../src/server/utils/hash"
 import { ec as EC } from "elliptic"
 // @ts-ignore
 import { KeyPair } from "elliptic/lib/elliptic/ec"
-import { dummyInfo } from "../constats"
+import { dummyInfo } from "../constants"
 import { InfoWrapped } from "../../../src/server/interfaces/InfoWrapped"
 
 const secp256k1 = new EC('secp256k1')
