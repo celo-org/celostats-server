@@ -1,4 +1,4 @@
 export interface ClientPong {
-  serverTime: number
-  clientTime: number
+  readonly serverTime: number
+  readonly clientTime: number
 }

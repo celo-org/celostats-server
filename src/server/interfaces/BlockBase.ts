@@ -1,17 +1,17 @@
 export interface BlockBase {
-  number: number
-  hash: string
-  parentHash: string
-  miner: string
-  blockRemain: number
-  difficulty: string
-  epochSize: number
-  totalDifficulty: string
-  gasLimit: number
-  gasUsed: number
-  timestamp: number
+  readonly number: number
+  readonly hash: string
+  readonly parentHash: string
+  readonly miner: string
+  readonly blockRemain: number
+  readonly difficulty: string
+  readonly epochSize: number
+  readonly totalDifficulty: string
+  readonly gasLimit: number
+  readonly gasUsed: number
+  readonly timestamp: number
   time: number
-  arrival: number
+  readonly arrival: number
   received: number
   trusted: boolean
   arrived: number

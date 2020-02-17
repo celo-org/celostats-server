@@ -27,6 +27,7 @@ import { isAuthorized } from "./utils/isAuthorized";
 import { Validator } from "./interfaces/Validator"
 import { ValidatorData } from "./interfaces/ValidatorData"
 import { NodeDetails } from "./interfaces/NodeDetails"
+import { Events } from "./server/Events"
 import { Address } from "./interfaces/Address"
 
 export default class Controller {
@@ -44,20 +45,19 @@ export default class Controller {
   public init(): void {
     // ping clients
     setInterval(() => {
-      this.clientBroadcast({
-        action: 'client-ping',
-        data: {
+      this.clientBroadcast(
+        Events.ClientPing, {
           serverTime: Date.now()
         }
-      })
+      )
     }, cfg.clientPingTimeout)
 
     // Cleanup old inactive nodes
     setInterval(() => {
-      this.clientBroadcast({
-        action: 'init',
-        data: this.collection.getAll()
-      })
+      this.clientBroadcast(
+        Events.Init,
+        this.collection.getAll()
+      )
 
       this.handleGetCharts()
 
@@ -74,10 +74,28 @@ export default class Controller {
     }, cfg.statisticsInterval)
   }
 
-  private clientBroadcast(payload: object) {
+  private clientBroadcast(
+    action: Events,
+    payload: object
+  ) {
     for (const i in this.client.sockets.connected) {
-      this.client.sockets.connected[i].emit('b', payload);
+      this.emit(
+        this.client.sockets.connected[i],
+        action, payload
+      );
       this.statistics.add(Sides.Client, Directions.Out)
+    }
+  }
+
+  private emit(
+    s: io.Socket | Primus.spark,
+    action: Events,
+    payload?: object | any[]
+  ) {
+    if (payload) {
+      s.emit(action, payload)
+    } else {
+      s.emit(action)
     }
   }
 
@@ -101,10 +119,14 @@ export default class Controller {
       <NodeInformation>{
         nodeData,
         stats
-      })
+      }
+    )
 
     if (nodeDetails) {
-      spark.emit('ready')
+      this.emit(
+        spark,
+        Events.Ready
+      )
 
       this.statistics.add(Sides.Node, Directions.Out)
 
@@ -112,10 +134,10 @@ export default class Controller {
         'API', 'CON', 'Node',
         `'${nodeDetails.info.name}'`, `(${spark.id})`, 'Connected')
 
-      this.clientBroadcast({
-        action: 'add',
-        data: nodeDetails
-      })
+      this.clientBroadcast(
+        Events.Add,
+        nodeDetails
+      )
     }
   }
 
@@ -125,15 +147,16 @@ export default class Controller {
     block: Block
   ): void {
     const res = this.collection.addBlock(
-      id, block)
+      id,
+      block
+    )
 
     if (res) {
       if (res.blockStats) {
-        this.clientBroadcast({
-          action: 'block',
-          data: res.blockStats
-        })
-
+        this.clientBroadcast(
+          Events.Block,
+          res.blockStats
+        )
         console.info(
           'API', 'BLK',
           'Block:', res.blockStats.block['number'],
@@ -143,10 +166,11 @@ export default class Controller {
       }
 
       if (res.highestBlock) {
-        this.clientBroadcast({
-          action: 'lastBlock',
-          number: res.highestBlock
-        })
+        this.clientBroadcast(
+          Events.LastBlock, {
+            highestBlock: res.highestBlock
+          }
+        )
 
         // propagate to all the clients
         this.handleGetCharts()
@@ -163,10 +187,10 @@ export default class Controller {
     )
 
     if (pending) {
-      this.clientBroadcast({
-        action: 'pending',
-        data: pending
-      })
+      this.clientBroadcast(
+        Events.Pending,
+        pending
+      )
 
       console.success(
         'API', 'TXS', 'Pending:',
@@ -233,10 +257,10 @@ export default class Controller {
     const basicStats = this.collection.updateStats(id, stats)
 
     if (basicStats) {
-      this.clientBroadcast({
-        action: 'stats',
-        data: basicStats
-      })
+      this.clientBroadcast(
+        Events.Stats,
+        basicStats
+      )
 
       console.info(
         'API', 'STA',
@@ -253,10 +277,9 @@ export default class Controller {
     const lat = this.collection.updateLatency(id, latency)
 
     if (lat) {
-      this.clientBroadcast({
-          action: 'latency',
-          data: lat
-        }
+      this.clientBroadcast(
+        Events.Latency,
+        lat
       )
 
       console.info(
@@ -274,10 +297,10 @@ export default class Controller {
     const nodeStats: NodeStats = this.collection.setInactive(id)
 
     if (nodeStats) {
-      this.clientBroadcast({
-        action: 'inactive',
-        data: nodeStats
-      })
+      this.clientBroadcast(
+        Events.Inactive,
+        nodeStats
+      )
 
       console.success(
         'API', 'CON', 'Node:',
@@ -294,8 +317,9 @@ export default class Controller {
   ): void {
     const start = (stats.clientTime ? stats.clientTime : null)
 
-    spark.emit(
-      'node-pong',
+    this.emit(
+      spark,
+      Events.NodePong,
       <NodePong>{
         clientTime: start,
         serverTime: Date.now()
@@ -367,17 +391,20 @@ export default class Controller {
 
     if (charts) {
       if (socket) {
-        socket.emit('charts', charts)
+        this.emit(
+          socket,
+          Events.Charts,
+          charts
+        )
 
         this.statistics.add(Sides.Client, Directions.Out)
       } else {
 
-        const chartsResponse = {
-          action: 'charts',
-          data: charts
-        }
         // propagate to all clients
-        this.clientBroadcast(chartsResponse)
+        this.clientBroadcast(
+          Events.Charts,
+          charts
+        )
       }
     }
   }
@@ -389,9 +416,11 @@ export default class Controller {
     const serverTime = data.serverTime || 0
     const latency = Math.ceil((Date.now() - serverTime) / 2)
 
-    socket.emit(
-      'client-latency',
-      {latency: latency}
+    this.emit(
+      socket,
+      Events.ClientLatency, {
+        latency
+      }
     )
 
     this.statistics.add(Sides.Client, Directions.Out)
@@ -401,8 +430,9 @@ export default class Controller {
     id: string,
     socket: io.Socket
   ): void {
-    socket.emit(
-      'init',
+    this.emit(
+      socket,
+      Events.Init,
       this.collection.getAll()
     )
 

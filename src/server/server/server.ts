@@ -29,6 +29,7 @@ import { Directions } from "../statistics/Directions";
 import { IDictionary } from "../interfaces/IDictionary";
 import { isInputValid } from "../utils/isInputValid";
 import { deleteSpark } from "../utils/deleteSpark";
+import { Events } from "./Events"
 
 export default class Server {
 
@@ -116,182 +117,177 @@ export default class Server {
 
   private initApi(): void {
     // Init API Socket events
-    this.api.on('connection', (spark: Primus.spark): void => {
-      this.controller.statistics.add(Sides.Node, Directions.In)
-
-      // make connection dangling by default
-      this.danglingConnections[spark.id] = 1
-
-      console.success(
-        'API', 'CON', 'Node Open:',
-        spark.address.ip, `'${spark.id}'`
-      )
-
-      spark.on('hello', (data: NodeResponseInfo): void => {
+    this.api
+      .on(Events.Connection, (spark: Primus.spark): void => {
         this.controller.statistics.add(Sides.Node, Directions.In)
 
-        const {
-          stats,
-          proof
-        }: {
-          stats: InfoWrapped,
-          proof: Proof
-        } = data
-
-        const id = proof.address;
-
-        const isAuthed = this.controller.handleNodeHello(
-          id, proof, stats, spark
-        )
-
-        if (isAuthed) {
-          // remove dangling connection on success
-          delete (this.danglingConnections[spark.id])
-        }
-      })
-
-      spark.on('block', (data: NodeResponseBlock): void => {
-        this.controller.statistics.add(Sides.Node, Directions.In)
-
-        const {
-          stats,
-          proof
-        }: {
-          stats: BlockWrapped,
-          proof: Proof
-        } = data
-
-        if (isInputValid(stats) && stats.block) {
-          const id = proof.address
-
-          // handle validator information from block
-          this.controller.handleNodeBlockValidators(stats.block.validators)
-
-          this.controller.handleNodeBlock(id, spark.address.ip, stats.block)
-
-        } else {
-          console.error(
-            'API', 'BLK',
-            'Invalid Block message:',
-            stats
-          )
-        }
-      })
-
-      spark.on('pending', (data: NodeResponseStats): void => {
-        this.controller.statistics.add(Sides.Node, Directions.In)
-
-        const {
-          stats,
-          proof
-        }: {
-          stats: StatsWrapped,
-          proof: Proof
-        } = data
-
-        if (isInputValid(stats) && stats.stats) {
-          const id = proof.address
-
-          this.controller.handleNodePending(id, stats.stats)
-        } else {
-          console.error('API', 'TXS', 'Pending error:', data)
-        }
-      })
-
-      spark.on('stats', (data: NodeResponseStats): void => {
-        this.controller.statistics.add(Sides.Node, Directions.In)
-
-        const {
-          stats,
-          proof
-        }: {
-          stats: StatsWrapped,
-          proof: Proof
-        } = data;
-
-        if (
-          isInputValid(stats) &&
-          stats.stats
-        ) {
-
-          // why? why not spark.id like everywhere?
-          const id = proof.address
-
-          this.controller.handleNodeStats(id, stats.stats)
-        }
-      })
-
-      spark.on('node-ping', (data: NodeResponsePing): void => {
-        this.controller.statistics.add(Sides.Node, Directions.In)
-
-        const {
-          stats,
-          proof
-        }: {
-          stats: NodePing,
-          proof: Proof
-        } = data
-
-        if (isInputValid(stats)) {
-          const id = proof.address
-
-          this.controller.handleNodePing(id, stats, spark)
-        }
-      })
-
-      spark.on('latency', (data: NodeResponseLatency): void => {
-        this.controller.statistics.add(Sides.Node, Directions.In)
-
-        const {
-          stats,
-          proof
-        }: {
-          stats: Latency,
-          proof: Proof
-        } = data
-
-        if (isInputValid(stats)) {
-
-          const id = proof.address
-
-          this.controller.handleNodeLatency(
-            id,
-            // todo: make node send this as number instead of string
-            parseInt(String(stats.latency))
-          )
-        }
-      })
-
-      spark.on('end', (): void => {
-        this.controller.statistics.add(Sides.Node, Directions.In)
-
-        // use spark id here, we have nothing else
-        const id = spark.id;
-
-        // it this was caused by a failed auth do not try this
-        if (this.danglingConnections[id]) {
-          delete (this.danglingConnections[spark.id])
-
-        } else {
-          this.controller.handleNodeEnd(id)
-        }
+        // make connection dangling by default
+        this.danglingConnections[spark.id] = 1
 
         console.success(
-          'API', 'CON', 'Node Close:',
-          spark.address.ip, `'${id}'`
+          'API', 'CON', 'Node Open:',
+          spark.address.ip, `'${spark.id}'`
         )
 
-      })
-    })
+        spark
+          .on(Events.Hello, (data: NodeResponseInfo): void => {
+            this.controller.statistics.add(Sides.Node, Directions.In)
 
-    this.api.on('disconnection', (spark: Primus.spark): void => {
-      deleteSpark(spark)
-    });
+            const {
+              stats,
+              proof
+            }: {
+              stats: InfoWrapped,
+              proof: Proof
+            } = data
+
+            const id = proof.address;
+
+            const isAuthed = this.controller.handleNodeHello(
+              id, proof, stats, spark
+            )
+
+            if (isAuthed) {
+              // remove dangling connection on success
+              delete (this.danglingConnections[spark.id])
+            }
+          })
+          .on(Events.Block, (data: NodeResponseBlock): void => {
+            this.controller.statistics.add(Sides.Node, Directions.In)
+
+            const {
+              stats,
+              proof
+            }: {
+              stats: BlockWrapped,
+              proof: Proof
+            } = data
+
+            if (isInputValid(stats) && stats.block) {
+              const id = proof.address
+
+              // handle validator information from block
+              this.controller.handleNodeBlockValidators(stats.block.validators)
+
+              this.controller.handleNodeBlock(id, spark.address.ip, stats.block)
+
+            } else {
+              console.error(
+                'API', 'BLK',
+                'Invalid Block message:',
+                stats
+              )
+            }
+          })
+          .on(Events.Pending, (data: NodeResponseStats): void => {
+            this.controller.statistics.add(Sides.Node, Directions.In)
+
+            const {
+              stats,
+              proof
+            }: {
+              stats: StatsWrapped,
+              proof: Proof
+            } = data
+
+            if (isInputValid(stats) && stats.stats) {
+              const id = proof.address
+
+              this.controller.handleNodePending(id, stats.stats)
+            } else {
+              console.error('API', 'TXS', 'Pending error:', data)
+            }
+          })
+          .on(Events.Stats, (data: NodeResponseStats): void => {
+            this.controller.statistics.add(Sides.Node, Directions.In)
+
+            const {
+              stats,
+              proof
+            }: {
+              stats: StatsWrapped,
+              proof: Proof
+            } = data;
+
+            if (
+              isInputValid(stats) &&
+              stats.stats
+            ) {
+
+              // why? why not spark.id like everywhere?
+              const id = proof.address
+
+              this.controller.handleNodeStats(id, stats.stats)
+            }
+          })
+          .on(Events.NodePing, (data: NodeResponsePing): void => {
+            this.controller.statistics.add(Sides.Node, Directions.In)
+
+            const {
+              stats,
+              proof
+            }: {
+              stats: NodePing,
+              proof: Proof
+            } = data
+
+            if (isInputValid(stats)) {
+              const id = proof.address
+
+              this.controller.handleNodePing(id, stats, spark)
+            }
+          })
+          .on(Events.Latency, (data: NodeResponseLatency): void => {
+            this.controller.statistics.add(Sides.Node, Directions.In)
+
+            const {
+              stats,
+              proof
+            }: {
+              stats: Latency,
+              proof: Proof
+            } = data
+
+            if (isInputValid(stats)) {
+
+              const id = proof.address
+
+              this.controller.handleNodeLatency(
+                id,
+                // todo: make node send this as number instead of string
+                parseInt(String(stats.latency))
+              )
+            }
+          })
+          .on(Events.End, (): void => {
+            this.controller.statistics.add(Sides.Node, Directions.In)
+
+            // use spark id here, we have nothing else
+            const id = spark.id;
+
+            // it this was caused by a failed auth do not try this
+            if (this.danglingConnections[id]) {
+              delete (this.danglingConnections[spark.id])
+
+            } else {
+              this.controller.handleNodeEnd(id)
+            }
+
+            console.success(
+              'API', 'CON', 'Node Close:',
+              spark.address.ip, `'${id}'`
+            )
+
+          })
+      })
+      .on(Events.Disconnection, (spark: Primus.spark): void => {
+        deleteSpark(spark)
+      });
   }
 
   private initClient(): void {
     this.client
-      .on('connection', (socket: io.Socket): void => {
+      .on(Events.Connection, (socket: io.Socket): void => {
         this.controller.statistics.add(Sides.Client, Directions.In)
 
         console.success(
@@ -300,23 +296,23 @@ export default class Server {
         )
 
         socket
-          .once('ready', (): void => {
+          .once(Events.Ready, (): void => {
             this.controller.statistics.add(Sides.Client, Directions.In)
             const id = socket.id
 
             this.controller.handleClientReady(id, socket)
           })
-          .on('client-pong', (data: ClientPong): void => {
+          .on(Events.ClientPong, (data: ClientPong): void => {
             this.controller.statistics.add(Sides.Client, Directions.In)
 
             this.controller.handleClientPong(data, socket)
           })
-          .once('error', (reason: string): void => {
+          .on(Events.Error, (reason: string): void => {
             const id = socket.id;
             console.error(reason)
             this.controller.handleClientEnd(id, socket, reason)
           })
-          .once('disconnecting', (reason: string): void => {
+          .once(Events.Disconnecting, (reason: string): void => {
             const id = socket.id;
             this.controller.handleClientEnd(id, socket, reason)
           })

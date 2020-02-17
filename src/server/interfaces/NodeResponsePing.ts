@@ -5,4 +5,3 @@ export interface NodeResponsePing {
   readonly proof: Proof
   readonly stats: NodePing
 }
-

@@ -16,7 +16,7 @@ describe('Collection', () => {
     stats: {
       id: '11',
       address: '0x12345',
-      info: dummyInfo
+      info: dummyInfo,
     }
   }
 

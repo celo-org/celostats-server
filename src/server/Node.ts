@@ -2,15 +2,15 @@ import deepEqual from "deep-equal";
 import { cfg, trusted } from "./utils/config"
 import { Block } from "./interfaces/Block";
 import { Pending } from "./interfaces/Pending";
-import { StatsResponse } from "./interfaces/StatsResponse";
 import { Latency } from "./interfaces/Latency";
+import { StatsResponse } from "./interfaces/StatsResponse";
 import { BlockStats } from "./interfaces/BlockStats";
 import { Info } from "./interfaces/Info";
 import { Uptime } from "./interfaces/Uptime";
 import { NodeStats } from "./interfaces/NodeStats";
 import { NodeDetails } from "./interfaces/NodeDetails";
 import { NodeInformation } from "./interfaces/NodeInformation";
-import { ValidatorData} from "./interfaces/ValidatorData"
+import { ValidatorData } from "./interfaces/ValidatorData"
 import { BlockSummary } from "./interfaces/BlockSummary"
 import { NodeSummary } from "./interfaces/NodeSummary"
 import { Stats } from "./interfaces/Stats"
@@ -82,7 +82,7 @@ export default class Node {
     uptime: null
   }
 
-  private _uptime: Uptime = {
+  private readonly _uptime: Uptime = {
     started: null,
     up: null,
     down: null,
@@ -444,7 +444,7 @@ export default class Node {
     }
   }
 
-  private calculateUptime() {
+  private calculateUptime(): number {
     if (this._uptime.lastUpdate === this._uptime.started) {
       return 100
     }
@@ -454,7 +454,7 @@ export default class Node {
 
   private setPropagationHistory(
     propagationHistory: number[]
-  ) {
+  ): boolean {
     // anything new?
     if (deepEqual(propagationHistory, this._propagationHistory)) {
       // no, nothing to set

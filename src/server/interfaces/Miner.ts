@@ -1,4 +1,6 @@
 export interface Miner {
-  readonly miner: string;
+  // miner address
+  readonly miner: string
+  // block number
   readonly number: number
 }

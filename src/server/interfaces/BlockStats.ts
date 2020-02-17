@@ -2,8 +2,8 @@ import { BlockSummary } from "./BlockSummary"
 import { Address } from "./Address"
 
 export interface BlockStats {
-  id: Address
-  block: BlockSummary
-  propagationAvg: number
-  history: number[]
+  readonly id: Address
+  readonly block: BlockSummary
+  readonly propagationAvg: number
+  readonly history: number[]
 }

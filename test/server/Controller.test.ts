@@ -19,9 +19,9 @@ describe('Controller', () => {
 
     const server = createServer(expressConfig)
 
-    server.headersTimeout = 0.9 * 1000
-    server.maxHeadersCount = 0
-    server.timeout = 0.6 * 1000
+    server.headersTimeout = cfg.headersTimeout
+    server.maxHeadersCount = cfg.maxHeadersCount
+    server.timeout = cfg.timeout
 
     const api = new Primus(server, {
       transformer: 'websockets',

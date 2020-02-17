@@ -102,27 +102,48 @@ netStatsApp.controller('StatsCtrl', function (
   // Socket listeners
   // ----------------
   socket
-    .on('connect', function open () {
+    .on('connect', function () {
       socket.emit('ready');
       console.log('The connection has been opened.');
     })
-    .on('end', function end () {
+    .on('end', function () {
       console.log('Socket connection ended.');
     })
-    .on('error', function error (err) {
+    .on('error', function (err) {
       console.log(err);
     })
-    .on('reconnecting', function reconnecting (opts) {
+    .on('reconnecting', function (opts) {
       console.log('We are scheduling a reconnect operation', opts);
     })
-    .on('b', function (data) {
-      socketAction(data.action, data.data);
+    .on('client-ping', function (data) {
+      socketAction('client-ping', data);
     })
     .on('init', function (data) {
       socketAction('init', data);
     })
+    .on('stats', function (data) {
+      socketAction('stats', data);
+    })
+    .on('block', function (data) {
+      socketAction('block', data);
+    })
+    .on('lastBlock', function (data) {
+      socketAction('lastBlock', data);
+    })
+    .on('pending', function (data) {
+      socketAction('pending', data);
+    })
     .on('charts', function (data) {
       socketAction('charts', data);
+    })
+    .on('info', function (data) {
+      socketAction('info', data);
+    })
+    .on('inactive', function (data) {
+      socketAction('inactive', data);
+    })
+    .on('latency', function (data) {
+      socketAction('latency', data);
     })
     .on('client-latency', function (data) {
       $scope.latency = data.latency;
@@ -157,49 +178,6 @@ netStatsApp.controller('StatsCtrl', function (
       toastr['success']('Got nodes list', 'Got nodes!');
 
       updateActiveNodes();
-    }
-  }
-
-  function handleUpdate (data) {
-    var index = findIndex({ id: data.id });
-    var node = $scope.nodes[index];
-
-    if (
-      index >= 0 &&
-      !_.isUndefined(node) &&
-      !_.isUndefined(node.stats)
-    ) {
-      if (!_.isUndefined(node.stats.latency))
-        data.stats.latency = node.stats.latency;
-
-      if (_.isUndefined(data.stats.hashrate))
-        data.stats.hashrate = 0;
-
-      if (node.stats.block.number < data.stats.block.number) {
-        var best = _.maxBy($scope.nodes, function (node) {
-          return parseInt(node.stats.block.number);
-        }).stats.block;
-
-        if (data.stats.block.number > best.number) {
-          data.stats.block.arrived = _.now();
-        } else {
-          data.stats.block.arrived = best.arrived;
-        }
-        node.history = data.history;
-      }
-
-      node.stats = data.stats;
-
-      if (
-        !_.isUndefined(data.stats.latency) &&
-        _.get(node, 'stats.latency', 0) !== data.stats.latency
-      ) {
-        node.stats.latency = data.stats.latency;
-
-        latencyFilter(node);
-      }
-
-      updateBestBlock();
     }
   }
 
@@ -303,11 +281,6 @@ netStatsApp.controller('StatsCtrl', function (
     }
   }
 
-  function handleBlockPropagationChart (data) {
-    $scope.blockPropagationChart = data.histogram;
-    $scope.blockPropagationAvg = data.avg;
-  }
-
   function handleCharts (data) {
     if (!_.isEqual($scope.avgBlockTime, data.avgBlocktime))
       $scope.avgBlockTime = data.avgBlocktime;
@@ -392,11 +365,6 @@ netStatsApp.controller('StatsCtrl', function (
         handleInit(data);
         break;
 
-      // TODO: Remove when everybody updates api client to 0.0.12
-      case 'update':
-        handleUpdate(data);
-        break;
-
       case 'block':
         handleBlock(data);
         break;
@@ -413,10 +381,6 @@ netStatsApp.controller('StatsCtrl', function (
         handleInfo(data);
         break;
 
-      case 'blockPropagationChart':
-        handleBlockPropagationChart(data);
-        break;
-
       case 'charts':
         handleCharts(data);
         break;
@@ -431,6 +395,14 @@ netStatsApp.controller('StatsCtrl', function (
 
       case 'client-ping':
         handleClientPing(data);
+        break;
+
+      case 'lastBlock':
+        // stub, handle me!
+        break;
+
+      default:
+        console.warn('Action', action, 'is not handled!');
         break;
     }
   }

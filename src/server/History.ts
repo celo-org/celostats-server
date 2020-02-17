@@ -64,16 +64,7 @@ export default class History {
             block.propagation = now - historyBlock.forks[forkIndex].received
           } else {
             // No fork found => add a new one
-            const prevBlock: BlockWrapper = this.blocks.prevMaxBlock()
-
-            if (prevBlock) {
-              block.time = Math.max(block.arrived - prevBlock.block.arrived, 0)
-
-              if (block.number < this.blocks.bestBlock().height)
-                block.time = Math.max((block.timestamp - prevBlock.block.timestamp) * 1000, 0)
-            } else {
-              block.time = 0
-            }
+            this.setBlockTime(block)
 
             forkIndex = historyBlock.forks.push(block) - 1
             historyBlock.forks[forkIndex].fork = forkIndex
@@ -109,17 +100,7 @@ export default class History {
             block.received = historyBlock.propagTimes[propagationIndex].received
             block.propagation = historyBlock.propagTimes[propagationIndex].propagation
 
-            const prevBlock = this.blocks.prevMaxBlock()
-
-            if (prevBlock) {
-              block.time = Math.max(block.arrived - prevBlock.block.arrived, 0)
-
-              if (block.number < this.blocks.bestBlock().height) {
-                block.time = Math.max((block.timestamp - prevBlock.block.timestamp) * 1000, 0)
-              }
-            } else {
-              block.time = 0
-            }
+            this.setBlockTime(block)
 
             forkIndex = historyBlock.forks.push(block) - 1
             historyBlock.forks[forkIndex].fork = forkIndex
@@ -144,19 +125,7 @@ export default class History {
 
       } else {
         // Couldn't find block with this height
-
-        // Getting previous max block
-        const prevBlock = this.blocks.prevMaxBlock()
-
-        if (prevBlock) {
-          block.time = Math.max(block.arrived - prevBlock.block.arrived, 0)
-
-          if (block.number < this.blocks.bestBlock().height) {
-            block.time = Math.max((block.timestamp - prevBlock.block.timestamp) * 1000, 0)
-          }
-        } else {
-          block.time = 0
-        }
+        this.setBlockTime(block)
 
         const blockWrapper: BlockWrapper = {
           height: block.number,
@@ -192,6 +161,21 @@ export default class History {
         block: block,
         changed: changed
       }
+    }
+  }
+
+  private setBlockTime(block: Block) {
+    // Getting previous max block
+    const prevBlock: BlockWrapper = this.blocks.prevMaxBlock()
+
+    if (prevBlock) {
+      block.time = Math.max(block.arrived - prevBlock.block.arrived, 0)
+
+      if (block.number < this.blocks.bestBlock().height) {
+        block.time = Math.max((block.timestamp - prevBlock.block.timestamp) * 1000, 0)
+      }
+    } else {
+      block.time = 0
     }
   }
 

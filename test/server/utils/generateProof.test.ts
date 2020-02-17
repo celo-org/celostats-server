@@ -1,22 +1,22 @@
 import { generateProof } from "./generateProof";
-import { StatsWrapped } from "../../../src/server/interfaces/StatsWrapped"
 import assert from "assert";
 import { hash } from "../../../src/server/utils/hash"
 // @ts-ignore
 import { ec as EC } from "elliptic"
 // @ts-ignore
 import { KeyPair } from "elliptic/lib/elliptic/ec"
-import { InfoWrapped } from "../../../src/server/interfaces/InfoWrapped"
 import { dummyInfo } from "../constants"
+import { InfoWrapped } from "../../../src/server/interfaces/InfoWrapped"
 
 const secp256k1 = new EC('secp256k1')
 
 describe('#generateProof()', () => {
 
   it('should generate 130 bytes long 0x prefixed signatures always', () => {
+
     const stats: InfoWrapped = {
+      address: '0x0',
       id: 'lorem ipsum',
-      address: "0x0",
       info: dummyInfo
     }
 
@@ -29,8 +29,8 @@ describe('#generateProof()', () => {
 
   it('must verify its own signature', () => {
     const stats: InfoWrapped = {
+      address: '0x0',
       id: 'lorem ipsum',
-      address: "0x0",
       info: dummyInfo
     }
 
