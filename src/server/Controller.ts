@@ -147,7 +147,8 @@ export default class Controller {
     block: Block
   ): void {
     const res = this.collection.addBlock(
-      id, block)
+      id, block
+    )
 
     if (res) {
       if (res.blockStats) {
