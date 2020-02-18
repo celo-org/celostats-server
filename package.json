@@ -1,6 +1,6 @@
 {
-  "name": "ethstats-server",
-  "description": "Ethstats Network Dashboard",
+  "name": "@celo/celostats-server",
+  "description": "Celostats Network Dashboard",
   "version": "0.2.0",
   "private": true,
   "engines": {
@@ -87,17 +87,6 @@
   "bugs": {
     "url": "https://github.com/goerli/netstats-server/issues"
   },
-  "authors": [
-    {
-      "name": "Marian Oancea",
-      "email": "marian@ethdev.com",
-      "url": "https://github.com/cubedro"
-    },
-    {
-      "name": "Afri Schoedon",
-      "email": "goerli@5chdn.co",
-      "url": "https://github.com/goerli"
-    }
-  ],
+  "authors": [],
   "license": "LGPL-3.0"
 }
