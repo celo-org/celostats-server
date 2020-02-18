@@ -29,6 +29,11 @@ import { ValidatorData } from "./interfaces/ValidatorData"
 import { NodeDetails } from "./interfaces/NodeDetails"
 import { Events } from "./server/Events"
 import { Address } from "./interfaces/Address"
+import { ChartData } from "./interfaces/ChartData"
+import { Pending } from "./interfaces/Pending"
+import { StatsResponse } from "./interfaces/StatsResponse"
+import { ClientPing } from "./interfaces/ClientPing"
+import { LastBlock } from "./interfaces/LastBlock"
 
 export default class Controller {
   private readonly collection: Collection
@@ -46,7 +51,8 @@ export default class Controller {
     // ping clients
     setInterval(() => {
       this.clientBroadcast(
-        Events.ClientPing, {
+        Events.ClientPing,
+        <ClientPing>{
           serverTime: Date.now()
         }
       )
@@ -167,7 +173,8 @@ export default class Controller {
 
       if (res.highestBlock) {
         this.clientBroadcast(
-          Events.LastBlock, {
+          Events.LastBlock,
+          <LastBlock>{
             highestBlock: res.highestBlock
           }
         )
@@ -182,7 +189,7 @@ export default class Controller {
     id: Address,
     stats: Stats
   ): void {
-    const pending = this.collection.updatePending(
+    const pending: Pending = this.collection.updatePending(
       id, stats
     )
 
@@ -254,12 +261,12 @@ export default class Controller {
     id: Address,
     stats: Stats
   ): void {
-    const basicStats = this.collection.updateStats(id, stats)
+    const statsResponse: StatsResponse = this.collection.updateStats(id, stats)
 
-    if (basicStats) {
+    if (statsResponse) {
       this.clientBroadcast(
         Events.Stats,
-        basicStats
+        statsResponse
       )
 
       console.info(
@@ -387,7 +394,7 @@ export default class Controller {
   private handleGetCharts(
     socket?: io.Socket
   ): void {
-    const charts = this.collection.getCharts()
+    const charts: ChartData = this.collection.getCharts()
 
     if (charts) {
       if (socket) {
@@ -413,8 +420,8 @@ export default class Controller {
     data: ClientPong,
     socket: io.Socket
   ): void {
-    const serverTime = data.serverTime || 0
-    const latency = Math.ceil((Date.now() - serverTime) / 2)
+    const serverTime: number = data.serverTime || 0
+    const latency: number = Math.ceil((Date.now() - serverTime) / 2)
 
     this.emit(
       socket,
