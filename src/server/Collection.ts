@@ -109,12 +109,16 @@ export default class Collection {
   }
 
   private async loadContractKit(): Promise<void> {
-    const kit: ContractKit = newKit(cfg.JSONRPC)
+    try {
+      const kit: ContractKit = newKit(cfg.JSONRPC)
 
-    // load validators contract
-    validatorsContract = await kit.contracts.getValidators()
+      // load validators contract
+      validatorsContract = await kit.contracts.getValidators()
 
-    console.info('Contract kit loaded!')
+      console.info('Contract kit loaded!')
+    } catch (err) {
+      console.error('Loading of contract kit failed!', err)
+    }
   }
 
   public updatePending(
