@@ -18,7 +18,7 @@
     "compile:client": "grunt",
     "watch": "grunt watch",
     "dist": "grunt",
-    "postinstall": "yarn compile",
+    "postinstall": "yarn compile:server",
     "start": "node ./dist/server/app.js",
     "start:inspect": "node --inspect ./dist/server/app.js"
   },
