@@ -14,14 +14,9 @@ import { ValidatorData } from "./interfaces/ValidatorData"
 import { NodeDetails } from "./interfaces/NodeDetails"
 import { NodeSummary } from "./interfaces/NodeSummary"
 import { Address } from "./interfaces/Address"
-import { ContractKit, newKit } from "@celo/contractkit"
-import {
-  ValidatorGroup,
-  ValidatorsWrapper
-} from "@celo/contractkit/lib/wrappers/Validators"
 import { cfg } from "./utils/config"
 
-let validatorsContract: ValidatorsWrapper = null;
+// let validatorsContract: ValidatorsWrapper = null;
 
 export default class Collection {
 
@@ -31,11 +26,13 @@ export default class Collection {
   // todo: move to history
   private highestBlock = 1
 
+  /*
   constructor() {
     (async () => {
       await this.loadContractKit()
     })()
   }
+  */
 
   public addNode(
     id: Address,
@@ -108,18 +105,22 @@ export default class Collection {
     return this.highestBlock
   }
 
+  /*
   private async loadContractKit(): Promise<void> {
-    try {
-      const kit: ContractKit = newKit(cfg.JSONRPC)
+    if (!validatorsContract) {
+      try {
+        const kit: ContractKit = newKit(cfg.JSONRPC)
 
-      // load validators contract
-      validatorsContract = await kit.contracts.getValidators()
+        // load validators contract
+        validatorsContract = await kit.contracts.getValidators()
 
-      console.info('Contract kit loaded!')
-    } catch (err) {
-      console.error('Loading of contract kit failed!', err)
+        console.info('Contract kit loaded!')
+      } catch (err) {
+        console.error('Loading of contract kit failed!', err)
+      }
     }
   }
+  */
 
   public updatePending(
     id: Address,
@@ -180,6 +181,7 @@ export default class Collection {
       node = this.nodes.createEmptyNode(id)
     }
 
+    /*
     if (node.getValidatorGroupName() === null && validatorsContract) {
       (async () => {
         const validatorGroup: ValidatorGroup = await validatorsContract.getValidatorGroup(
@@ -188,6 +190,7 @@ export default class Collection {
         node.setValidatorGroupName(validatorGroup.name)
       })()
     }
+    */
 
     node.setValidatorData(validator)
   }
