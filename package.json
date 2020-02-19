@@ -2,6 +2,7 @@
   "name": "@celo/celostats-server",
   "description": "Celostats Network Dashboard",
   "version": "0.2.0",
+  "main": "./src/server/app.ts",
   "private": true,
   "engines": {
     "node": ">=10.0.0"
