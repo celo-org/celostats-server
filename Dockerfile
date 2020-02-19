@@ -1,4 +1,4 @@
-FROM node:13
+FROM node:10.19
 
 ADD . /celostats-server
 WORKDIR /celostats-server
