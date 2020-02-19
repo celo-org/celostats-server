@@ -180,7 +180,7 @@ export default class Collection {
       node = this.nodes.createEmptyNode(id)
     }
 
-    if (validatorsContract) {
+    if (node.getValidatorGroupName() === null && validatorsContract) {
       (async () => {
         const validatorGroup: ValidatorGroup = await validatorsContract.getValidatorGroup(
           validator.affiliation.toString()

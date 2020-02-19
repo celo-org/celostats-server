@@ -142,6 +142,10 @@ export default class Node {
     return this.getInfo()
   }
 
+  public getValidatorGroupName(): string {
+    return this._validatorData.validatorGroupName
+  }
+
   public setValidatorGroupName(
     validatorGroupName: string
   ): void {
