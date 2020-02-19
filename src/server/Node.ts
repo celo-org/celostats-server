@@ -95,6 +95,7 @@ export default class Node {
     blsPublicKey: null,
     ecdsaPublicKey: null,
     score: null,
+    validatorGroupName: null,
     affiliation: null,
     registered: null,
     elected: null,
@@ -141,7 +142,15 @@ export default class Node {
     return this.getInfo()
   }
 
-  public setValidatorData(data: ValidatorData) {
+  public setValidatorGroupName(
+    validatorGroupName: string
+  ): void {
+    this._validatorData.validatorGroupName = validatorGroupName
+  }
+
+  public setValidatorData(
+    data: ValidatorData,
+  ): void {
     // set data
     this._validatorData = {
       blsPublicKey: data.blsPublicKey,

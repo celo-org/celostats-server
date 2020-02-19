@@ -5,6 +5,7 @@ export interface ValidatorData {
   readonly blsPublicKey: string
   readonly ecdsaPublicKey: string
   readonly affiliation: Address
+  validatorGroupName?: string
   readonly signer: Address
   readonly address: Address
 }
