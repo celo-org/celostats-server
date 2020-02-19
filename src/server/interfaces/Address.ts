@@ -1,3 +1,1 @@
-export class Address extends String {
-
-}
+export type Address = string
