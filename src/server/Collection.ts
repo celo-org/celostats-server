@@ -15,8 +15,10 @@ import { NodeDetails } from "./interfaces/NodeDetails"
 import { NodeSummary } from "./interfaces/NodeSummary"
 import { Address } from "./interfaces/Address"
 import { cfg } from "./utils/config"
+import { ValidatorGroup, ValidatorsWrapper } from "@celo/contractkit/lib/wrappers/Validators"
+import { ContractKit, newKit } from "@celo/contractkit"
 
-// let validatorsContract: ValidatorsWrapper = null;
+let validatorsContract: ValidatorsWrapper = null;
 
 export default class Collection {
 
@@ -26,13 +28,11 @@ export default class Collection {
   // todo: move to history
   private highestBlock = 1
 
-  /*
   constructor() {
     (async () => {
       await this.loadContractKit()
     })()
   }
-  */
 
   public addNode(
     id: Address,
@@ -105,7 +105,6 @@ export default class Collection {
     return this.highestBlock
   }
 
-  /*
   private async loadContractKit(): Promise<void> {
     if (!validatorsContract) {
       try {
@@ -120,7 +119,6 @@ export default class Collection {
       }
     }
   }
-  */
 
   public updatePending(
     id: Address,
@@ -181,7 +179,6 @@ export default class Collection {
       node = this.nodes.createEmptyNode(id)
     }
 
-    /*
     if (node.getValidatorGroupName() === null && validatorsContract) {
       (async () => {
         const validatorGroup: ValidatorGroup = await validatorsContract.getValidatorGroup(
@@ -190,7 +187,6 @@ export default class Collection {
         node.setValidatorGroupName(validatorGroup.name)
       })()
     }
-    */
 
     node.setValidatorData(validator)
   }
