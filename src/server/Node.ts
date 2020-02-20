@@ -16,21 +16,12 @@ import { NodeSummary } from "./interfaces/NodeSummary"
 import { Stats } from "./interfaces/Stats"
 import { ValidatorDataWithStaking } from "./interfaces/ValidatorDataWithStaking"
 import { Address } from "./interfaces/Address"
-import fetch from "node-fetch"
-import https from "https"
-import http from "http"
+import { validatorsContract } from "./ContractKit"
+import { ValidatorGroup } from "@celo/contractkit/lib/wrappers/Validators"
 // @ts-ignore
 import throttledQueue from 'throttled-queue';
 
 const throttle = throttledQueue(5, 1000, true);
-
-const agentOpts = {
-  keepAlive: true
-}
-
-
-const httpsAgent = new https.Agent(agentOpts)
-const httpAgent = new http.Agent(agentOpts)
 
 export default class Node {
 
@@ -514,37 +505,16 @@ export default class Node {
   private async loadValidatorGroupName(
     validatorGroupAddress: string
   ): Promise<void> {
-
-    const query = `{
-  celoValidatorGroup(hash: "${validatorGroupAddress}") { 
-    account {
-      name
-    }
-  }
-}`;
-
     try {
-      const response = await fetch(
-        `${cfg.blockscoutUrl}/graphiql`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-          },
-          agent: cfg.blockscoutUrl.startsWith('https') ? httpsAgent : httpAgent,
-          compress: cfg.compression,
-          body: JSON.stringify({query})
-        }
-      )
+      const validatorGroup: ValidatorGroup =
+        await validatorsContract.getValidatorGroup(validatorGroupAddress)
 
-      const {data} = await response.json()
-
-      if (data.celoValidatorGroup) {
+      if (validatorGroup) {
         this._validatorData.validatorGroupName =
-          data.celoValidatorGroup.account.name;
+          validatorGroup.name;
       }
     } catch (err) {
-      console.error('Unable to connect to Blockscout!', err.message)
+      console.error('Unable to connect to get Validator Group Name!', err.message)
     }
   }
 }
