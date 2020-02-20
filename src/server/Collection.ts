@@ -1,4 +1,4 @@
-import '../utils/logger'
+import './utils/logger'
 import History from "./History";
 import Node from "./Node"
 import Nodes from "./Nodes";
