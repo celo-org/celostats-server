@@ -157,6 +157,7 @@ export default class Node {
   ): void {
     // set data
     this._validatorData = {
+      ...this._validatorData,
       blsPublicKey: data.blsPublicKey,
       ecdsaPublicKey: data.ecdsaPublicKey,
       score: data.score,

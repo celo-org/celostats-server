@@ -113,9 +113,9 @@ export default class Collection {
         // load validators contract
         validatorsContract = await kit.contracts.getValidators()
 
-        console.info('Contract kit loaded!')
+        console.success('Contract kit loaded!')
       } catch (err) {
-        console.error('Loading of contract kit failed!', err)
+        console.error('Loading of contract kit failed!', err.message)
       }
     }
   }
@@ -179,10 +179,10 @@ export default class Collection {
       node = this.nodes.createEmptyNode(id)
     }
 
-    if (node.getValidatorGroupName() === null && validatorsContract) {
+    if (validatorsContract && !node.getValidatorGroupName()) {
       (async () => {
         const validatorGroup: ValidatorGroup = await validatorsContract.getValidatorGroup(
-          validator.affiliation.toString()
+          validator.affiliation
         )
         node.setValidatorGroupName(validatorGroup.name)
       })()
