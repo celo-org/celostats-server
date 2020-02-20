@@ -17,6 +17,15 @@ import { Stats } from "./interfaces/Stats"
 import { ValidatorDataWithStaking } from "./interfaces/ValidatorDataWithStaking"
 import { Address } from "./interfaces/Address"
 import fetch from "node-fetch"
+import https from "https"
+import http from "http"
+
+const agentOpts = {
+  keepAlive: true
+}
+
+const httpsAgent = new https.Agent(agentOpts)
+const httpAgent = new http.Agent(agentOpts)
 
 export default class Node {
 
@@ -506,14 +515,18 @@ export default class Node {
   }
 }`;
 
-        const response = await fetch(`${cfg.blockscoutUrl}/graphiql`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-          },
-          body: JSON.stringify({query})
-        })
+        const response = await fetch(
+          `${cfg.blockscoutUrl}/graphiql`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+            },
+            agent: cfg.blockscoutUrl.startsWith('https') ? httpsAgent : httpAgent,
+            compress: cfg.compression,
+            body: JSON.stringify({query})
+          }
+        )
 
         const {data} = await response.json()
 
