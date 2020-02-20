@@ -18,6 +18,10 @@ import { ValidatorDataWithStaking } from "./interfaces/ValidatorDataWithStaking"
 import { Address } from "./interfaces/Address"
 import https from "https"
 import http from "http"
+// @ts-ignore
+import throttledQueue from 'throttled-queue';
+
+const throttle = throttledQueue(5, 1000);
 
 const agentOpts = {
   keepAlive: true
@@ -156,9 +160,11 @@ export default class Node {
     validatorData: ValidatorData,
   ): void {
 
-    if (!this._validatorData.validatorGroupName) {
-      this.loadValidatorGroupName(validatorData.affiliation)
-    }
+    throttle(() => {
+      if (!this._validatorData.validatorGroupName) {
+        this.loadValidatorGroupName(validatorData.affiliation)
+      }
+    })
 
     // set data
     this._validatorData = {
