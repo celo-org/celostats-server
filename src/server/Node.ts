@@ -161,14 +161,14 @@ export default class Node {
     validatorData: ValidatorData,
   ): void {
 
-    throttle(() => {
-      if (
-        !this._validatorData.validatorGroupName &&
-        this._validatorData.affiliation !== validatorData.affiliation
-      ) {
-        this.loadValidatorGroupName(validatorData.affiliation)
-      }
-    })
+    if (
+      !this._validatorData.validatorGroupName &&
+      this._validatorData.affiliation !== validatorData.affiliation
+    ) {
+      throttle(async () => {
+        await this.loadValidatorGroupName(validatorData.affiliation)
+      })
+    }
 
     // set data
     this._validatorData = {
@@ -511,13 +511,11 @@ export default class Node {
     return true
   }
 
-  private loadValidatorGroupName(
+  private async loadValidatorGroupName(
     validatorGroupAddress: string
-  ): void {
+  ): Promise<void> {
 
-    try {
-      (async () => {
-        const query = `{
+    const query = `{
   celoValidatorGroup(hash: "${validatorGroupAddress}") { 
     account {
       name
@@ -525,26 +523,26 @@ export default class Node {
   }
 }`;
 
-        const response = await fetch(
-          `${cfg.blockscoutUrl}/graphiql`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'application/json',
-            },
-            agent: cfg.blockscoutUrl.startsWith('https') ? httpsAgent : httpAgent,
-            compress: cfg.compression,
-            body: JSON.stringify({query})
-          }
-        )
-
-        const {data} = await response.json()
-
-        if (data.celoValidatorGroup) {
-          this._validatorData.validatorGroupName =
-            data.celoValidatorGroup.account.name;
+    try {
+      const response = await fetch(
+        `${cfg.blockscoutUrl}/graphiql`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+          agent: cfg.blockscoutUrl.startsWith('https') ? httpsAgent : httpAgent,
+          compress: cfg.compression,
+          body: JSON.stringify({query})
         }
-      })()
+      )
+
+      const {data} = await response.json()
+
+      if (data.celoValidatorGroup) {
+        this._validatorData.validatorGroupName =
+          data.celoValidatorGroup.account.name;
+      }
     } catch (err) {
       console.error('Unable to connect to Blockscout!', err.message)
     }
