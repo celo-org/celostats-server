@@ -16,13 +16,13 @@ import { NodeSummary } from "./interfaces/NodeSummary"
 import { Stats } from "./interfaces/Stats"
 import { ValidatorDataWithStaking } from "./interfaces/ValidatorDataWithStaking"
 import { Address } from "./interfaces/Address"
-import fetch from "node-fetch"
 import https from "https"
 import http from "http"
 
 const agentOpts = {
   keepAlive: true
 }
+
 
 const httpsAgent = new https.Agent(agentOpts)
 const httpAgent = new http.Agent(agentOpts)
@@ -515,25 +515,40 @@ export default class Node {
   }
 }`;
 
-        const response = await fetch(
-          `${cfg.blockscoutUrl}/graphiql`, {
+        const url = new URL(cfg.blockscoutUrl)
+        const request = (url.protocol.startsWith('https') ? https : http).request(
+          {
             method: 'POST',
+            host: url.host,
+            protocol: url.protocol,
+            path: '/graphiql',
+            port: url.port,
             headers: {
               'Content-Type': 'application/json',
               'Accept': 'application/json',
             },
-            agent: cfg.blockscoutUrl.startsWith('https') ? httpsAgent : httpAgent,
-            compress: cfg.compression,
-            body: JSON.stringify({query})
+            agent: url.protocol.startsWith('https') ? httpsAgent : httpAgent
+          }, (response) => {
+
+            let res = ''
+            response.on('data', (chunk: string) => {
+              res += chunk
+            })
+
+            response.on('end', () => {
+              const {data} = JSON.parse(res)
+
+              if (data && data.celoValidatorGroup) {
+                this._validatorData.validatorGroupName =
+                  data.celoValidatorGroup.account.name;
+              }
+            })
           }
         )
 
-        const {data} = await response.json()
+        request.write(JSON.stringify({query}))
+        request.end();
 
-        if (data.celoValidatorGroup) {
-          this._validatorData.validatorGroupName =
-            data.celoValidatorGroup.account.name;
-        }
       })()
     } catch (err) {
       console.error('Unable to connect to Blockscout!', err.message)
