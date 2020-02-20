@@ -15,11 +15,6 @@ import { ValidatorData } from "./interfaces/ValidatorData"
 import { NodeDetails } from "./interfaces/NodeDetails"
 import { NodeSummary } from "./interfaces/NodeSummary"
 import { Address } from "./interfaces/Address"
-import { cfg } from "./utils/config"
-import { ValidatorGroup, ValidatorsWrapper } from "@celo/contractkit/lib/wrappers/Validators"
-import { ContractKit, newKit } from "@celo/contractkit"
-
-let validatorsContract: ValidatorsWrapper = null;
 
 export default class Collection {
 
@@ -28,12 +23,6 @@ export default class Collection {
 
   // todo: move to history
   private highestBlock = 1
-
-  constructor() {
-    (async () => {
-      await this.loadContractKit()
-    })()
-  }
 
   public addNode(
     id: Address,
@@ -106,21 +95,6 @@ export default class Collection {
     return this.highestBlock
   }
 
-  private async loadContractKit(): Promise<void> {
-    if (!validatorsContract) {
-      try {
-        const kit: ContractKit = newKit(cfg.JSONRPC)
-
-        // load validators contract
-        validatorsContract = await kit.contracts.getValidators()
-
-        console.success('Contract kit loaded!')
-      } catch (err) {
-        console.error('Loading of contract kit failed!', err.message)
-      }
-    }
-  }
-
   public updatePending(
     id: Address,
     stats: Stats
@@ -178,15 +152,6 @@ export default class Collection {
 
     if (!node) {
       node = this.nodes.createEmptyNode(id)
-    }
-
-    if (validatorsContract && !node.getValidatorGroupName()) {
-      (async () => {
-        const validatorGroup: ValidatorGroup = await validatorsContract.getValidatorGroup(
-          validator.affiliation
-        )
-        node.setValidatorGroupName(validatorGroup.name)
-      })()
     }
 
     node.setValidatorData(validator)
