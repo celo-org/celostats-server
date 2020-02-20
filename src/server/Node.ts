@@ -143,12 +143,6 @@ export default class Node {
     return this.getInfo()
   }
 
-  private setValidatorGroupName(
-    validatorGroupName: string
-  ): void {
-    this._validatorData.validatorGroupName = validatorGroupName;
-  }
-
   public setValidatorData(
     validatorData: ValidatorData,
   ): void {
@@ -521,10 +515,11 @@ export default class Node {
           body: JSON.stringify({query})
         })
 
-        const jsonResponse = await response.json()
+        const {data} = await response.json()
 
-        if (jsonResponse.celoValidatorGroup) {
-          this.setValidatorGroupName(jsonResponse.celoValidatorGroup.name)
+        if (data.celoValidatorGroup) {
+          this._validatorData.validatorGroupName =
+            data.celoValidatorGroup.account.name;
         }
       })()
     } catch (err) {
