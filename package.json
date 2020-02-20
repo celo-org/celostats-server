@@ -62,6 +62,7 @@
     "jquery-sparkline": "^2.4.0",
     "moment": "^2.24.0",
     "ngstorage": "^0.3.11",
+    "node-fetch": "^2.6.0",
     "popper.js": "^1.16.0",
     "prettier": "^1.19.1",
     "primus": "^7.3.4",
