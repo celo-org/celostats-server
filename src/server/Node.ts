@@ -22,7 +22,7 @@ import http from "http"
 // @ts-ignore
 import throttledQueue from 'throttled-queue';
 
-const throttle = throttledQueue(5, 1000);
+const throttle = throttledQueue(5, 1000, true);
 
 const agentOpts = {
   keepAlive: true
