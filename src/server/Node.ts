@@ -162,7 +162,10 @@ export default class Node {
   ): void {
 
     throttle(() => {
-      if (!this._validatorData.validatorGroupName) {
+      if (
+        !this._validatorData.validatorGroupName &&
+        this._validatorData.affiliation !== validatorData.affiliation
+      ) {
         this.loadValidatorGroupName(validatorData.affiliation)
       }
     })
@@ -538,9 +541,9 @@ export default class Node {
         const {data} = await response.json()
 
         if (data.celoValidatorGroup) {
-                this._validatorData.validatorGroupName =
-                  data.celoValidatorGroup.account.name;
-              }
+          this._validatorData.validatorGroupName =
+            data.celoValidatorGroup.account.name;
+        }
       })()
     } catch (err) {
       console.error('Unable to connect to Blockscout!', err.message)
