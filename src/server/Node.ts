@@ -16,6 +16,7 @@ import { NodeSummary } from "./interfaces/NodeSummary"
 import { Stats } from "./interfaces/Stats"
 import { ValidatorDataWithStaking } from "./interfaces/ValidatorDataWithStaking"
 import { Address } from "./interfaces/Address"
+import fetch from "node-fetch"
 
 export default class Node {
 
@@ -142,28 +143,29 @@ export default class Node {
     return this.getInfo()
   }
 
-  public getValidatorGroupName(): string {
-    return this._validatorData.validatorGroupName
-  }
-
-  public setValidatorGroupName(
+  private setValidatorGroupName(
     validatorGroupName: string
   ): void {
-    this._validatorData.validatorGroupName = validatorGroupName
+    this._validatorData.validatorGroupName = validatorGroupName;
   }
 
   public setValidatorData(
-    data: ValidatorData,
+    validatorData: ValidatorData,
   ): void {
+
+    if (!this._validatorData.validatorGroupName) {
+      this.loadValidatorGroupName(validatorData.affiliation)
+    }
+
     // set data
     this._validatorData = {
       ...this._validatorData,
-      blsPublicKey: data.blsPublicKey,
-      ecdsaPublicKey: data.ecdsaPublicKey,
-      score: data.score,
-      affiliation: data.affiliation,
-      signer: data.signer,
-      address: data.address,
+      blsPublicKey: validatorData.blsPublicKey,
+      ecdsaPublicKey: validatorData.ecdsaPublicKey,
+      score: validatorData.score,
+      affiliation: validatorData.affiliation,
+      signer: validatorData.signer,
+      address: validatorData.address,
       elected: null,
       registered: null
     }
@@ -494,5 +496,39 @@ export default class Node {
     this._stats.propagationAvg = (positives.length > 0 ? Math.round(sum / positives.length) : 0)
 
     return true
+  }
+
+  private loadValidatorGroupName(
+    validatorGroupAddress: string
+  ): void {
+
+    try {
+      (async () => {
+        const query = `{
+  celoValidatorGroup(hash: "${validatorGroupAddress}") { 
+    account {
+      name
+    }
+  }
+}`;
+
+        const response = await fetch(`${cfg.blockscoutUrl}/graphiql`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+          body: JSON.stringify({query})
+        })
+
+        const jsonResponse = await response.json()
+
+        if (jsonResponse.celoValidatorGroup) {
+          this.setValidatorGroupName(jsonResponse.celoValidatorGroup.name)
+        }
+      })()
+    } catch (err) {
+      console.error('Unable to connect to Blockscout!', err.message)
+    }
   }
 }
