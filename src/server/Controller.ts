@@ -199,7 +199,7 @@ export default class Controller {
         pending
       )
 
-      console.success(
+      console.info(
         'API', 'TXS', 'Pending:',
         pending['pending'],
         'from:', pending.id
