@@ -2,7 +2,7 @@ import { BlockWrapper } from "./interfaces/BlockWrapper";
 
 export default class Blocks extends Array<BlockWrapper> {
   public prevMaxBlock(): BlockWrapper {
-    const heights = this.map(item => item.height)
+    const heights = this.map(item => item.block.number)
     const index = heights.indexOf(Math.max(...heights))
 
     if (index < 0) {
@@ -23,18 +23,18 @@ export default class Blocks extends Array<BlockWrapper> {
   public bestBlockNumber(): number {
     const best: BlockWrapper = this.bestBlock()
 
-    if (best && best.height) {
-      return best.height
+    if (best && best.block.number) {
+      return best.block.number
     }
 
     return 0
   }
 
   public worstBlockNumber(): number {
-    const worst = this.worstBlock()
+    const worst: BlockWrapper = this.worstBlock()
 
-    if (worst && worst.height) {
-      return worst.height
+    if (worst && worst.block.number) {
+      return worst.block.number
     }
 
     return 0
@@ -52,7 +52,7 @@ export default class Blocks extends Array<BlockWrapper> {
       const delta = this
         .filter((blockWrapper: BlockWrapper) => {
           return (
-            blockWrapper.height <= max &&
+            blockWrapper.block.number <= max &&
             !blockWrapper.block.trusted
           )
         })
@@ -65,7 +65,7 @@ export default class Blocks extends Array<BlockWrapper> {
     number: number
   ): BlockWrapper {
     const index = this.indexOf(
-      this.find((b: BlockWrapper) => b.height === number)
+      this.find((b: BlockWrapper) => b.block.number === number)
     )
 
     if (index < 0) {

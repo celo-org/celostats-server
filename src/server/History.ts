@@ -13,6 +13,11 @@ import { cfg } from "./utils/config";
 import { compareBlocks } from "./utils/compareBlocks";
 import { compareForks } from "./utils/compareForks";
 import { Address } from "./interfaces/Address"
+// @ts-ignore
+import throttledQueue from 'throttled-queue';
+import { getContracts } from "./ContractKit"
+
+const throttle = throttledQueue(5, 1000, true);
 
 export default class History {
 
@@ -123,38 +128,48 @@ export default class History {
 
         changed = true
 
-      } else {
+      } else if (
+        this.blocks.length === 0 ||
+        (this.blocks.length > 0 && block.number > this.blocks.worstBlockNumber()) ||
+        (
+          this.blocks.length < cfg.maxBlockHistory &&
+          block.number < this.blocks.bestBlockNumber() &&
+          addingHistory
+        )
+      ) {
         // Couldn't find block with this height
         this.setBlockTime(block)
 
         const blockWrapper: BlockWrapper = {
-          height: block.number,
           block: block,
           forks: [block],
-          propagTimes: Array<PropagationTime>()
-        }
-
-        if (
-          this.blocks.length === 0 ||
-          (this.blocks.length > 0 && block.number > this.blocks.worstBlockNumber()) ||
-          (
-            this.blocks.length < cfg.maxBlockHistory &&
-            block.number < this.blocks.bestBlockNumber() &&
-            addingHistory
-          )
-        ) {
-          blockWrapper.propagTimes.push({
+          signers: [],
+          propagTimes: Array<PropagationTime>({
             node: id,
             trusted: trusted,
             fork: 0,
             received: now,
             propagation: block.propagation
           })
-
-          this.saveBlock(blockWrapper)
-
-          changed = true
         }
+
+        const contracts = getContracts()
+
+        if (contracts) {
+          (async () => {
+            try {
+              blockWrapper.signers = await contracts.election.getValidatorSigners(
+                blockWrapper.block.number
+              )
+            } catch (err) {
+              console.error('API', 'BLK', blockWrapper.block.number, err.message)
+            }
+          })()
+        }
+
+        this.saveBlock(blockWrapper)
+
+        changed = true
       }
 
       return {
@@ -171,7 +186,7 @@ export default class History {
     if (prevBlock) {
       block.time = Math.max(block.arrived - prevBlock.block.arrived, 0)
 
-      if (block.number < this.blocks.bestBlock().height) {
+      if (block.number < this.blocks.bestBlock().block.number) {
         block.time = Math.max((block.timestamp - prevBlock.block.timestamp) * 1000, 0)
       }
     } else {
@@ -186,7 +201,8 @@ export default class History {
       .unshift(block)
 
     this.blocks = this.blocks.sort(
-      (block1: BlockWrapper, block2: BlockWrapper) => block2.height - block1.height
+      (block1: BlockWrapper, block2: BlockWrapper) =>
+        block2.block.number - block1.block.number
     )
 
     if (this.blocks.length > cfg.maxBlockHistory) {
@@ -249,7 +265,7 @@ export default class History {
 
     let freqCum = 0
 
-    const histogram = data.map((val: any): HistogramEntry => {
+    const histogram = data.map((val): HistogramEntry => {
       freqCum += val.length
 
       const cumPercent = (freqCum / Math.max(1, propagation.length))
@@ -307,7 +323,7 @@ export default class History {
         miner: string
       } => {
         return {
-          height: blockWrapper.height,
+          height: blockWrapper.block.number,
           blocktime: blockWrapper.block.time / 1000,
           difficulty: blockWrapper.block.difficulty,
           uncles: blockWrapper.block.uncles.length,

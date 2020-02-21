@@ -16,12 +16,6 @@ import { NodeSummary } from "./interfaces/NodeSummary"
 import { Stats } from "./interfaces/Stats"
 import { ValidatorDataWithStaking } from "./interfaces/ValidatorDataWithStaking"
 import { Address } from "./interfaces/Address"
-import { getContracts } from "./ContractKit"
-import { ValidatorGroup } from "@celo/contractkit/lib/wrappers/Validators"
-// @ts-ignore
-import throttledQueue from 'throttled-queue';
-
-const throttle = throttledQueue(5, 1000, true);
 
 export default class Node {
 
@@ -44,6 +38,7 @@ export default class Node {
   }
 
   private _propagationHistory: number[] = []
+  private _signHistory: boolean[] = []
 
   private _block: Block = {
     number: null,
@@ -151,12 +146,6 @@ export default class Node {
   public setValidatorData(
     validatorData: ValidatorData,
   ): void {
-
-    throttle(() => {
-      this.loadValidatorGroupName(
-        validatorData.affiliation
-      )
-    })
 
     // set data
     this._validatorData = {
@@ -497,33 +486,5 @@ export default class Node {
     this._stats.propagationAvg = (positives.length > 0 ? Math.round(sum / positives.length) : 0)
 
     return true
-  }
-
-  private loadValidatorGroupName(
-    validatorGroupAddress: string
-  ): void {
-    (async () => {
-      try {
-        const contracts = getContracts()
-        if (
-          contracts !== null &&
-          !this._validatorData.validatorGroupName
-        ) {
-          const validatorGroup: ValidatorGroup =
-            await contracts.validatorsContract.getValidatorGroup(
-              validatorGroupAddress
-            )
-
-          if (validatorGroup) {
-            this._validatorData.validatorGroupName = validatorGroup.name
-          }
-        }
-      } catch (err) {
-        console.error(
-          'Unable to connect to get Validator Group Name!',
-          err.message
-        )
-      }
-    })()
   }
 }

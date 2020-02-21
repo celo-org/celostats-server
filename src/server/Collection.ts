@@ -50,12 +50,15 @@ export default class Collection {
 
     if (node) {
 
-      const newBlock = this.history.addBlock(
+      const newBlock: {
+        block: Block
+        changed: boolean
+      } = this.history.addBlock(
         id, block,
         node.getTrusted()
       )
 
-      if (newBlock) {
+      if (newBlock.changed) {
         const propagationHistory: number[] = this.history.getNodePropagation(id)
 
         block.arrived = newBlock.block.arrived
