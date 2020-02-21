@@ -84,7 +84,11 @@
     "nyc": "^15.0.0"
   },
   "resolutions": {
-    "@celo/contractkit/web3": "^1.2.6"
+    "@celo/contractkit/web3": "^1.2.6",
+    "@celo/contractkit/web3-core-helpers": "^1.2.6",
+    "@celo/contractkit/web3-eth-abi": "^1.2.6",
+    "@celo/contractkit/web3-utils": "^1.2.6",
+    "@celo/utils/web3-utils": "^1.2.6"
   },
   "repository": {
     "type": "git",

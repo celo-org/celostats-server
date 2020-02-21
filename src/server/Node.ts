@@ -16,7 +16,7 @@ import { NodeSummary } from "./interfaces/NodeSummary"
 import { Stats } from "./interfaces/Stats"
 import { ValidatorDataWithStaking } from "./interfaces/ValidatorDataWithStaking"
 import { Address } from "./interfaces/Address"
-import { validatorsContract } from "./ContractKit"
+import { getContracts } from "./ContractKit"
 import { ValidatorGroup } from "@celo/contractkit/lib/wrappers/Validators"
 // @ts-ignore
 import throttledQueue from 'throttled-queue';
@@ -504,12 +504,15 @@ export default class Node {
   ): void {
     (async () => {
       try {
+        const contracts = getContracts()
         if (
-          validatorsContract &&
+          contracts !== null &&
           !this._validatorData.validatorGroupName
         ) {
           const validatorGroup: ValidatorGroup =
-          await validatorsContract.getValidatorGroup(validatorGroupAddress)
+            await contracts.validatorsContract.getValidatorGroup(
+              validatorGroupAddress
+            )
 
           if (validatorGroup) {
             this._validatorData.validatorGroupName = validatorGroup.name
