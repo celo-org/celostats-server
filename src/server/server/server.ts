@@ -58,6 +58,7 @@ export default class Server {
       res.send(
         Buffer.from(`<pre>${stats}</pre>`)
       )
+      res.end()
     })
 
     expressConfig.use(routes)
@@ -85,6 +86,8 @@ export default class Server {
       path: '/client',
       transports: ['websocket'],
       cookie: false,
+      pingInterval: null,
+      pingTimeout: cfg.clientPingTimeout,
       perMessageDeflate: cfg.compression,
       httpCompression: cfg.compression
     })

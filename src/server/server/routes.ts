@@ -30,9 +30,9 @@ routes.get('/memory', (
     <div>heapUsed: ${(mem.heapUsed / 1024 / 1024).toFixed(2)}mb</div>
     <div>heapTotal: ${(mem.heapTotal / 1024 / 1024).toFixed(2)}mb</div>
     <div>external: ${(mem.external / 1024 / 1024).toFixed(2)}mb</div>
-</div>
-`
+</div>`
   ))
+  res.end()
 })
 
 /**
@@ -48,6 +48,7 @@ routes.get('/config', (
       `<pre>${JSON.stringify(cfg, null, 2)}</pre>`
     )
   )
+  res.end()
 })
 
 /**
@@ -82,12 +83,14 @@ Highest Block: ${await contracts.web3.eth.getBlockNumber()}
 Execution time: ${end[1] / 1000000}ms
 </pre>`
       ))
+      res.end()
     })()
 
   } else {
     res.send(
       Buffer.from('Contracts lot loaded :(')
     )
+    res.end()
   }
 })
 
