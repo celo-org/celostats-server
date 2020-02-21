@@ -152,16 +152,10 @@ export default class Node {
     validatorData: ValidatorData,
   ): void {
 
-    throttle(async () => {
-      if (
-        !this._validatorData.validatorGroupName &&
-        this._validatorData.affiliation !== validatorData.affiliation
-      ) {
-        const validatorGroupName: string = await this.loadValidatorGroupName(
-          validatorData.affiliation
-        )
-        this._validatorData.validatorGroupName = validatorGroupName
-      }
+    throttle(() => {
+      this.loadValidatorGroupName(
+        validatorData.affiliation
+      )
     })
 
     // set data
@@ -505,23 +499,28 @@ export default class Node {
     return true
   }
 
-  private async loadValidatorGroupName(
+  private loadValidatorGroupName(
     validatorGroupAddress: string
-  ): Promise<string> {
-    try {
-      if (validatorsContract) {
-        const validatorGroup: ValidatorGroup =
+  ): void {
+    (async () => {
+      try {
+        if (
+          validatorsContract &&
+          !this._validatorData.validatorGroupName
+        ) {
+          const validatorGroup: ValidatorGroup =
           await validatorsContract.getValidatorGroup(validatorGroupAddress)
 
-        if (validatorGroup) {
-          return validatorGroup.name
+          if (validatorGroup) {
+            this._validatorData.validatorGroupName = validatorGroup.name
+          }
         }
+      } catch (err) {
+        console.error(
+          'Unable to connect to get Validator Group Name!',
+          err.message
+        )
       }
-    } catch (err) {
-      console.error(
-        'Unable to connect to get Validator Group Name!',
-        err.message
-      )
-    }
+    })()
   }
 }

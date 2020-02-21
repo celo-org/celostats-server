@@ -84,8 +84,7 @@
     "nyc": "^15.0.0"
   },
   "resolutions": {
-    "@celo/contractkit/eth-lib/keccakjs/sha3": "^1.2.3",
-    "@celo/contractkit/web3/web3-eth/web3-eth-accounts/scrypt.js": "^0.3.0"
+    "@celo/contractkit/web3": "^1.2.6"
   },
   "repository": {
     "type": "git",
