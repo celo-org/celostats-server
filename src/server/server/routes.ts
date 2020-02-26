@@ -1,6 +1,7 @@
 import express from "express";
 import { cfg } from "../utils/config"
 import { getContracts } from "../ContractKit"
+import { execSync } from "child_process"
 
 export const routes = express.Router()
 
@@ -46,6 +47,22 @@ routes.get('/config', (
   res.send(
     Buffer.from(
       `<pre>${JSON.stringify(cfg, null, 2)}</pre>`
+    )
+  )
+  res.end()
+})
+
+/**
+ * Version view
+ */
+routes.get('/version', (
+  req: express.Request,
+  res: express.Response
+) => {
+  res.set('Content-Type', 'text/html');
+  res.send(
+    Buffer.from(
+      `${execSync('git rev-parse HEAD').toString().trim()}`
     )
   )
   res.end()

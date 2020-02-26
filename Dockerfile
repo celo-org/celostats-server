@@ -5,6 +5,9 @@ WORKDIR /celostats-server
 
 ENV NODE_ENV=production
 
+# rehydrate git
+RUN git init
+
 RUN yarn
 RUN yarn global add grunt-cli typescript
 RUN grunt --configPath="src/client/js/celoConfig.js"
