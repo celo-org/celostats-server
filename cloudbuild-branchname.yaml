@@ -23,8 +23,8 @@ steps:
       "set",
       "image",
       "--namespace=baklavastaging",
-      "deployment/baklavastaging-ethstats",
-      "ethstats=gcr.io/$PROJECT_ID/celostats-server:$COMMIT_SHA"
+      "deployment/baklavastaging-celostats",
+      "celostats=gcr.io/$PROJECT_ID/celostats-server:$COMMIT_SHA"
     ]
     env:
     - "CLOUDSDK_COMPUTE_ZONE=us-west1-a"
