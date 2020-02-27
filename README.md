@@ -6,7 +6,7 @@ This is a visual interface for tracking proof-of-work ("mainnet") and proof-of-a
 ## Proof-of-Stake
 ![Screenshot](https://user-images.githubusercontent.com/6178597/69904869-cba34900-13ac-11ea-9136-13fc51cf246e.gif "Screenshot POS")
 
-* Demo: https://baklavastaging-ethstats.celo-testnet.org/
+* Demo: https://baklavastaging-celostats.celo-testnet.org/
 
 #### Prerequisite
 * node
