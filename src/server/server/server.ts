@@ -61,6 +61,17 @@ export default class Server {
       res.end()
     })
 
+    expressConfig.get('/forks', (
+      req: express.Request,
+      res: express.Response
+    ) => {
+      res.set('Content-Type', 'text/html');
+      res.send(
+        Buffer.from(`<pre>${JSON.stringify(this.controller.getForks(), null, 2)}</pre>`)
+      )
+      res.end()
+    })
+
     expressConfig.use(routes)
 
     const server = createServer(expressConfig)

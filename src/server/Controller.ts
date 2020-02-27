@@ -468,4 +468,8 @@ export default class Controller {
 
     return true
   }
+
+  public getForks() {
+    return this.collection.getForks()
+  }
 }

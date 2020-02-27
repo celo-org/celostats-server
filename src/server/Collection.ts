@@ -15,6 +15,7 @@ import { ValidatorData } from "./interfaces/ValidatorData"
 import { NodeDetails } from "./interfaces/NodeDetails"
 import { NodeSummary } from "./interfaces/NodeSummary"
 import { Address } from "./interfaces/Address"
+import { IDictionary } from "./interfaces/IDictionary"
 
 export default class Collection {
 
@@ -172,5 +173,9 @@ export default class Collection {
 
       node.setStakingInformation(reg, elec)
     }
+  }
+
+  public getForks(): IDictionary {
+    return this.history.getForks()
   }
 }

@@ -13,11 +13,8 @@ import { cfg } from "./utils/config";
 import { compareBlocks } from "./utils/compareBlocks";
 import { compareForks } from "./utils/compareForks";
 import { Address } from "./interfaces/Address"
-// @ts-ignore
-import throttledQueue from 'throttled-queue';
 import { getContracts } from "./ContractKit"
-
-const throttle = throttledQueue(5, 1000, true);
+import { IDictionary } from "./interfaces/IDictionary"
 
 export default class History {
 
@@ -348,4 +345,25 @@ export default class History {
     }
   }
 
+  public getForks(): IDictionary {
+
+    const forks: IDictionary = {}
+
+    for (const block of this.blocks) {
+      const b: IDictionary = {
+        forks: block.forks.length
+      }
+
+      for (const forkedBlock of block.forks) {
+        b[forkedBlock.hash] = {
+          number: forkedBlock.number,
+          miner: forkedBlock.miner
+        }
+      }
+
+      forks[block.block.number] = b
+    }
+
+    return forks
+  }
 }
