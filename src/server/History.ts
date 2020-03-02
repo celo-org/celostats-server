@@ -25,6 +25,8 @@ export default class History {
     receivedBlock: Block,
     trusted: boolean
   ): Block {
+    let writtenBlock: Block = null
+
     if (
       receivedBlock && receivedBlock.uncles &&
       !isNaN(receivedBlock.number) && receivedBlock.number >= 0 &&
@@ -46,35 +48,31 @@ export default class History {
 
       if (historyBlock) {
         // We already have a block with this height in collection
-        return this.updateBlock(
-          id,
-          block,
+        writtenBlock = this.updateBlock(
+          id, block,
           historyBlock
         )
-
       } else if (
         block.number > this._blocks.worstBlockNumber() ||
         block.number < this._blocks.bestBlockNumber()
       ) {
         // Couldn't find block with this height
-        return this.addNewBlock(
-          id,
-          block
+        writtenBlock = this.addNewBlock(
+          id, block
         )
       }
     }
 
-    return null
+    return writtenBlock
   }
 
   private addNewBlock(
     id: string,
     block: Block
   ): Block {
-    this.setBlockTime(block)
-
     const b: Block = {
-      ...block
+      ...block,
+      time: this.getBlockTime(block)
     }
 
     const blockWrapper: BlockWrapper = {
@@ -213,7 +211,7 @@ export default class History {
       block.propagation =
         historyBlock.propagationTimes[propagationIndex].propagation
 
-      this.setBlockTime(block)
+      block.time = this.getBlockTime(block)
 
       forkIndex = historyBlock.forks.push(block) - 1
       historyBlock.forks[forkIndex].fork = forkIndex
@@ -237,7 +235,7 @@ export default class History {
   ): number {
 
     // copy
-    const block = {
+    const block: Block = {
       ...receivedBlock
     }
 
@@ -247,11 +245,13 @@ export default class History {
       historyBlock.forks[forkIndex]
     ) {
       // Found fork => update data
+      block.time = historyBlock.block.time
       block.arrived = historyBlock.forks[forkIndex].arrived
-      block.propagation = block.received - historyBlock.forks[forkIndex].received
+      block.propagation =
+        block.received - historyBlock.forks[forkIndex].received
     } else {
       // No fork found => add a new one
-      this.setBlockTime(block)
+      block.time = this.getBlockTime(block)
 
       forkIndex = historyBlock.forks.push(block) - 1
       historyBlock.forks[forkIndex].fork = forkIndex
@@ -275,27 +275,29 @@ export default class History {
    * TODO: Properly document and test this method
    * @param block
    */
-  private setBlockTime(
+  private getBlockTime(
     block: Block
-  ): void {
+  ): number {
+    let time = 0
+
     // Getting previous max block
     const bestBlock: BlockWrapper = this._blocks.bestBlock()
 
     if (bestBlock) {
-      block.time = Math.max(
+      time = Math.max(
         block.arrived - bestBlock.block.arrived,
         0
       )
 
       if (block.number < bestBlock.block.number) {
-        block.time = Math.max(
+        time = Math.max(
           (block.timestamp - bestBlock.block.timestamp) * 1000,
           0
         )
       }
-    } else {
-      block.time = 0
     }
+
+    return time
   }
 
   public getNodePropagationHistory(
