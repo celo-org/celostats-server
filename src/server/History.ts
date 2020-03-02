@@ -13,7 +13,7 @@ import { cfg } from "./utils/config";
 import { compareBlocks } from "./utils/compareBlocks";
 import { getForkIndex } from "./utils/getForkIndex";
 import { Address } from "./interfaces/Address"
-import { getContracts } from "./ContractKit"
+import { getContractKit } from "./ContractKit"
 import { IDictionary } from "./interfaces/IDictionary"
 
 export default class History {
@@ -91,12 +91,12 @@ export default class History {
       })
     }
 
-    const contracts = getContracts()
+    const contractKit = getContractKit()
 
-    if (contracts) {
+    if (contractKit) {
       (async () => {
         try {
-          const signers = await contracts.election.getValidatorSigners(
+          const signers = await contractKit.election.getValidatorSigners(
             blockWrapper.block.number
           )
 

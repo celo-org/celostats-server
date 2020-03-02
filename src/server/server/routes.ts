@@ -1,6 +1,6 @@
 import express from "express";
 import { cfg } from "../utils/config"
-import { getContracts } from "../ContractKit"
+import { getContractKit } from "../ContractKit"
 import { execSync } from "child_process"
 
 export const routes = express.Router()
@@ -76,15 +76,15 @@ routes.get('/contracts', (
   res: express.Response
 ) => {
   const start = process.hrtime();
-  const contracts = getContracts();
+  const contractKit = getContractKit();
 
   res.set('Content-Type', 'text/html');
 
-  if (contracts) {
+  if (contractKit) {
 
     (async () => {
-      const css = await contracts.validators.currentSignerSet()
-      const election = await contracts.election.getConfig()
+      const css = await contractKit.validators.currentSignerSet()
+      const election = await contractKit.election.getConfig()
       const end = process.hrtime(start)
 
       res.send(Buffer.from(`
@@ -95,7 +95,7 @@ Current Signer Set: ${JSON.stringify(css, null, 2)}
 
 Election Config: ${JSON.stringify(election, null, 2)}
 
-Highest Block: ${await contracts.web3.eth.getBlockNumber()}
+Highest Block: ${await contractKit.web3.eth.getBlockNumber()}
 
 Execution time: ${end[1] / 1000000}ms
 </pre>`
@@ -108,6 +108,9 @@ Execution time: ${end[1] / 1000000}ms
       Buffer.from('Contracts lot loaded :(')
     )
     res.end()
+
+    // try to reset the contract kit, maybe it helps. fingers crossed!
+    contractKit.reset()
   }
 })
 

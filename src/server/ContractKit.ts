@@ -32,12 +32,17 @@ let contractsLoaded = false;
   }
 })()
 
-const getContracts = () => {
+function reset() {
+  contractsLoaded = false
+}
+
+const getContractKit = () => {
   if (contractsLoaded) {
     return {
       validators,
       election,
-      web3
+      web3,
+      reset
     }
   }
 
@@ -45,5 +50,5 @@ const getContracts = () => {
 }
 
 export {
-  getContracts
+  getContractKit
 }
