@@ -3,7 +3,7 @@ import { Block } from "./Block";
 
 export interface BlockWrapper {
   block: Block
+  readonly forks: Block[],
+  readonly propagationTimes: PropagationTime[],
   signers: string[]
-  readonly forks: Block[]
-  readonly propagTimes: PropagationTime[]
 }

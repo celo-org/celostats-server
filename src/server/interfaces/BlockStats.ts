@@ -6,4 +6,5 @@ export interface BlockStats {
   readonly block: BlockSummary
   readonly propagationAvg: number
   readonly history: number[]
+  readonly signHistory: boolean[]
 }

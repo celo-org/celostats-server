@@ -1,3 +1,4 @@
+/* global BigInt */
 import { Sides } from "./Sides";
 import { Directions } from "./Directions";
 import Collection from "../Collection";
@@ -17,12 +18,12 @@ export class Statistics {
     }
   } = {
     [Sides.Node]: {
-      [Directions.In]: 0n,
-      [Directions.Out]: 0n
+      [Directions.In]: BigInt(0),
+      [Directions.Out]: BigInt(0)
     },
     [Sides.Client]: {
-      [Directions.In]: 0n,
-      [Directions.Out]: 0n
+      [Directions.In]: BigInt(0),
+      [Directions.Out]: BigInt(0)
     }
   }
 

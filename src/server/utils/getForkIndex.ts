@@ -2,7 +2,7 @@ import { BlockWrapper } from "../interfaces/BlockWrapper";
 import { Block } from "../interfaces/Block";
 import { compareBlocks } from "./compareBlocks";
 
-export function compareForks(
+export function getForkIndex(
   historyBlock: BlockWrapper,
   block: Block
 ): number {
@@ -10,7 +10,10 @@ export function compareForks(
     return -1
   }
 
-  if (!historyBlock.forks || historyBlock.forks.length === 0) {
+  if (
+    !historyBlock.forks ||
+    historyBlock.forks.length === 0
+  ) {
     return -1
   }
 

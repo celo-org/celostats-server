@@ -11,231 +11,336 @@ import { BlockWrapper } from "./interfaces/BlockWrapper";
 import { padArray } from "./utils/padArray";
 import { cfg } from "./utils/config";
 import { compareBlocks } from "./utils/compareBlocks";
-import { compareForks } from "./utils/compareForks";
+import { getForkIndex } from "./utils/getForkIndex";
 import { Address } from "./interfaces/Address"
 import { getContracts } from "./ContractKit"
 import { IDictionary } from "./interfaces/IDictionary"
 
 export default class History {
 
-  private blocks: Blocks = new Blocks()
+  private _blocks: Blocks = new Blocks()
 
   public addBlock(
     id: Address,
-    block: Block,
-    trusted: boolean,
-    addingHistory = false
-  ): {
-    block: Block,
-    changed: boolean
-  } {
-    let changed = false
-
+    receivedBlock: Block,
+    trusted: boolean
+  ): Block {
     if (
-      block && block.uncles &&
-      !isNaN(block.number) && block.number >= 0 &&
-      block.transactions && block.difficulty
+      receivedBlock && receivedBlock.uncles &&
+      !isNaN(receivedBlock.number) && receivedBlock.number >= 0 &&
+      receivedBlock.transactions && receivedBlock.difficulty
     ) {
-      const historyBlock: BlockWrapper = this.blocks.search(block.number)
-      let forkIndex = -1
-
+      const historyBlock: BlockWrapper = this._blocks.findBlockByNumber(
+        receivedBlock.number
+      )
       const now = Date.now()
 
-      block.trusted = trusted
-      block.arrived = now
-      block.received = now
-      block.propagation = 0
-      block.fork = 0
+      const block: Block = {
+        ...receivedBlock,
+        trusted: trusted,
+        arrived: now,
+        received: now,
+        propagation: 0,
+        fork: 0
+      }
 
       if (historyBlock) {
         // We already have a block with this height in collection
-
-        // Check if node already checked this block height
-        const propagationIndex = historyBlock.propagTimes.indexOf(
-          historyBlock.propagTimes.find((p) => p.node === id)
+        return this.updateBlock(
+          id,
+          block,
+          historyBlock
         )
-
-        // Check if node already check a fork with this height
-        forkIndex = compareForks(historyBlock, block)
-
-        if (propagationIndex === -1) {
-          // Node didn't submit this block before
-          if (forkIndex >= 0 && historyBlock.forks[forkIndex]) {
-            // Found fork => update data
-            block.arrived = historyBlock.forks[forkIndex].arrived
-            block.propagation = now - historyBlock.forks[forkIndex].received
-          } else {
-            // No fork found => add a new one
-            this.setBlockTime(block)
-
-            forkIndex = historyBlock.forks.push(block) - 1
-            historyBlock.forks[forkIndex].fork = forkIndex
-          }
-
-          // Push propagation time
-          historyBlock.propagTimes.push({
-            node: id,
-            trusted: trusted,
-            fork: forkIndex,
-            received: now,
-            propagation: block.propagation
-          })
-        } else {
-          // Node submitted the block before
-          if (forkIndex >= 0 && historyBlock.forks[forkIndex]) {
-            // Matching fork found => update data
-            block.arrived = historyBlock.forks[forkIndex].arrived
-
-            if (forkIndex === historyBlock.propagTimes[propagationIndex].fork) {
-              // Fork index is the same
-              block.received = historyBlock.propagTimes[propagationIndex].received
-              block.propagation = historyBlock.propagTimes[propagationIndex].propagation
-            } else {
-              // Fork index is different
-              historyBlock.propagTimes[propagationIndex].fork = forkIndex
-              historyBlock.propagTimes[propagationIndex].propagation =
-                block.propagation = now - historyBlock.forks[forkIndex].received
-            }
-
-          } else {
-            // No matching fork found => replace old one
-            block.received = historyBlock.propagTimes[propagationIndex].received
-            block.propagation = historyBlock.propagTimes[propagationIndex].propagation
-
-            this.setBlockTime(block)
-
-            forkIndex = historyBlock.forks.push(block) - 1
-            historyBlock.forks[forkIndex].fork = forkIndex
-          }
-        }
-
-        if (
-          trusted &&
-          !compareBlocks(
-            historyBlock.block,
-            historyBlock.forks[forkIndex]
-          )
-        ) {
-          // If source is trusted update the main block
-          historyBlock.forks[forkIndex].trusted = trusted
-          historyBlock.block = historyBlock.forks[forkIndex]
-        }
-
-        block.fork = forkIndex
-
-        changed = true
 
       } else if (
-        this.blocks.length === 0 ||
-        (this.blocks.length > 0 && block.number > this.blocks.worstBlockNumber()) ||
-        (
-          this.blocks.length < cfg.maxBlockHistory &&
-          block.number < this.blocks.bestBlockNumber() &&
-          addingHistory
-        )
+        block.number > this._blocks.worstBlockNumber() ||
+        block.number < this._blocks.bestBlockNumber()
       ) {
         // Couldn't find block with this height
-        this.setBlockTime(block)
-
-        const blockWrapper: BlockWrapper = {
-          block: block,
-          forks: [block],
-          signers: [],
-          propagTimes: Array<PropagationTime>({
-            node: id,
-            trusted: trusted,
-            fork: 0,
-            received: now,
-            propagation: block.propagation
-          })
-        }
-
-        const contracts = getContracts()
-
-        if (contracts) {
-          (async () => {
-            try {
-              blockWrapper.signers = await contracts.election.getValidatorSigners(
-                blockWrapper.block.number
-              )
-            } catch (err) {
-              console.error('API', 'BLK', blockWrapper.block.number, err.message)
-            }
-          })()
-        }
-
-        this.saveBlock(blockWrapper)
-
-        changed = true
-      }
-
-      return {
-        block: block,
-        changed: changed
+        return this.addNewBlock(
+          id,
+          block
+        )
       }
     }
+
+    return null
   }
 
-  private setBlockTime(block: Block) {
+  private addNewBlock(
+    id: string,
+    block: Block
+  ): Block {
+    this.setBlockTime(block)
+
+    const b: Block = {
+      ...block
+    }
+
+    const blockWrapper: BlockWrapper = {
+      // set block
+      block: b,
+      // set fork
+      forks: [b],
+      signers: [],
+      propagationTimes: Array<PropagationTime>({
+        node: id,
+        trusted: block.trusted,
+        // set fork index
+        fork: 0,
+        received: block.received,
+        propagation: block.propagation
+      })
+    }
+
+    const contracts = getContracts()
+
+    if (contracts) {
+      (async () => {
+        try {
+          const signers = await contracts.election.getValidatorSigners(
+            blockWrapper.block.number
+          )
+
+          if (signers) {
+            blockWrapper.signers = signers;
+          }
+        } catch (err) {
+          console.error('API', 'BLK', blockWrapper.block.number, err.message)
+        }
+      })()
+    }
+
+    this._blocks.saveBlock(blockWrapper)
+
+    return blockWrapper.block
+  }
+
+  private updateBlock(
+    id: string,
+    receivedBlock: Block,
+    historyBlock: BlockWrapper,
+  ): Block {
+    // Check if node already check a fork with this height
+    let forkIndex = getForkIndex(
+      historyBlock,
+      receivedBlock
+    )
+
+    // Check if node already checked this block height
+    const propagationIndex = historyBlock.propagationTimes.indexOf(
+      historyBlock.propagationTimes.find((p) => p.node === id)
+    )
+
+    if (propagationIndex === -1) {
+      // Node didn't submit this block before
+      forkIndex = this.addNodePropagation(
+        id,
+        receivedBlock,
+        historyBlock,
+        forkIndex
+      )
+    } else {
+      // Node submitted the block before
+      forkIndex = this.updateNodePropagation(
+        receivedBlock,
+        historyBlock,
+        forkIndex,
+        propagationIndex
+      )
+    }
+
+    // are the base block and the new forks different?
+    if (
+      receivedBlock.trusted &&
+      !compareBlocks(
+        historyBlock.block,
+        historyBlock.forks[forkIndex]
+      )
+    ) {
+      // yes
+
+      // If source is trusted update the main block
+      historyBlock.forks[forkIndex].trusted = receivedBlock.trusted
+      historyBlock.forks[forkIndex].fork = forkIndex
+      historyBlock.block = historyBlock.forks[forkIndex]
+    }
+
+    return historyBlock.block;
+  }
+
+  /**
+   * TODO: Properly document and test this method
+   * @param historyBlock
+   * @param forkIndex
+   * @param propagationIndex
+   */
+  private updateNodePropagation(
+    receivedBlock: Block,
+    historyBlock: BlockWrapper,
+    forkIndex: number,
+    propagationIndex: number
+  ): number {
+    const block: Block = {
+      ...receivedBlock
+    }
+
+    if (
+      forkIndex >= 0 &&
+      historyBlock.forks[forkIndex]
+    ) {
+      // Matching fork found => update data
+      block.arrived = historyBlock.forks[forkIndex].arrived
+
+      if (forkIndex === historyBlock.propagationTimes[propagationIndex].fork) {
+        // Fork index is the same
+        block.received =
+          historyBlock.propagationTimes[propagationIndex].received
+        block.propagation =
+          historyBlock.propagationTimes[propagationIndex].propagation
+      } else {
+        // Fork index is different
+        historyBlock.propagationTimes[propagationIndex].fork = forkIndex
+        historyBlock.propagationTimes[propagationIndex].propagation =
+          block.propagation =
+            block.received - historyBlock.forks[forkIndex].received
+      }
+
+    } else {
+      // No matching fork found => replace old one
+      block.received =
+        historyBlock.propagationTimes[propagationIndex].received
+      block.propagation =
+        historyBlock.propagationTimes[propagationIndex].propagation
+
+      this.setBlockTime(block)
+
+      forkIndex = historyBlock.forks.push(block) - 1
+      historyBlock.forks[forkIndex].fork = forkIndex
+    }
+
+    return forkIndex
+  }
+
+  /**
+   * TODO: Properly document and test this method
+   * @param id
+   * @param receivedBlock
+   * @param historyBlock
+   * @param forkIndex
+   */
+  private addNodePropagation(
+    id: string,
+    receivedBlock: Block,
+    historyBlock: BlockWrapper,
+    forkIndex: number,
+  ): number {
+
+    // copy
+    const block = {
+      ...receivedBlock
+    }
+
+    // do we have a fork?
+    if (
+      forkIndex >= 0 &&
+      historyBlock.forks[forkIndex]
+    ) {
+      // Found fork => update data
+      block.arrived = historyBlock.forks[forkIndex].arrived
+      block.propagation = block.received - historyBlock.forks[forkIndex].received
+    } else {
+      // No fork found => add a new one
+      this.setBlockTime(block)
+
+      forkIndex = historyBlock.forks.push(block) - 1
+      historyBlock.forks[forkIndex].fork = forkIndex
+    }
+
+    historyBlock.block = block
+
+    // Push propagation time
+    historyBlock.propagationTimes.push({
+      node: id,
+      trusted: block.trusted,
+      fork: forkIndex,
+      received: block.received,
+      propagation: block.propagation
+    })
+
+    return forkIndex
+  }
+
+  /**
+   * TODO: Properly document and test this method
+   * @param block
+   */
+  private setBlockTime(
+    block: Block
+  ): void {
     // Getting previous max block
-    const prevBlock: BlockWrapper = this.blocks.prevMaxBlock()
+    const bestBlock: BlockWrapper = this._blocks.bestBlock()
 
-    if (prevBlock) {
-      block.time = Math.max(block.arrived - prevBlock.block.arrived, 0)
+    if (bestBlock) {
+      block.time = Math.max(
+        block.arrived - bestBlock.block.arrived,
+        0
+      )
 
-      if (block.number < this.blocks.bestBlock().block.number) {
-        block.time = Math.max((block.timestamp - prevBlock.block.timestamp) * 1000, 0)
+      if (block.number < bestBlock.block.number) {
+        block.time = Math.max(
+          (block.timestamp - bestBlock.block.timestamp) * 1000,
+          0
+        )
       }
     } else {
       block.time = 0
     }
   }
 
-  private saveBlock(
-    block: BlockWrapper
-  ): void {
-    this.blocks
-      .unshift(block)
-
-    this.blocks = this.blocks.sort(
-      (block1: BlockWrapper, block2: BlockWrapper) =>
-        block2.block.number - block1.block.number
-    )
-
-    if (this.blocks.length > cfg.maxBlockHistory) {
-      this.blocks.pop()
-    }
-  }
-
-  public getNodePropagation(
+  public getNodePropagationHistory(
     id: Address
   ): number[] {
-    return this.blocks
+    return this._blocks
       .slice(0, cfg.maxPeerPropagation)
-      .map((block: BlockWrapper) => {
-
-        const matches = block.propagTimes.filter(
+      .map((blockWrapper: BlockWrapper): number => {
+        const propagationTime: PropagationTime = blockWrapper.propagationTimes.find(
           (propagationTime: PropagationTime) => propagationTime.node === id
         )
 
-        if (matches.length > 0) {
-          return matches[0].propagation
+        if (propagationTime) {
+          return propagationTime.propagation
         }
 
         return -1
       })
   }
 
+  public getNodeSignatures(
+    id: Address
+  ): boolean[] {
+    return this._blocks
+      .slice(0, cfg.maxBins)
+      .map((block: BlockWrapper): boolean => {
+        const signer = block.signers.find(
+          (signer: string) =>
+            signer.toLowerCase() === id.toLowerCase()
+        )
+        return !!signer
+      })
+      .fill(null, null, cfg.maxBins)
+  }
+
   public getLength(): number {
-    return this.blocks.length;
+    return this._blocks.length;
   }
 
   public getBlockPropagation(): Histogram {
     const propagation: number[] = []
     let avgPropagation = 0
 
-    for (const block of this.blocks) {
-      for (const propagationTime of block.propagTimes) {
+    for (const blockWrapper of this._blocks) {
+      for (const propagationTime of blockWrapper.propagationTimes) {
         const prop = Math.min(
           cfg.maxPropagationRange,
           propagationTime.propagation || -1
@@ -285,7 +390,7 @@ export default class History {
   }
 
   private getAvgBlocktime(): number {
-    const blockTimes = this.blocks
+    const blockTimes = this._blocks
       .map((item: BlockWrapper): number => {
         return item.block.time / 1000
       })
@@ -296,7 +401,7 @@ export default class History {
   }
 
   private getMinersCount(): Miner[] {
-    return this.blocks
+    return this._blocks
       .slice(0, cfg.maxBins)
       .map((item: BlockWrapper): Miner => {
         return {
@@ -307,7 +412,7 @@ export default class History {
   }
 
   public getCharts(): ChartData {
-    const chartHistory = this.blocks
+    const chartHistory = this._blocks
       .slice(0, cfg.maxBins)
       .map((blockWrapper: BlockWrapper): {
         height: number
@@ -349,7 +454,7 @@ export default class History {
 
     const forks: IDictionary = {}
 
-    for (const block of this.blocks) {
+    for (const block of this._blocks) {
       const b: IDictionary = {
         forks: block.forks.length
       }
@@ -366,4 +471,12 @@ export default class History {
 
     return forks
   }
+
+  public getBlockByNumber(
+    blockNumber: number
+  ): BlockWrapper {
+
+    return this._blocks.findBlockByNumber(blockNumber)
+  }
+
 }

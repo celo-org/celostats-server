@@ -1,6 +1,7 @@
 import Node from "./Node"
 import { NodeSummary } from "./interfaces/NodeSummary"
 import { Address } from "./interfaces/Address"
+import History from "./History"
 
 export default class Nodes extends Array<Node> {
 
@@ -26,9 +27,10 @@ export default class Nodes extends Array<Node> {
   }
 
   public createEmptyNode(
-    id: Address
+    id: Address,
+    history: History,
   ): Node {
-    const node = new Node(id)
+    const node = new Node(id, history)
     this.push(node)
     return node;
   }
@@ -55,7 +57,7 @@ export default class Nodes extends Array<Node> {
     }
 
     if (deleteList.length > 0) {
-      console.log(`Deleting ${deleteList.length} stale nodes!`)
+      console.success(`Deleting ${deleteList.length} stale nodes!`)
 
       for (let i = 0; i < deleteList.length; i++) {
         this.splice(deleteList[i], 1)

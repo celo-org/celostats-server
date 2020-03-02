@@ -6,4 +6,5 @@ export interface NodeStats {
   readonly name: string
   readonly stats: StatsSummary
   readonly history: number[]
+  readonly signHistory: boolean[]
 }

@@ -1,3 +1,4 @@
+/* globals BigInt */
 import assert from "assert"
 import { createServer } from "http";
 import Controller from "../../src/server/Controller"
@@ -98,7 +99,7 @@ describe('Controller', () => {
       // after
       const after = controller.statistics.sumBySide(Sides.Client)
       // evaluate
-      assert.equal(after, before + 1n)
+      assert.equal(after, before + BigInt(1))
     });
 
     it('should read supplied server time properly', async (done) => {

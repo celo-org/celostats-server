@@ -19,20 +19,20 @@ import { IDictionary } from "./interfaces/IDictionary"
 
 export default class Collection {
 
-  private nodes: Nodes = new Nodes()
-  private history: History = new History()
+  private _nodes: Nodes = new Nodes()
+  private _history: History = new History()
 
   // todo: move to history
-  private highestBlock = 1
+  private _highestBlock = 1
 
   public addNode(
     id: Address,
     nodeInformation: NodeInformation
   ): NodeDetails {
-    let node: Node = this.nodes.getNodeById(id)
+    let node: Node = this._nodes.getNodeById(id)
 
     if (!node) {
-      node = this.nodes.createEmptyNode(id)
+      node = this._nodes.createEmptyNode(id, this._history)
     }
 
     return node.setNodeInformation(
@@ -47,35 +47,28 @@ export default class Collection {
     highestBlock: number | null,
     blockStats: BlockStats | null
   } {
-    const node: Node = this.nodes.getNodeById(id)
+    const node: Node = this._nodes.getNodeById(id)
 
     if (node) {
-
-      const newBlock: {
-        block: Block
-        changed: boolean
-      } = this.history.addBlock(
-        id, block,
+      const changedBlock: Block = this._history.addBlock(
+        id,
+        block,
         node.getTrusted()
       )
 
-      if (newBlock.changed) {
-        const propagationHistory: number[] = this.history.getNodePropagation(id)
-
-        block.arrived = newBlock.block.arrived
-        block.received = newBlock.block.received
-        block.propagation = newBlock.block.propagation
-        block.validators = newBlock.block.validators
-
+      if (changedBlock) {
         let highestBlock = null
-        if (newBlock.block.number > this.highestBlock) {
-          this.highestBlock = newBlock.block.number
-          highestBlock = this.highestBlock
+
+        if (changedBlock.number > this._highestBlock) {
+          this._highestBlock = changedBlock.number
+          highestBlock = this._highestBlock
         }
 
         return {
           highestBlock,
-          blockStats: node.setBlock(block, propagationHistory)
+          blockStats: node.setBlock(
+            changedBlock
+          )
         }
       }
     }
@@ -86,24 +79,24 @@ export default class Collection {
     blocks: number
   } {
     return {
-      nodes: this.nodes.length,
-      blocks: this.history.getLength()
+      nodes: this._nodes.length,
+      blocks: this._history.getLength()
     }
   }
 
   public getAll(): NodeSummary[] {
-    return this.nodes.all()
+    return this._nodes.all()
   }
 
   public getHighestBlock(): number {
-    return this.highestBlock
+    return this._highestBlock
   }
 
   public updatePending(
     id: Address,
     stats: Stats
   ): Pending {
-    const node: Node = this.nodes.getNodeById(id)
+    const node: Node = this._nodes.getNodeById(id)
 
     if (node) {
       return node.setPending(stats)
@@ -114,7 +107,7 @@ export default class Collection {
     id: Address,
     stats: Stats,
   ): StatsResponse {
-    const node: Node = this.nodes.getNodeById(id)
+    const node: Node = this._nodes.getNodeById(id)
 
     if (node) {
       return node.setStats(stats)
@@ -125,7 +118,7 @@ export default class Collection {
     id: Address,
     latency: number,
   ): Latency {
-    const node: Node = this.nodes.getNodeById(id)
+    const node: Node = this._nodes.getNodeById(id)
 
     if (node) {
       return node.setLatency(latency)
@@ -135,7 +128,7 @@ export default class Collection {
   public setInactive(
     spark: string
   ): NodeStats {
-    const node = this.nodes.getNodeBySpark(spark)
+    const node = this._nodes.getNodeBySpark(spark)
 
     if (node) {
       node.setState(false)
@@ -144,18 +137,17 @@ export default class Collection {
   }
 
   public getCharts(): ChartData {
-
-    return this.history.getCharts();
+    return this._history.getCharts();
   }
 
   public setValidator(
     id: Address,
     validator: ValidatorData
   ): void {
-    let node: Node = this.nodes.getNodeById(id)
+    let node: Node = this._nodes.getNodeById(id)
 
     if (!node) {
-      node = this.nodes.createEmptyNode(id)
+      node = this._nodes.createEmptyNode(id, this._history)
     }
 
     node.setValidatorData(validator)
@@ -165,7 +157,7 @@ export default class Collection {
     registered: Address[],
     elected: Address[]
   ): void {
-    for (const node of this.nodes) {
+    for (const node of this._nodes) {
       const id: Address = node.getId().toLowerCase()
 
       const elec = elected.indexOf(id) > -1
@@ -176,6 +168,6 @@ export default class Collection {
   }
 
   public getForks(): IDictionary {
-    return this.history.getForks()
+    return this._history.getForks()
   }
 }

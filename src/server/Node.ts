@@ -16,6 +16,8 @@ import { NodeSummary } from "./interfaces/NodeSummary"
 import { Stats } from "./interfaces/Stats"
 import { ValidatorDataWithStaking } from "./interfaces/ValidatorDataWithStaking"
 import { Address } from "./interfaces/Address"
+import History from "./History"
+import { BlockWrapper } from "./interfaces/BlockWrapper"
 
 export default class Node {
 
@@ -37,35 +39,8 @@ export default class Node {
     contact: null
   }
 
-  private _propagationHistory: number[] = []
-  private _signHistory: boolean[] = []
-
-  private _block: Block = {
-    number: null,
-    epochSize: null,
-    blockRemain: null,
-    hash: null,
-    parentHash: null,
-    difficulty: null,
-    totalDifficulty: null,
-    gasLimit: null,
-    gasUsed: null,
-    timestamp: null,
-    time: null,
-    miner: null,
-    validators: {
-      registered: [],
-      elected: []
-    },
-    trusted: null,
-    arrival: null,
-    received: null,
-    arrived: null,
-    fork: null,
-    propagation: null,
-    transactions: [],
-    uncles: []
-  }
+  private _history: History;
+  private _highestBlock = -1
 
   private _stats: Stats = {
     active: null,
@@ -103,16 +78,17 @@ export default class Node {
     signer: null
   }
 
-  public constructor(id: Address) {
+  public constructor(
+    id: Address,
+    history: History
+  ) {
     this._id = id
+    this._history = history
   }
 
   public setNodeInformation(
     nodeInformation: NodeInformation
   ): NodeDetails {
-    // preset propagation history
-    this._propagationHistory.fill(-1, 0, cfg.maxPropagationHistory)
-
     // activate node
     if (this._uptime.started === null) {
       this.setState(true)
@@ -173,6 +149,10 @@ export default class Node {
     return this._info.name
   }
 
+  public getUptime(): Uptime {
+    return this._uptime
+  }
+
   public setStakingInformation(
     registered: boolean,
     elected: boolean
@@ -186,35 +166,31 @@ export default class Node {
   }
 
   public setBlock(
-    block: Block,
-    propagationHistory: number[],
+    receivedBlock: Block,
   ): BlockStats | null {
     if (
-      block &&
-      !isNaN(block.number)
+      receivedBlock &&
+      !isNaN(receivedBlock.number)
     ) {
-      const propagationHistoryChanged =
-        !deepEqual(propagationHistory, this._propagationHistory)
+      const currentBlock = this.getBlock()
 
+      // did the block data changed?
       const blockDataChanged =
-        !deepEqual(block, this._block)
+        !deepEqual(receivedBlock, currentBlock?.block)
 
-      if (propagationHistoryChanged || blockDataChanged) {
-
-        this.setPropagationHistory(propagationHistory)
-
-        const blockNumberChanged = block.number !== this._block.number
-        const blockHashChanged = block.hash !== this._block.hash
+      if (blockDataChanged) {
+        // set block data
+        const blockNumberChanged = receivedBlock.number !== currentBlock?.block.number
+        const blockHashChanged = receivedBlock.hash !== currentBlock?.block.hash
 
         if (blockNumberChanged || blockHashChanged) {
           // do we have registered validators already?
-          if (!block.validators.registered) {
+          if (!receivedBlock.validators?.registered) {
             // if so, set them in the block
-            block.validators = this._block.validators
+            receivedBlock.validators = currentBlock?.block.validators
           }
 
-          // overwrite block
-          this._block = block
+          this._highestBlock = receivedBlock.number
 
           return this.getBlockStats()
         }
@@ -313,8 +289,10 @@ export default class Node {
 
   public isInactiveAndOld() {
     return (
-      !this._uptime.lastStatus &&
-      this._uptime.lastUpdate !== null &&
+      // if last status is set
+      // if last update is set
+      !this._uptime.lastStatus && !isNaN(this._uptime.lastUpdate) &&
+      // if last update is past max inactive time
       (Date.now() - this._uptime.lastUpdate) > cfg.maxInactiveTime
     )
   }
@@ -364,35 +342,40 @@ export default class Node {
         pending: this._stats.pending,
         latency: this._stats.latency
       },
-      history: this._propagationHistory
+      history: this.getPropagationHistory(),
+      signHistory: this.getSignHistory()
     }
   }
 
   private getBlockSummary(): BlockSummary {
-    return {
-      transactions: this._block.transactions.length,
-      validators: {
-        elected: this._block.validators.elected.length,
-        registered: this._block.validators.registered.length,
-      },
-      epochSize: this._block.epochSize,
-      blockRemain: this._block.blockRemain,
-      number: this._block.number,
-      hash: this._block.hash,
-      parentHash: this._block.parentHash,
-      miner: this._block.miner,
-      difficulty: this._block.difficulty,
-      totalDifficulty: this._block.totalDifficulty,
-      gasLimit: this._block.gasLimit,
-      gasUsed: this._block.gasUsed,
-      timestamp: this._block.timestamp,
-      time: this._block.time,
-      arrival: this._block.arrival,
-      received: this._block.received,
-      trusted: this._block.trusted,
-      arrived: this._block.arrived,
-      fork: this._block.fork,
-      propagation: this._block.propagation
+    const blockWrapper = this.getBlock()
+
+    if (blockWrapper) {
+      return {
+        transactions: blockWrapper.block.transactions.length,
+        signatures: blockWrapper.signers?.length,
+        validators: {
+          elected: blockWrapper.block.validators?.elected.length,
+          registered: blockWrapper.block.validators?.registered.length,
+        },
+        epochSize: blockWrapper.block.epochSize,
+        blockRemain: blockWrapper.block.blockRemain,
+        number: blockWrapper.block.number,
+        hash: blockWrapper.block.hash,
+        parentHash: blockWrapper.block.parentHash,
+        miner: blockWrapper.block.miner,
+        difficulty: blockWrapper.block.difficulty,
+        totalDifficulty: blockWrapper.block.totalDifficulty,
+        gasLimit: blockWrapper.block.gasLimit,
+        gasUsed: blockWrapper.block.gasUsed,
+        timestamp: blockWrapper.block.timestamp,
+        time: blockWrapper.block.time,
+        received: blockWrapper.block.received,
+        trusted: blockWrapper.block.trusted,
+        arrived: blockWrapper.block.arrived,
+        fork: blockWrapper.block.fork,
+        propagation: blockWrapper.block.propagation
+      }
     }
   }
 
@@ -401,7 +384,8 @@ export default class Node {
       id: this.getId(),
       block: this.getBlockSummary(),
       propagationAvg: this._stats.propagationAvg,
-      history: this._propagationHistory
+      history: this.getPropagationHistory(),
+      signHistory: this.getSignHistory(),
     }
   }
 
@@ -446,7 +430,7 @@ export default class Node {
         latency: this._stats.latency,
         pending: this._stats.pending,
       },
-      history: this._propagationHistory,
+      history: this.getPropagationHistory(),
     }
   }
 
@@ -455,36 +439,46 @@ export default class Node {
       return 100
     }
 
-    return Math.round(this._uptime.up / (this._uptime.lastUpdate - this._uptime.started) * 100)
+    return Math.round(
+      this._uptime.up /
+      (this._uptime.lastUpdate - this._uptime.started) * 100
+    )
   }
 
-  private setPropagationHistory(
-    propagationHistory: number[]
-  ): boolean {
-    // anything new?
-    if (deepEqual(propagationHistory, this._propagationHistory)) {
-      // no, nothing to set
-      return false
-    }
+  private getPropagationHistory(): number[] {
 
-    if (!propagationHistory) {
-      this._propagationHistory = [].fill(-1, 0, cfg.maxPropagationHistory)
-      this._stats.propagationAvg = 0
+    const propagationHistory = this._history.getNodePropagationHistory(this._id) || []
 
-      return true
-    }
-
-    this._propagationHistory = propagationHistory
-
-    const positives: number[] = this._propagationHistory
-      .filter((p: number) => {
-        return p >= 0
+    const positives: number[] = propagationHistory
+      .filter((propagation: number) => {
+        return propagation >= 0
       })
 
     const sum = positives.reduce((sum, h) => sum + h, 0)
 
     this._stats.propagationAvg = (positives.length > 0 ? Math.round(sum / positives.length) : 0)
 
-    return true
+    return propagationHistory.fill(
+      -1,
+      propagationHistory.length - 1,
+      cfg.maxPropagationHistory
+    )
+  }
+
+  private getSignHistory(): boolean[] {
+
+    const s = this._history.getNodeSignatures(this._id) || []
+
+    const ss = s.fill(
+      null, s.length - 1, cfg.maxBins
+    )
+
+    return ss
+  }
+
+  private getBlock(): BlockWrapper {
+    return this._history.getBlockByNumber(
+      this._highestBlock
+    )
   }
 }
