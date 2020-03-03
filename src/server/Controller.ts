@@ -167,19 +167,21 @@ export default class Controller {
           changedBlock
         )
 
-        this.clientBroadcast(
-          Events.Block,
-          stats
-        )
-        console.info(
-          'API', 'BLK',
-          'Block:', stats.block['number'],
-          'td:', stats.block['totalDifficulty'],
-          'from:', stats.id, 'ip:', ip
-        )
+        if (stats) {
+          this.clientBroadcast(
+            Events.Block,
+            stats
+          )
+
+          console.info(
+            'API', 'BLK',
+            'Block:', stats.block['number'],
+            'td:', stats.block['totalDifficulty'],
+            'from:', stats.id, 'ip:', ip
+          )
+        }
 
         if (changedBlock.number > blockHistory.getHighestBlockNumber()) {
-
           this.clientBroadcast(
             Events.LastBlock,
             <LastBlock>{
