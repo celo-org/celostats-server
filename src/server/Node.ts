@@ -444,7 +444,6 @@ export default class Node {
   }
 
   private getPropagationHistory(): number[] {
-
     const propagationHistory =
       blockHistory.getNodePropagationHistory(this._id) || new Array(cfg.maxPropagationHistory).fill(-1)
 

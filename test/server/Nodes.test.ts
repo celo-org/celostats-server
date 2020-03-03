@@ -91,7 +91,7 @@ describe('Nodes', () => {
 
   describe('#all()', () => {
 
-    it('should return the inserted node', (done) => {
+    it('should return the inserted node', () => {
 
       const id = '0xnode11244'
 
@@ -102,11 +102,9 @@ describe('Nodes', () => {
 
       assert.equal(all.length, 1)
       assert.equal(all[0].id, id)
-      done()
-
     })
 
-    it('should return all deduplicated', (done) => {
+    it('should return all deduplicated', () => {
 
       const id = "node1";
 
@@ -117,8 +115,6 @@ describe('Nodes', () => {
       assert(n2)
 
       assert.equal(nodes.all().length, 1)
-      done()
-
     })
 
   })

@@ -16,7 +16,7 @@ describe('BlockHistory', () => {
 
   describe('#getSignHistory()', () => {
 
-    it('should return the inserted node', () => {
+    it('should return the inserted node as block signer', () => {
 
       const nodeId = "0x1234456"
       const block = {
@@ -28,8 +28,8 @@ describe('BlockHistory', () => {
         nodeId, block,
         true
       )
-      const sigs = blockHistory.getSignHistory(nodeId)
 
+      const sigs = blockHistory.getSignHistory(nodeId)
       assert(typeof sigs === 'object')
     })
 
@@ -70,7 +70,7 @@ describe('BlockHistory', () => {
       const nodePropagationHistory: number[] =
         blockHistory.getNodePropagationHistory(nodeId2)
 
-      assert(nodePropagationHistory.length === 1)
+      assert(nodePropagationHistory.length === cfg.maxPropagationHistory)
     })
 
   })
