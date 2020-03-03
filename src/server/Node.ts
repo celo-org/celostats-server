@@ -445,7 +445,8 @@ export default class Node {
 
   private getPropagationHistory(): number[] {
 
-    const propagationHistory = blockHistory.getNodePropagationHistory(this._id) || []
+    const propagationHistory =
+      blockHistory.getNodePropagationHistory(this._id) || new Array(cfg.maxPropagationHistory).fill(-1)
 
     const positives: number[] = propagationHistory
       .filter((propagation: number) => {
@@ -454,27 +455,20 @@ export default class Node {
 
     const sum = positives.reduce((sum, h) => sum + h, 0)
 
+    // todo move this somewhere else
     this._stats.propagationAvg = (positives.length > 0 ? Math.round(sum / positives.length) : 0)
 
-    return propagationHistory.fill(
-      -1,
-      propagationHistory.length - 1,
-      cfg.maxPropagationHistory - 1
-    )
+    console.log(propagationHistory)
+
+    return propagationHistory
   }
 
   private getSignHistory(): SignedState[] {
-    let signHistory: SignedState[] = []
+    let signHistory: SignedState[] = Array(cfg.maxBins).fill(null)
 
     if (this._validatorData.signer) {
       signHistory = blockHistory.getSignHistory(this._validatorData.signer)
     }
-
-    signHistory = signHistory.fill(
-      null,
-      signHistory.length - 1,
-      cfg.maxBins - 1
-    )
 
     return signHistory
   }

@@ -314,7 +314,7 @@ export class BlockHistory {
   public getNodePropagationHistory(
     id: Address
   ): number[] {
-    return this._blocks
+    const propagationHistory = this._blocks
       .slice(0, cfg.maxPeerPropagation)
       .map((blockWrapper: BlockWrapper): number => {
         const propagationTime: PropagationTime = blockWrapper.propagationTimes.find(
@@ -327,12 +327,19 @@ export class BlockHistory {
 
         return -1
       })
+
+    // pad right
+    while (propagationHistory.length < cfg.maxPeerPropagation) {
+      propagationHistory.push(-1)
+    }
+
+    return propagationHistory
   }
 
   public getSignHistory(
     id: Address
   ): SignedState[] {
-    return this._blocks
+    const signHistory = this._blocks
       .slice(0, cfg.maxBins)
       .map((block: BlockWrapper): SignedState => {
 
@@ -349,6 +356,13 @@ export class BlockHistory {
 
         return signer ? SignedState.Signed : SignedState.Unsigned
       })
+
+    // pad right
+    while (signHistory.length < cfg.maxBins) {
+      signHistory.push(null)
+    }
+
+    return signHistory;
   }
 
   public getLength(): number {
