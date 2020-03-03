@@ -163,9 +163,6 @@ export default class Controller {
       )
 
       if (changedBlock) {
-        // propagate new block to all the clients
-        this.handleGetCharts()
-
         // if we had a new height report
         if (changedBlock.number > blockHistory.getHighestBlockNumber()) {
           this.clientBroadcast(
@@ -174,6 +171,9 @@ export default class Controller {
               highestBlock: changedBlock.number
             }
           )
+
+          // propagate new block to all the clients
+          this.handleGetCharts()
         }
 
         // get stats for reporting node
