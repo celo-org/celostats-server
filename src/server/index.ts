@@ -11,8 +11,10 @@ import { LastBlock } from "./interfaces/LastBlock";
 import { BlockSummary } from "./interfaces/BlockSummary";
 import { Miner } from "./interfaces/Miner";
 import { Events } from "./server/Events";
+import { SignedState } from "./interfaces/SignedState"
 
 export {
+  SignedState,
   Pending,
   NodeSummary,
   ChartData,

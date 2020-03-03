@@ -15,6 +15,7 @@ import { getForkIndex } from "./utils/getForkIndex";
 import { Address } from "./interfaces/Address"
 import { getContractKit } from "./ContractKit"
 import { IDictionary } from "./interfaces/IDictionary"
+import { SignedState } from "./interfaces/SignedState"
 
 export class BlockHistory {
 
@@ -178,6 +179,7 @@ export class BlockHistory {
 
   /**
    * TODO: Properly document and test this method
+   * @param receivedBlock
    * @param historyBlock
    * @param forkIndex
    * @param propagationIndex
@@ -329,22 +331,23 @@ export class BlockHistory {
 
   public getSignHistory(
     id: Address
-  ): boolean[] {
+  ): SignedState[] {
     return this._blocks
       .slice(0, cfg.maxBins)
-      .map((block: BlockWrapper): boolean => {
+      .map((block: BlockWrapper): SignedState => {
 
         // do we have any data for that block?
         if (!block.signers || block.signers.length === 0) {
           // no, return null
-          return null
+          return SignedState.Unknown
         }
 
         const signer = block.signers.find(
           (signer: string) =>
             signer.toLowerCase() === id.toLowerCase()
         )
-        return !!signer
+
+        return signer ? SignedState.Signed : SignedState.Unsigned
       })
   }
 

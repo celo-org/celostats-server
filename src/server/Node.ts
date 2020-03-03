@@ -18,6 +18,7 @@ import { ValidatorDataWithStaking } from "./interfaces/ValidatorDataWithStaking"
 import { Address } from "./interfaces/Address"
 import { blockHistory } from "./BlockHistory"
 import { BlockWrapper } from "./interfaces/BlockWrapper"
+import { SignedState } from "./interfaces/SignedState"
 
 export default class Node {
 
@@ -462,8 +463,8 @@ export default class Node {
     )
   }
 
-  private getSignHistory(): boolean[] {
-    let signHistory: boolean[] = []
+  private getSignHistory(): SignedState[] {
+    let signHistory: SignedState[] = []
 
     if (this._validatorData.signer) {
       signHistory = blockHistory.getSignHistory(this._validatorData.signer)
