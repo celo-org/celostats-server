@@ -14,7 +14,7 @@ describe('BlockHistory', () => {
     blockHistory = new BlockHistory();
   })
 
-  describe('#getNodeSignatures()', () => {
+  describe('#getSignHistory()', () => {
 
     it('should return the inserted node', () => {
 
@@ -28,7 +28,7 @@ describe('BlockHistory', () => {
         nodeId, block,
         true
       )
-      const sigs = blockHistory.getNodeSignatures(nodeId)
+      const sigs = blockHistory.getSignHistory(nodeId)
 
       assert(typeof sigs === 'object')
     })
