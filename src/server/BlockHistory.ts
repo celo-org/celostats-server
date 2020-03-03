@@ -96,7 +96,11 @@ export class BlockHistory {
     if (contractKit) {
       (async () => {
         try {
-          const signers = await contractKit.election.getValidatorSigners(
+          while (blockWrapper.block.number !== await contractKit.web3.eth.getBlockNumber()) {
+            await new Promise(resolve => setTimeout(resolve, 50));
+          }
+
+          const signers = await contractKit.election.getCurrentValidatorSigners(
             blockWrapper.block.number
           )
 
@@ -323,7 +327,7 @@ export class BlockHistory {
       })
   }
 
-  public getNodeSignatures(
+  public getSignHistory(
     id: Address
   ): boolean[] {
     return this._blocks
@@ -335,7 +339,6 @@ export class BlockHistory {
         )
         return !!signer
       })
-      .fill(null, null, cfg.maxBins)
   }
 
   public getLength(): number {

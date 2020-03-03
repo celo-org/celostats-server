@@ -463,14 +463,19 @@ export default class Node {
   }
 
   private getSignHistory(): boolean[] {
+    let s: boolean[] = []
 
-    const s = blockHistory.getNodeSignatures(this._id) || []
+    if (this._validatorData.signer) {
+      s = blockHistory.getSignHistory(this._validatorData.signer)
+    }
 
-    const ss = s.fill(
-      null, s.length - 1, cfg.maxBins
+    s = s.fill(
+      null,
+      s.length - 1,
+      cfg.maxBins - 1
     )
 
-    return ss
+    return s
   }
 
   private getBlock(): BlockWrapper {
