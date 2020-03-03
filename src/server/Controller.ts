@@ -156,6 +156,7 @@ export default class Controller {
     const node: Node = nodes.getNodeById(id)
 
     if (node) {
+      const prevBlockNumber = blockHistory.getHighestBlockNumber();
       const changedBlock: Block = blockHistory.addBlock(
         id,
         block,
@@ -164,7 +165,7 @@ export default class Controller {
 
       if (changedBlock) {
         // if we had a new height report
-        if (changedBlock.number > blockHistory.getHighestBlockNumber()) {
+        if (changedBlock.number > prevBlockNumber) {
           this.clientBroadcast(
             Events.LastBlock,
             <LastBlock>{
