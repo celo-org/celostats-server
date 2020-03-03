@@ -1,3 +1,4 @@
+import './utils/logger'
 import { cfg } from "./utils/config"
 import { ValidatorsWrapper } from "@celo/contractkit/lib/wrappers/Validators"
 import { ContractKit, newKitFromWeb3 } from "@celo/contractkit"

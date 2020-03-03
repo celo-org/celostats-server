@@ -1,17 +1,17 @@
 import assert from "assert"
-import History from "../../src/server/History"
+import { BlockHistory } from "../../src/server/BlockHistory"
 import { dummyBlock } from "./constants"
 import { Block } from "../../src/server/interfaces/Block"
 import { cfg } from "../../src/server/utils/config"
 
 cfg.JSONRPC = ""
 
-describe('History', () => {
+describe('BlockHistory', () => {
 
-  let history: History;
+  let blockHistory: BlockHistory;
 
   beforeEach(() => {
-    history = new History();
+    blockHistory = new BlockHistory();
   })
 
   describe('#getNodeSignatures()', () => {
@@ -24,11 +24,11 @@ describe('History', () => {
         signers: [nodeId]
       }
 
-      history.addBlock(
+      blockHistory.addBlock(
         nodeId, block,
         true
       )
-      const sigs = history.getNodeSignatures(nodeId)
+      const sigs = blockHistory.getNodeSignatures(nodeId)
 
       assert(typeof sigs === 'object')
     })
@@ -51,7 +51,7 @@ describe('History', () => {
         propagation: 400
       }
 
-      history.addBlock(
+      blockHistory.addBlock(
         nodeId1, {
           ...block,
           propagation: propagation1
@@ -59,7 +59,7 @@ describe('History', () => {
         true
       )
 
-      history.addBlock(
+      blockHistory.addBlock(
         nodeId2, {
           ...block,
           propagation: propagation2
@@ -68,7 +68,7 @@ describe('History', () => {
       )
 
       const nodePropagationHistory: number[] =
-        history.getNodePropagationHistory(nodeId2)
+        blockHistory.getNodePropagationHistory(nodeId2)
 
       assert(nodePropagationHistory.length === 1)
     })

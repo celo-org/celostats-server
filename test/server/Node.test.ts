@@ -1,7 +1,6 @@
 import Node from "../../src/server/Node";
 import assert from "assert"
 import { dummyNodeInformation } from "./constants"
-import History from "../../src/server/History"
 
 describe('Node', () => {
 
@@ -9,7 +8,7 @@ describe('Node', () => {
 
     it('return false on fresh node', () => {
       const id = '0xsparky'
-      const node = new Node(id, new History())
+      const node = new Node(id)
       assert(node)
 
       node.setNodeInformation(dummyNodeInformation)
@@ -21,7 +20,7 @@ describe('Node', () => {
 
     it('return true when last status is true and last update is current', () => {
       const id = '0xsparky'
-      const node = new Node(id, new History())
+      const node = new Node(id)
       assert(node)
 
       node.setNodeInformation(dummyNodeInformation)
@@ -38,7 +37,7 @@ describe('Node', () => {
 
     it('return true when last update is very far away and last status is false', () => {
       const id = '0xsparky'
-      const node = new Node(id, new History())
+      const node = new Node(id)
       assert(node)
 
       node.setNodeInformation(dummyNodeInformation)
@@ -55,7 +54,7 @@ describe('Node', () => {
 
     it('return true when last update is 0 and last status is false', () => {
       const id = '0xsparky'
-      const node = new Node(id, new History())
+      const node = new Node(id)
       assert(node)
 
       node.setNodeInformation(dummyNodeInformation)

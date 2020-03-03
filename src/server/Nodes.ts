@@ -1,9 +1,102 @@
 import Node from "./Node"
 import { NodeSummary } from "./interfaces/NodeSummary"
 import { Address } from "./interfaces/Address"
-import History from "./History"
+import { NodeInformation } from "./interfaces/NodeInformation"
+import { NodeDetails } from "./interfaces/NodeDetails"
+import { ValidatorData } from "./interfaces/ValidatorData"
+import { Stats } from "./interfaces/Stats"
+import { StatsResponse } from "./interfaces/StatsResponse"
+import { Pending } from "./interfaces/Pending"
+import { Latency } from "./interfaces/Latency"
+import { NodeStats } from "./interfaces/NodeStats"
 
-export default class Nodes extends Array<Node> {
+export class Nodes extends Array<Node> {
+
+  public updateStakingInformation(
+    registered: Address[],
+    elected: Address[]
+  ): void {
+    for (const node of this) {
+      const id: Address = node.getId().toLowerCase()
+
+      const elec = elected.indexOf(id) > -1
+      const reg = registered.indexOf(id) > -1
+
+      node.setStakingInformation(reg, elec)
+    }
+  }
+
+  public updateLatency(
+    id: Address,
+    latency: number,
+  ): Latency {
+    const node: Node = this.getNodeById(id)
+
+    if (node) {
+      return node.setLatency(latency)
+    }
+  }
+
+  public setInactive(
+    spark: string
+  ): NodeStats {
+    const node = this.getNodeBySpark(spark)
+
+    if (node) {
+      node.setState(false)
+      return node.getNodeStats()
+    }
+  }
+
+  public updatePending(
+    id: Address,
+    stats: Stats
+  ): Pending {
+    const node: Node = this.getNodeById(id)
+
+    if (node) {
+      return node.setPending(stats)
+    }
+  }
+
+  public updateStats(
+    id: Address,
+    stats: Stats,
+  ): StatsResponse {
+    const node: Node = this.getNodeById(id)
+
+    if (node) {
+      return node.setStats(stats)
+    }
+  }
+
+  public setValidator(
+    id: Address,
+    validator: ValidatorData
+  ): void {
+    let node: Node = this.getNodeById(id)
+
+    if (!node) {
+      node = this.createEmptyNode(id)
+    }
+
+    node.setValidatorData(validator)
+  }
+
+  public addNode(
+    id: Address,
+    nodeInformation: NodeInformation
+  ): NodeDetails {
+    let node: Node = this.getNodeById(id)
+
+    if (!node) {
+      node = this.createEmptyNode(id)
+    }
+
+    return node.setNodeInformation(
+      nodeInformation
+    )
+  }
 
   private getIndex(
     search: { (n: Node): boolean }
@@ -28,9 +121,8 @@ export default class Nodes extends Array<Node> {
 
   public createEmptyNode(
     id: Address,
-    history: History,
   ): Node {
-    const node = new Node(id, history)
+    const node = new Node(id)
     this.push(node)
     return node;
   }
@@ -65,3 +157,5 @@ export default class Nodes extends Array<Node> {
     }
   }
 }
+
+export const nodes = new Nodes()

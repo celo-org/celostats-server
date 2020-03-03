@@ -16,7 +16,7 @@ import { NodeSummary } from "./interfaces/NodeSummary"
 import { Stats } from "./interfaces/Stats"
 import { ValidatorDataWithStaking } from "./interfaces/ValidatorDataWithStaking"
 import { Address } from "./interfaces/Address"
-import History from "./History"
+import { blockHistory } from "./BlockHistory"
 import { BlockWrapper } from "./interfaces/BlockWrapper"
 
 export default class Node {
@@ -39,7 +39,6 @@ export default class Node {
     contact: null
   }
 
-  private _history: History;
   private _highestBlock = -1
 
   private _stats: Stats = {
@@ -79,11 +78,9 @@ export default class Node {
   }
 
   public constructor(
-    id: Address,
-    history: History
+    id: Address
   ) {
     this._id = id
-    this._history = history
   }
 
   public setNodeInformation(
@@ -447,7 +444,7 @@ export default class Node {
 
   private getPropagationHistory(): number[] {
 
-    const propagationHistory = this._history.getNodePropagationHistory(this._id) || []
+    const propagationHistory = blockHistory.getNodePropagationHistory(this._id) || []
 
     const positives: number[] = propagationHistory
       .filter((propagation: number) => {
@@ -467,7 +464,7 @@ export default class Node {
 
   private getSignHistory(): boolean[] {
 
-    const s = this._history.getNodeSignatures(this._id) || []
+    const s = blockHistory.getNodeSignatures(this._id) || []
 
     const ss = s.fill(
       null, s.length - 1, cfg.maxBins
@@ -477,7 +474,7 @@ export default class Node {
   }
 
   private getBlock(): BlockWrapper {
-    return this._history.getBlockByNumber(
+    return blockHistory.getBlockByNumber(
       this._highestBlock
     )
   }

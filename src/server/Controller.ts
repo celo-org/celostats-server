@@ -1,7 +1,6 @@
 import './utils/logger'
 // @ts-ignore
 import Primus from "primus"
-import Collection from "./Collection";
 import Node from "./Node";
 import io from "socket.io"
 import { Statistics } from "./statistics/Statistics";
@@ -34,17 +33,18 @@ import { Pending } from "./interfaces/Pending"
 import { StatsResponse } from "./interfaces/StatsResponse"
 import { ClientPing } from "./interfaces/ClientPing"
 import { LastBlock } from "./interfaces/LastBlock"
+import { nodes } from "./Nodes"
+import { blockHistory } from "./BlockHistory"
+import { BlockStats } from "./interfaces/BlockStats"
 
 export default class Controller {
-  private readonly collection: Collection
   public readonly statistics: Statistics;
 
   constructor(
     private api: Primus,
     private client: io.Server
   ) {
-    this.collection = new Collection()
-    this.statistics = new Statistics(this.collection);
+    this.statistics = new Statistics();
   }
 
   public init(): void {
@@ -62,7 +62,7 @@ export default class Controller {
     setInterval(() => {
       this.clientBroadcast(
         Events.Init,
-        this.collection.getAll()
+        nodes.all()
       )
 
       this.handleGetCharts()
@@ -120,7 +120,7 @@ export default class Controller {
       latency: spark.latency || 0
     }
 
-    const nodeDetails: NodeDetails = this.collection.addNode(
+    const nodeDetails: NodeDetails = nodes.addNode(
       id,
       <NodeInformation>{
         nodeData,
@@ -152,35 +152,44 @@ export default class Controller {
     ip: string,
     block: Block
   ): void {
-    const res = this.collection.addBlock(
-      id,
-      block
-    )
 
-    if (res) {
-      if (res.blockStats) {
+    const node: Node = nodes.getNodeById(id)
+
+    if (node) {
+      const changedBlock: Block = blockHistory.addBlock(
+        id,
+        block,
+        node.getTrusted()
+      )
+
+      if (changedBlock) {
+        const stats: BlockStats = node.setBlock(
+          changedBlock
+        )
+
         this.clientBroadcast(
           Events.Block,
-          res.blockStats
+          stats
         )
         console.info(
           'API', 'BLK',
-          'Block:', res.blockStats.block['number'],
-          'td:', res.blockStats.block['totalDifficulty'],
-          'from:', res.blockStats.id, 'ip:', ip
-        )
-      }
-
-      if (res.highestBlock) {
-        this.clientBroadcast(
-          Events.LastBlock,
-          <LastBlock>{
-            highestBlock: res.highestBlock
-          }
+          'Block:', stats.block['number'],
+          'td:', stats.block['totalDifficulty'],
+          'from:', stats.id, 'ip:', ip
         )
 
-        // propagate to all the clients
-        this.handleGetCharts()
+        if (changedBlock.number > blockHistory.getHighestBlockNumber()) {
+
+          this.clientBroadcast(
+            Events.LastBlock,
+            <LastBlock>{
+              highestBlock: changedBlock.number
+            }
+          )
+
+          // propagate to all the clients
+          this.handleGetCharts()
+        }
       }
     }
   }
@@ -189,7 +198,7 @@ export default class Controller {
     id: Address,
     stats: Stats
   ): void {
-    const pending: Pending = this.collection.updatePending(
+    const pending: Pending = nodes.updatePending(
       id, stats
     )
 
@@ -247,10 +256,10 @@ export default class Controller {
 
         // correlate via signer here
         const id = v.signer
-        this.collection.setValidator(id, v)
+        nodes.setValidator(id, v)
       }
 
-      this.collection.updateStakingInformation(
+      nodes.updateStakingInformation(
         validators.registered.map((validator: Validator): Address => validator.signer.toLowerCase()),
         validators.elected.map((elected: Address): Address => elected.toLowerCase())
       )
@@ -261,7 +270,8 @@ export default class Controller {
     id: Address,
     stats: Stats
   ): void {
-    const statsResponse: StatsResponse = this.collection.updateStats(id, stats)
+    const statsResponse: StatsResponse =
+      nodes.updateStats(id, stats)
 
     if (statsResponse) {
       this.clientBroadcast(
@@ -281,7 +291,7 @@ export default class Controller {
     id: Address,
     latency: number
   ): void {
-    const lat = this.collection.updateLatency(id, latency)
+    const lat = nodes.updateLatency(id, latency)
 
     if (lat) {
       this.clientBroadcast(
@@ -301,7 +311,7 @@ export default class Controller {
     id: string
   ): void {
 
-    const nodeStats: NodeStats = this.collection.setInactive(id)
+    const nodeStats: NodeStats = nodes.setInactive(id)
 
     if (nodeStats) {
       this.clientBroadcast(
@@ -394,7 +404,7 @@ export default class Controller {
   private handleGetCharts(
     socket?: io.Socket
   ): void {
-    const charts: ChartData = this.collection.getCharts()
+    const charts: ChartData = blockHistory.getCharts()
 
     if (charts) {
       if (socket) {
@@ -440,7 +450,7 @@ export default class Controller {
     this.emit(
       socket,
       Events.Init,
-      this.collection.getAll()
+      nodes.all()
     )
 
     this.statistics.add(Sides.Client, Directions.Out)
@@ -469,7 +479,4 @@ export default class Controller {
     return true
   }
 
-  public getForks() {
-    return this.collection.getForks()
-  }
 }

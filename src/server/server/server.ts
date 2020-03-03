@@ -30,6 +30,7 @@ import { IDictionary } from "../interfaces/IDictionary";
 import { isInputValid } from "../utils/isInputValid";
 import { deleteSpark } from "../utils/deleteSpark";
 import { Events } from "./Events"
+import { blockHistory } from "../BlockHistory"
 
 export default class Server {
 
@@ -67,7 +68,7 @@ export default class Server {
     ) => {
       res.set('Content-Type', 'text/html');
       res.send(
-        Buffer.from(`<pre>${JSON.stringify(this.controller.getForks(), null, 2)}</pre>`)
+        Buffer.from(`<pre>${JSON.stringify(blockHistory.getForks(), null, 2)}</pre>`)
       )
       res.end()
     })

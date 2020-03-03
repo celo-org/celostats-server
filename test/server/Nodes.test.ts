@@ -1,13 +1,25 @@
 import assert from "assert"
 import Node from "../../src/server/Node";
-import Nodes from "../../src/server/Nodes";
-import { dummyNodeInformation } from "./constants"
-import History from "../../src/server/History"
+import { Nodes } from "../../src/server/Nodes";
+import { dummyInfo, dummyNodeInformation } from "./constants"
+import { NodeInformation } from "../../src/server/interfaces/NodeInformation"
 
 describe('Nodes', () => {
 
+  const node: NodeInformation = {
+    nodeData: {
+      ip: '',
+      spark: '',
+      latency: 0
+    },
+    stats: {
+      id: '11',
+      address: '0x12345',
+      info: dummyInfo,
+    }
+  }
+
   let nodes: Nodes;
-  const history = new History()
 
   beforeEach(() => {
     nodes = new Nodes();
@@ -17,7 +29,7 @@ describe('Nodes', () => {
 
     it('should get node by id', () => {
       const id = '0xnode1'
-      const node = new Node(id, history)
+      const node = new Node(id)
       nodes.push(node)
 
       const n = nodes.getNodeById(id)
@@ -28,7 +40,7 @@ describe('Nodes', () => {
 
     it('should return null when node was not found with given id', () => {
       const id = '0xnode2'
-      const node = new Node(id, history)
+      const node = new Node(id)
       nodes.push(node)
 
       const n = nodes.getNodeById("xxxFindMeNotxxx")
@@ -43,7 +55,7 @@ describe('Nodes', () => {
     it('should get node by spark', () => {
       const id = '0xsparky'
       const spark = 'HGJgjsad'
-      const node = new Node(id, history)
+      const node = new Node(id)
       node.setNodeInformation({
         stats: {
           ...dummyNodeInformation.stats,
@@ -67,12 +79,46 @@ describe('Nodes', () => {
       const id = '0xnode2'
       const spark = 'LjaksKHJj'
 
-      const node = new Node(id, history)
+      const node = new Node(id)
       nodes.push(node)
 
       const n = nodes.getNodeBySpark(spark)
 
       assert.equal(n, null)
+    })
+
+  })
+
+  describe('#all()', () => {
+
+    it('should return the inserted node', (done) => {
+
+      const id = '0xnode11244'
+
+      const n = nodes.addNode(id, node)
+      assert(n)
+
+      const all = nodes.all()
+
+      assert.equal(all.length, 1)
+      assert.equal(all[0].id, id)
+      done()
+
+    })
+
+    it('should return all deduplicated', (done) => {
+
+      const id = "node1";
+
+      const n1 = nodes.addNode(id, node)
+      assert(n1)
+
+      const n2 = nodes.addNode(id, node)
+      assert(n2)
+
+      assert.equal(nodes.all().length, 1)
+      done()
+
     })
 
   })

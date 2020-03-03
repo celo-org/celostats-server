@@ -16,7 +16,7 @@ import { Address } from "./interfaces/Address"
 import { getContractKit } from "./ContractKit"
 import { IDictionary } from "./interfaces/IDictionary"
 
-export default class History {
+export class BlockHistory {
 
   private _blocks: Blocks = new Blocks()
 
@@ -104,7 +104,12 @@ export default class History {
             blockWrapper.signers = signers;
           }
         } catch (err) {
-          console.error('API', 'BLK', blockWrapper.block.number, err.message)
+          console.error(
+            'API', 'BLK',
+            'Getting signers failed for Block:',
+            blockWrapper.block.number,
+            'Error:', err.message
+          )
         }
       })()
     }
@@ -481,4 +486,9 @@ export default class History {
     return this._blocks.findBlockByNumber(blockNumber)
   }
 
+  public getHighestBlockNumber(): number {
+    return this._blocks.bestBlockNumber()
+  }
 }
+
+export const blockHistory = new BlockHistory()
