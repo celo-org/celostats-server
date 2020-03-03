@@ -191,7 +191,7 @@ export default class Controller {
           console.info(
             'API', 'BLK',
             'Block:', stats.block['number'],
-            'td:', stats.block['totalDifficulty'],
+            'TotalDifficulty:', stats.block['totalDifficulty'],
             'from:', stats.id, 'ip:', ip
           )
         }
