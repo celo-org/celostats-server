@@ -458,8 +458,6 @@ export default class Node {
     // todo move this somewhere else
     this._stats.propagationAvg = (positives.length > 0 ? Math.round(sum / positives.length) : 0)
 
-    console.log(propagationHistory)
-
     return propagationHistory
   }
 
