@@ -333,6 +333,13 @@ export class BlockHistory {
     return this._blocks
       .slice(0, cfg.maxBins)
       .map((block: BlockWrapper): boolean => {
+
+        // do we have any data for that block?
+        if (!block.signers || block.signers.length === 0) {
+          // no, return null
+          return null
+        }
+
         const signer = block.signers.find(
           (signer: string) =>
             signer.toLowerCase() === id.toLowerCase()

@@ -458,24 +458,24 @@ export default class Node {
     return propagationHistory.fill(
       -1,
       propagationHistory.length - 1,
-      cfg.maxPropagationHistory
+      cfg.maxPropagationHistory - 1
     )
   }
 
   private getSignHistory(): boolean[] {
-    let s: boolean[] = []
+    let signHistory: boolean[] = []
 
     if (this._validatorData.signer) {
-      s = blockHistory.getSignHistory(this._validatorData.signer)
+      signHistory = blockHistory.getSignHistory(this._validatorData.signer)
     }
 
-    s = s.fill(
+    signHistory = signHistory.fill(
       null,
-      s.length - 1,
+      signHistory.length - 1,
       cfg.maxBins - 1
     )
 
-    return s
+    return signHistory
   }
 
   private getBlock(): BlockWrapper {
