@@ -468,7 +468,8 @@ export class BlockHistory {
           gasSpending: blockWrapper.block.gasUsed,
           gasLimit: blockWrapper.block.gasLimit,
           miner: blockWrapper.block.miner,
-          signatures: blockWrapper.signers.length
+          signatures: !blockWrapper.signers || blockWrapper.signers.length === 0 ?
+            null : blockWrapper.signers.length
         }
       })
 
@@ -482,7 +483,7 @@ export class BlockHistory {
       gasSpending: padArray(chartHistory.map((h) => h.gasSpending), cfg.maxBins, 0),
       gasLimit: padArray(chartHistory.map((h) => h.gasLimit), cfg.maxBins, 0),
       miners: this.getMiners(),
-      signatures: chartHistory.map((b) => b.signatures),
+      signatures: padArray(chartHistory.map((b) => b.signatures), cfg.maxBins, null),
       propagation: this.getBlockPropagation(),
     }
   }
