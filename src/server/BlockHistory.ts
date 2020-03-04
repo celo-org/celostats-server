@@ -434,7 +434,7 @@ export class BlockHistory {
     return sum / (blockTimes.length === 0 ? 1 : blockTimes.length)
   }
 
-  private getMinersCount(): Miner[] {
+  private getMiners(): Miner[] {
     return this._blocks
       .slice(0, cfg.maxBins)
       .map((item: BlockWrapper): Miner => {
@@ -457,6 +457,7 @@ export class BlockHistory {
         gasSpending: number
         gasLimit: number
         miner: string
+        signatures: number
       } => {
         return {
           height: blockWrapper.block.number,
@@ -466,7 +467,8 @@ export class BlockHistory {
           transactions: blockWrapper.block.transactions ? blockWrapper.block.transactions.length : 0,
           gasSpending: blockWrapper.block.gasUsed,
           gasLimit: blockWrapper.block.gasLimit,
-          miner: blockWrapper.block.miner
+          miner: blockWrapper.block.miner,
+          signatures: blockWrapper.signers.length
         }
       })
 
@@ -479,7 +481,8 @@ export class BlockHistory {
       transactions: chartHistory.map((h) => h.transactions),
       gasSpending: padArray(chartHistory.map((h) => h.gasSpending), cfg.maxBins, 0),
       gasLimit: padArray(chartHistory.map((h) => h.gasLimit), cfg.maxBins, 0),
-      miners: this.getMinersCount(),
+      miners: this.getMiners(),
+      signatures: chartHistory.map((b) => b.signatures),
       propagation: this.getBlockPropagation(),
     }
   }
