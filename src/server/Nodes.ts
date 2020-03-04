@@ -2,7 +2,6 @@ import Node from "./Node"
 import { NodeSummary } from "./interfaces/NodeSummary"
 import { Address } from "./interfaces/Address"
 import { NodeInformation } from "./interfaces/NodeInformation"
-import { NodeDetails } from "./interfaces/NodeDetails"
 import { ValidatorData } from "./interfaces/ValidatorData"
 import { Stats } from "./interfaces/Stats"
 import { StatsResponse } from "./interfaces/StatsResponse"
@@ -86,7 +85,7 @@ export class Nodes extends Array<Node> {
   public addNode(
     id: Address,
     nodeInformation: NodeInformation
-  ): NodeDetails {
+  ): NodeSummary {
     let node: Node = this.getNodeById(id)
 
     if (!node) {

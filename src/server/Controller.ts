@@ -25,7 +25,6 @@ import { NodePong } from "./interfaces/NodePong";
 import { isAuthorized } from "./utils/isAuthorized";
 import { Validator } from "./interfaces/Validator"
 import { ValidatorData } from "./interfaces/ValidatorData"
-import { NodeDetails } from "./interfaces/NodeDetails"
 import { Events } from "./server/Events"
 import { Address } from "./interfaces/Address"
 import { ChartData } from "./interfaces/ChartData"
@@ -36,6 +35,7 @@ import { LastBlock } from "./interfaces/LastBlock"
 import { nodes } from "./Nodes"
 import { blockHistory } from "./BlockHistory"
 import { BlockStats } from "./interfaces/BlockStats"
+import { NodeSummary } from "./interfaces/NodeSummary"
 
 export default class Controller {
   public readonly statistics: Statistics;
@@ -120,7 +120,7 @@ export default class Controller {
       latency: spark.latency || 0
     }
 
-    const nodeDetails: NodeDetails = nodes.addNode(
+    const nodeSummary: NodeSummary = nodes.addNode(
       id,
       <NodeInformation>{
         nodeData,
@@ -128,7 +128,7 @@ export default class Controller {
       }
     )
 
-    if (nodeDetails) {
+    if (nodeSummary) {
       this.emit(
         spark,
         Events.Ready
@@ -138,11 +138,11 @@ export default class Controller {
 
       console.success(
         'API', 'CON', 'Node',
-        `'${nodeDetails.info.name}'`, `(${spark.id})`, 'Connected')
+        `'${nodeSummary.info.name}'`, `(${spark.id})`, 'Connected')
 
       this.clientBroadcast(
         Events.Add,
-        nodeDetails
+        nodeSummary
       )
     }
   }

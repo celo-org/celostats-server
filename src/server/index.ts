@@ -3,7 +3,6 @@ import { NodeSummary } from "./interfaces/NodeSummary";
 import { ChartData } from "./interfaces/ChartData";
 import { Latency } from "./interfaces/Latency";
 import { BlockStats } from "./interfaces/BlockStats";
-import { NodeDetails } from "./interfaces/NodeDetails";
 import { StatsResponse } from "./interfaces/StatsResponse";
 import { ClientPong } from "./interfaces/ClientPong";
 import { ClientPing } from "./interfaces/ClientPing";
@@ -20,7 +19,6 @@ export {
   ChartData,
   Latency,
   BlockStats,
-  NodeDetails,
   StatsResponse,
   ClientPong,
   ClientPing,

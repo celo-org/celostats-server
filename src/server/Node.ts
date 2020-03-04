@@ -8,7 +8,6 @@ import { BlockStats } from "./interfaces/BlockStats";
 import { Info } from "./interfaces/Info";
 import { Uptime } from "./interfaces/Uptime";
 import { NodeStats } from "./interfaces/NodeStats";
-import { NodeDetails } from "./interfaces/NodeDetails";
 import { NodeInformation } from "./interfaces/NodeInformation";
 import { ValidatorData } from "./interfaces/ValidatorData"
 import { BlockSummary } from "./interfaces/BlockSummary"
@@ -86,7 +85,7 @@ export default class Node {
 
   public setNodeInformation(
     nodeInformation: NodeInformation
-  ): NodeDetails {
+  ): NodeSummary {
     // activate node
     if (this._uptime.started === null) {
       this.setState(true)
@@ -114,7 +113,7 @@ export default class Node {
     // store spark
     this._spark = nodeInformation.nodeData.spark
 
-    return this.getInfo()
+    return this.getSummary()
   }
 
   public setValidatorData(
@@ -405,30 +404,6 @@ export default class Node {
         uptime: this._stats.uptime,
         latency: this._stats.latency
       }
-    }
-  }
-
-  private getInfo(): NodeDetails {
-    return {
-      id: this.getId(),
-      info: this._info,
-      stats: {
-        registered: this._stats.registered || this._validatorData.registered,
-        active: this._stats.active,
-        mining: this._stats.mining,
-        elected: this._stats.elected || this._validatorData.elected,
-        proxy: this._stats.proxy,
-        syncing: this._stats.syncing,
-        hashrate: this._stats.hashrate,
-        peers: this._stats.peers,
-        gasPrice: this._stats.gasPrice,
-        block: this.getBlockSummary(),
-        propagationAvg: this._stats.propagationAvg,
-        uptime: this._stats.uptime,
-        latency: this._stats.latency,
-        pending: this._stats.pending,
-      },
-      history: this.getPropagationHistory(),
     }
   }
 
