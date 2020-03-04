@@ -20,5 +20,7 @@ export interface ChartData {
   readonly gasLimit: number[]
   // the last x miners
   readonly miners: Miner[]
+  // the last x signature count
+  readonly signatures: number[]
   readonly propagation: Histogram
 }
