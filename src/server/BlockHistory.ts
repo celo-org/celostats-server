@@ -101,7 +101,7 @@ export class BlockHistory {
             await new Promise(resolve => setTimeout(resolve, 50));
           }
 
-          const signers = await contractKit.election.getCurrentValidatorSigners(
+          const signers = await contractKit.election.getValidatorSigners(
             blockWrapper.block.number
           )
 
