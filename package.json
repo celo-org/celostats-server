@@ -23,7 +23,7 @@
     "start:inspect": "node --inspect ./dist/server/app.js"
   },
   "dependencies": {
-    "@celo/contractkit": "^0.2.14",
+    "@celo/contractkit": "^0.2.15-beta",
     "@types/compression": "^1.0.1",
     "@types/d3": "^5.7.2",
     "@types/debounce": "^1.2.0",
@@ -80,9 +80,9 @@
     "ws": "^7.2.1"
   },
   "devDependencies": {
-    "@types/mocha": "^5.2.7",
+    "@types/mocha": "^7.0.2",
     "chai": "^4.2.0",
-    "mocha": "^7.0.0",
+    "mocha": "^7.0.1",
     "nyc": "^15.0.0"
   },
   "resolutions": {
