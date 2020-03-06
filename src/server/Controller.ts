@@ -378,9 +378,9 @@ export default class Controller {
       return false
     }
 
-    console.info(
+    console.success(
       'API', 'CON',
-      'Hello', id
+      'Hello', `'${stats.id}' (${id})`
     )
 
     return true

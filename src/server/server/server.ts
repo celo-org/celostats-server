@@ -129,7 +129,8 @@ export default class Server {
 
         console.success(
           'API', 'CON', 'Node Open:',
-          spark.address.ip, `'${spark.id}'`
+          `${spark.address.ip}:${spark.address.port}`,
+          `(${spark.id})`
         )
 
         spark
