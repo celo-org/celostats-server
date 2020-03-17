@@ -337,7 +337,7 @@ export default class Controller {
     stats: NodePing,
     spark: Primus.spark
   ): void {
-    const start = (stats.clientTime ? stats.clientTime : null)
+    const start: number = (stats.clientTime ? stats.clientTime : null)
 
     this.emit(
       spark,

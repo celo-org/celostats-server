@@ -1,4 +1,4 @@
 export interface NodePing {
-  readonly clientTime: string
+  readonly clientTime: number
   readonly id: string
 }
