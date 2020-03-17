@@ -9,13 +9,16 @@ import { KeyPair } from "elliptic/lib/elliptic/ec"
 
 const secp256k1 = new EC('secp256k1')
 
-export function generateProof(
-  stats: Wrapper
-): Proof {
-
-  // create key
+export function generateKey(): KeyPair {
   const key: KeyPair = secp256k1.genKeyPair();
 
+  return key;
+}
+
+export function generateProof(
+  stats: Wrapper,
+  key: KeyPair = generateKey()
+): Proof {
   // get public key
   const publicKey = key.getPublic().encode('hex')
 
