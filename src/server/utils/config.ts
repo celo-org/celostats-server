@@ -25,6 +25,9 @@ const JSONRPC = process.env.JSONRPC || "http://localhost:8545"
 // general config
 export const cfg = {
   production,
+  // WARNING: this will trust every node and has to be always
+  // on false in production environments!
+  trustEveryNode: false,
   port: process.env.PORT || 3000,
   headersTimeout: 0.9 * 1000,
   maxHeadersCount: 0,

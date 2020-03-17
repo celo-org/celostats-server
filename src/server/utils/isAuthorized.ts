@@ -8,6 +8,7 @@ import { KeyPair } from "elliptic/lib/elliptic/ec"
 import { isInputValid } from "./isInputValid";
 import { hash } from "./hash";
 import { Address } from "../interfaces/Address"
+import { cfg } from "./config"
 
 const secp256k1 = new EC('secp256k1')
 
