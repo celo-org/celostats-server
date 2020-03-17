@@ -164,19 +164,6 @@ export default class Controller {
       )
 
       if (changedBlock) {
-        // if we had a new height report
-        if (changedBlock.number > prevBlockNumber) {
-          this.clientBroadcast(
-            Events.LastBlock,
-            <LastBlock>{
-              highestBlock: changedBlock.number
-            }
-          )
-
-          // propagate new block to all the clients
-          this.handleGetCharts()
-        }
-
         // get stats for reporting node
         const stats: BlockStats = node.setBlock(
           changedBlock
@@ -190,10 +177,23 @@ export default class Controller {
 
           console.info(
             'API', 'BLK',
-            'Block:', stats.block['number'],
-            'TotalDifficulty:', stats.block['totalDifficulty'],
+            'Block:', stats.block.number,
+            'TotalDifficulty:', stats.block.totalDifficulty,
             'from:', stats.id, 'ip:', ip
           )
+        }
+
+        // if we had a new height report
+        if (changedBlock.number > prevBlockNumber) {
+          this.clientBroadcast(
+            Events.LastBlock,
+            <LastBlock>{
+              highestBlock: changedBlock.number
+            }
+          )
+
+          // propagate new block to all the clients
+          this.handleGetCharts()
         }
       }
     }

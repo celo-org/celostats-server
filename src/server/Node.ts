@@ -374,6 +374,8 @@ export default class Node {
         propagation: blockWrapper.block.propagation
       }
     }
+
+    return null
   }
 
   private getBlockStats(): BlockStats {

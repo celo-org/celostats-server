@@ -53,7 +53,9 @@ export default class Blocks extends Array<BlockWrapper> {
     number: number
   ): BlockWrapper {
     const index = this.indexOf(
-      this.find((b: BlockWrapper) => b.block.number === number)
+      this.find((blockWrapper: BlockWrapper) =>
+        blockWrapper.block.number === number
+      )
     )
 
     if (index < 0) {
