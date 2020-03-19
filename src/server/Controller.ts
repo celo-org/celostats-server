@@ -40,6 +40,10 @@ import { NodeSummary } from "./interfaces/NodeSummary"
 export default class Controller {
   public readonly statistics: Statistics;
 
+  private pingInterval: NodeJS.Timeout = null
+  private cleanupInterval: NodeJS.Timeout = null
+  private statisticsInterval: NodeJS.Timeout = null
+
   constructor(
     private api: Primus,
     private client: io.Server
@@ -49,7 +53,7 @@ export default class Controller {
 
   public init(): void {
     // ping clients
-    setInterval(() => {
+    this.pingInterval = setInterval(() => {
       this.clientBroadcast(
         Events.ClientPing,
         <ClientPing>{
@@ -59,7 +63,7 @@ export default class Controller {
     }, cfg.clientPingTimeout)
 
     // Cleanup old inactive nodes
-    setInterval(() => {
+    this.cleanupInterval = setInterval(() => {
       this.clientBroadcast(
         Events.Init,
         nodes.all()
@@ -70,7 +74,7 @@ export default class Controller {
     }, cfg.nodeCleanupTimeout)
 
     // print statistics
-    setInterval(() => {
+    this.statisticsInterval = setInterval(() => {
       const clients = Object.keys(this.client.sockets.connected).length
 
       let nodes = 0;
@@ -484,4 +488,9 @@ export default class Controller {
     return true
   }
 
+  public stop(): void {
+    clearInterval(this.pingInterval)
+    clearInterval(this.cleanupInterval)
+    clearInterval(this.statisticsInterval)
+  }
 }

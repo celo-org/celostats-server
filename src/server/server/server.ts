@@ -8,7 +8,7 @@ import * as primusEmit from "primus-emit"
 import * as primusSparkLatency from "primus-spark-latency"
 import express from "express";
 import Controller from "../Controller";
-import { createServer } from "http"
+import { Server as NodeServer, createServer } from "http"
 import { expressConfig } from "./expressConfig"
 import { routes } from "./routes";
 import { cfg } from "../utils/config"
@@ -38,6 +38,8 @@ export default class Server {
   private readonly client: io.Server
   private readonly danglingConnections: IDictionary = {}
   private readonly controller: Controller;
+
+  private readonly server: NodeServer = null
 
   constructor() {
 
@@ -75,13 +77,13 @@ export default class Server {
 
     expressConfig.use(routes)
 
-    const server = createServer(expressConfig)
+    this.server = createServer(expressConfig)
 
-    server.headersTimeout = cfg.headersTimeout
-    server.maxHeadersCount = cfg.maxHeadersCount
-    server.timeout = cfg.timeout
+    this.server.headersTimeout = cfg.headersTimeout
+    this.server.maxHeadersCount = cfg.maxHeadersCount
+    this.server.timeout = cfg.timeout
 
-    this.api = new Primus(server, {
+    this.api = new Primus(this.server, {
       transformer: 'websockets',
       pathname: '/api',
       parser: 'JSON',
@@ -94,7 +96,7 @@ export default class Server {
       }
     })
 
-    this.client = io(server, {
+    this.client = io(this.server, {
       path: '/client',
       transports: ['websocket'],
       cookie: false,
@@ -109,7 +111,7 @@ export default class Server {
       this.client
     )
 
-    server.listen(cfg.port)
+    this.server.listen(cfg.port)
 
     console.success(
       "SYS", "CON",
@@ -327,5 +329,22 @@ export default class Server {
     this.initApi()
     this.initClient()
     this.controller.init()
+  }
+
+  public stop(): void {
+    console.log("Stopping server!")
+
+    this.controller.stop()
+
+    this.server.close(() => {
+      console.log("Server stopped!")
+    })
+
+    this.api.destroy()
+
+    this.client.close(() => {
+      console.log("Client stopped!")
+    })
+
   }
 }

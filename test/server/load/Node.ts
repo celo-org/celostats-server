@@ -9,10 +9,10 @@ import { generateKey, generateProof } from "../utils/generateProof"
 import { hash } from "../../../src/server/utils/hash"
 import { Events, Latency } from "../../../src/server"
 import { InfoWrapped } from "../../../src/server/interfaces/InfoWrapped"
-import { dummyInfo } from "../constants"
+import { dummyInfo, dummyStats } from "../constants"
 import { NodeResponseInfo } from "../../../src/server/interfaces/NodeResponseInfo"
 import { NodePong } from "../../../src/server/interfaces/NodePong"
-import { fuzzy } from "./utils"
+import { fuzzy, getRandomInt, sleep } from "./utils"
 import { NodeResponseLatency } from "../../../src/server/interfaces/NodeResponseLatency"
 import { NodePing } from "../../../src/server/interfaces/NodePing"
 import { NodeResponsePing } from "../../../src/server/interfaces/NodeResponsePing"
@@ -20,6 +20,8 @@ import { Block } from "../../../src/server/interfaces/Block"
 import { BlockWrapped } from "../../../src/server/interfaces/BlockWrapped"
 import { NodeResponseBlock } from "../../../src/server/interfaces/NodeResponseBlock"
 import { cfg } from "../../../src/server/utils/config"
+import { NodeResponseStats } from "../../../src/server/interfaces/NodeResponseStats"
+import { StatsWrapped } from "../../../src/server/interfaces/StatsWrapped"
 
 const Socket = Primus.createSocket({
   pathname: '/api',
@@ -41,7 +43,7 @@ export class Node {
   address = '0x' + hash(this.publicKey.substr(2), 'hex').substr(24)
 
   private pingInterval: NodeJS.Timeout = null
-  private blockInterval: NodeJS.Timeout = null
+  private statsInterval: NodeJS.Timeout = null
 
   constructor(
     private id: string,
@@ -68,19 +70,19 @@ export class Node {
   start() {
     this.api.on("open", () => {
 
-      const stats: InfoWrapped = {
+      const infoWrapped: InfoWrapped = {
         id: this.id,
         address: this.address,
         info: {
           ...dummyInfo,
           name: this.id,
           contact: "test@celo.org"
-        }
+        },
       }
 
       const nodeResponseInfo: NodeResponseInfo = {
-        proof: generateProof(stats, this.key),
-        stats
+        proof: generateProof(infoWrapped, this.key),
+        stats: infoWrapped
       }
 
       this.api.emit(Events.Hello, nodeResponseInfo)
@@ -136,6 +138,32 @@ export class Node {
       }
     }, (pInterval / this.factor) * 1000)
 
+    const sInterval = fuzzy(5, this.volatilityPercent)
+
+    // ping interval
+    this.statsInterval = setInterval(() => {
+      const statsWrapped: StatsWrapped = {
+        id: this.id,
+        stats: {
+          ...dummyStats,
+          uptime: 100,
+          pending: getRandomInt(0, 10),
+          active: true
+        }
+      }
+
+      const nodeResponseStats: NodeResponseStats = {
+        stats: statsWrapped,
+        proof: generateProof(statsWrapped, this.key)
+      }
+
+      this.api.emit(Events.Stats, nodeResponseStats)
+
+      if (this.verbose) {
+        console.log(`${this.id} sent stats`)
+      }
+    }, (sInterval / this.factor) * 1000)
+
   }
 
   onBlock(block: Block) {
@@ -145,11 +173,12 @@ export class Node {
     }
 
     const nodeResponseBlock: NodeResponseBlock = {
-      stats: blockWrapped,
-      proof: generateProof(blockWrapped, this.key)
-    }
+        stats: blockWrapped,
+        proof: generateProof(blockWrapped, this.key)
+      }
 
     this.api.emit(Events.Block, nodeResponseBlock)
+
     if (this.verbose) {
       console.log(`${this.id} dispatched block ${block.number}`)
     }
@@ -157,7 +186,7 @@ export class Node {
 
   stop() {
     clearInterval(this.pingInterval)
-    clearInterval(this.blockInterval)
+    clearInterval(this.statsInterval)
   }
 
   end() {

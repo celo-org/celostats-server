@@ -11,3 +11,7 @@ export function fuzzy(x: number, volatilityPercent: number) {
   const f = (x / 100) * r
   return x + f
 }
+
+export async function sleep(ms: number) {
+  await new Promise((resolve) => setTimeout(resolve, ms))
+}
