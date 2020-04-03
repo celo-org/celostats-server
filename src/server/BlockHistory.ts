@@ -29,9 +29,9 @@ export class BlockHistory {
     let writtenBlock: Block = null
 
     if (
-      receivedBlock && receivedBlock.uncles &&
+      receivedBlock &&
       !isNaN(receivedBlock.number) && receivedBlock.number >= 0 &&
-      receivedBlock.transactions && receivedBlock.difficulty
+      receivedBlock.transactions
     ) {
       const historyBlock: BlockWrapper = this._blocks.findBlockByNumber(
         receivedBlock.number
@@ -451,8 +451,6 @@ export class BlockHistory {
       .map((blockWrapper: BlockWrapper): {
         height: number
         blocktime: number
-        difficulty: string
-        uncles: number
         transactions: number
         gasSpending: number
         gasLimit: number
@@ -462,8 +460,6 @@ export class BlockHistory {
         return {
           height: blockWrapper.block.number,
           blocktime: blockWrapper.block.time / 1000,
-          difficulty: blockWrapper.block.difficulty,
-          uncles: blockWrapper.block.uncles.length,
           transactions: blockWrapper.block.transactions ? blockWrapper.block.transactions.length : 0,
           gasSpending: blockWrapper.block.gasUsed,
           gasLimit: blockWrapper.block.gasLimit,
@@ -477,8 +473,6 @@ export class BlockHistory {
       height: chartHistory.map((h) => h.height),
       blocktime: padArray(chartHistory.map((h) => h.blocktime), cfg.maxBins, 0),
       avgBlocktime: this.getAvgBlocktime(),
-      difficulty: chartHistory.map((h) => h.difficulty),
-      uncles: chartHistory.map((h) => h.uncles),
       transactions: chartHistory.map((h) => h.transactions),
       gasSpending: padArray(chartHistory.map((h) => h.gasSpending), cfg.maxBins, 0),
       gasLimit: padArray(chartHistory.map((h) => h.gasLimit), cfg.maxBins, 0),

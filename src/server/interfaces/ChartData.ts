@@ -8,10 +8,6 @@ export interface ChartData {
   readonly blocktime: number[]
   // average block time
   readonly avgBlocktime: number
-  // the last x block difficulties
-  readonly difficulty: string[]
-  // todo: ?
-  readonly uncles: number[]
   // the last x blocks transactions amount
   readonly transactions: number[]
   // the last x blocks gas spending amount

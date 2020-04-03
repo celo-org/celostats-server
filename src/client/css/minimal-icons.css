@@ -72,7 +72,5 @@
 .icon-clock:before { content: '\e80f'; } /* '' */
 .icon-group:before { content: '\e810'; } /* '' */
 .icon-gas:before { content: '\e811'; } /* '' */
-.icon-difficulty:before { content: '\e812'; } /* '' */
-.icon-uncle:before { content: '\e813'; } /* '' */
 .icon-hashrate:before { content: '\e814'; } /* '' */
 .icon-gasprice:before { content: '\e815'; } /* '' */

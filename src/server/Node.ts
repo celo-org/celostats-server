@@ -361,7 +361,6 @@ export default class Node {
         hash: blockWrapper.block.hash,
         parentHash: blockWrapper.block.parentHash,
         miner: blockWrapper.block.miner,
-        difficulty: blockWrapper.block.difficulty,
         totalDifficulty: blockWrapper.block.totalDifficulty,
         gasLimit: blockWrapper.block.gasLimit,
         gasUsed: blockWrapper.block.gasUsed,
