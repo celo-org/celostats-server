@@ -4,7 +4,6 @@ export interface BlockBase {
   readonly parentHash: string
   readonly miner: string
   readonly blockRemain: number
-  readonly difficulty: string
   readonly epochSize: number
   readonly totalDifficulty: string
   readonly gasLimit: number

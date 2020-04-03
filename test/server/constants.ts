@@ -38,7 +38,6 @@ export const dummyBlock: Block = {
   time: 0,
   received: 0,
   arrived: 0,
-  uncles: [],
   validators: {
     elected: [],
     registered: []
@@ -55,7 +54,6 @@ export const dummyBlock: Block = {
   parentHash: '',
   // miner address
   miner: '',
-  difficulty: '0',
   totalDifficulty: '',
   gasLimit: 0,
   gasUsed: 0,
@@ -85,7 +83,6 @@ export const dummyBlockSummary: BlockSummary = {
   parentHash: '',
   // miner address
   miner: '',
-  difficulty: '',
   totalDifficulty: '',
   gasLimit: 0,
   gasUsed: 0,
