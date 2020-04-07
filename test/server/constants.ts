@@ -22,7 +22,6 @@ export const dummyInfo: Info = {
 export const dummyNodeInformation: NodeInformation = {
   stats: {
     id: '0x1',
-    address: "0x2",
     info: dummyInfo
   },
   nodeData: {
