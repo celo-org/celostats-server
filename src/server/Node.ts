@@ -287,8 +287,9 @@ export default class Node {
   public isInactiveAndOld() {
     return (
       // if last status is set
+      this._uptime.lastStatus !== null && !this._uptime.lastStatus &&
       // if last update is set
-      !this._uptime.lastStatus && !isNaN(this._uptime.lastUpdate) &&
+      !isNaN(this._uptime.lastUpdate) &&
       // if last update is past max inactive time
       (Date.now() - this._uptime.lastUpdate) > cfg.maxInactiveTime
     )

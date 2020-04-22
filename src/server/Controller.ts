@@ -229,6 +229,12 @@ export default class Controller {
       validators.registered &&
       validators.elected
     ) {
+
+      console.success(
+        'BLK',
+        `Got ValidatorSet. Elected: ${validators.elected.length} Registered: ${validators.registered.length}`
+      )
+
       for (const validator of validators.registered) {
 
         // trust registered validators and signers - not safe
