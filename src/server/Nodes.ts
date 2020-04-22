@@ -8,6 +8,7 @@ import { StatsResponse } from "./interfaces/StatsResponse"
 import { Pending } from "./interfaces/Pending"
 import { Latency } from "./interfaces/Latency"
 import { NodeStats } from "./interfaces/NodeStats"
+import { cfg, trusted } from "./utils/config"
 
 export class Nodes extends Array<Node> {
 
@@ -158,3 +159,7 @@ export class Nodes extends Array<Node> {
 }
 
 export const nodes = new Nodes()
+
+if (cfg.prePopulateFromWhitelist) {
+  trusted.forEach((addr: string) => nodes.createEmptyNode(addr))
+}
