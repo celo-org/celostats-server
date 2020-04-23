@@ -317,8 +317,7 @@ export default class Node {
         uptime: this._stats.uptime
       },
       info: this._info,
-      uptime: this._uptime,
-      signHistory: this.getSignHistory()
+      uptime: this._uptime
     }
   }
 

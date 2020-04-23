@@ -11,5 +11,4 @@ export interface NodeSummary {
   stats: StatsSummary
   uptime: Uptime
   validatorData: ValidatorDataWithStaking
-  signHistory: SignedState[]
 }

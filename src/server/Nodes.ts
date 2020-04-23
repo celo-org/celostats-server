@@ -139,10 +139,10 @@ export class Nodes extends Array<Node> {
       .map((n: Node) => n.getSummary())
   }
 
-  public getOfflineButInteresting(): NodeSummary[] {
+  public getOfflineButInteresting(): NodeStats[] {
     return this
       .filter((node: Node) => node.isOfflineButInteresting())
-      .map((n: Node) => n.getSummary())
+      .map((n: Node) => n.getNodeStats())
   }
 
   private removeOldNodes(): void {

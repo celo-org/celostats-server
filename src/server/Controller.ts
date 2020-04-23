@@ -176,9 +176,9 @@ export default class Controller {
           // propagate new block to all the clients
           this.handleGetCharts()
 
-          const offliner = nodes.getOfflineButInteresting()
+          const offliner: NodeStats[] = nodes.getOfflineButInteresting()
 
-          offliner.forEach((nodeSummary: NodeSummary) => {
+          offliner.forEach((nodeSummary: NodeStats) => {
             this.clientBroadcast(
               Events.Add,
               nodeSummary
