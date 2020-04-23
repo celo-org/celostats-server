@@ -143,7 +143,8 @@ export default class Node {
   }
 
   public isOfflineButInteresting(): boolean {
-    return !this._stats.active && !!this._validatorData.affiliation
+    return !this._stats.active && !!this._validatorData.affiliation &&
+      (this._validatorData.elected || this._validatorData.registered)
   }
 
   public getUptime(): Uptime {

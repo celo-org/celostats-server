@@ -178,13 +178,12 @@ export default class Controller {
 
           const offliner = nodes.getOfflineButInteresting()
 
-          if (offliner.length > 0) {
+          offliner.forEach((nodeSummary: NodeSummary) => {
             this.clientBroadcast(
-              Events.Init,
-              offliner
+              Events.Add,
+              nodeSummary
             )
-          }
-
+          })
         }
 
         // get stats for reporting node
