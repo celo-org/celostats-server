@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "@celo/contractkit": "0.3.2",
+    "@celo/utils": "^0.1.11",
     "@types/compression": "^1.0.1",
     "@types/d3": "^5.7.2",
     "@types/debounce": "^1.2.0",

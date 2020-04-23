@@ -16,6 +16,7 @@ import { Address } from "./interfaces/Address"
 import { getContractKit } from "./ContractKit"
 import { IDictionary } from "./interfaces/IDictionary"
 import { SignedState } from "./interfaces/SignedState"
+import { bitIsSet, parseBlockExtraData } from "@celo/utils/lib/istanbul"
 
 export class BlockHistory {
 
@@ -97,16 +98,22 @@ export class BlockHistory {
     if (contractKit) {
       (async () => {
         try {
-          while (blockWrapper.block.number !== await contractKit.web3.eth.getBlockNumber()) {
+          while (blockWrapper.block.number + 1 !== await contractKit.web3.eth.getBlockNumber()) {
             await new Promise(resolve => setTimeout(resolve, 50));
           }
+
+          const block = await contractKit.web3
+            .eth.getBlock(blockWrapper.block.number + 1)
+
+          const parseExtraData = parseBlockExtraData(block.extraData)
 
           const signers = await contractKit.election.getValidatorSigners(
             blockWrapper.block.number
           )
 
           if (signers) {
-            blockWrapper.signers = signers;
+            blockWrapper.signers = signers.filter((potentialSigner, index) =>
+              bitIsSet(parseExtraData.aggregatedSeal.bitmap, index));
           }
         } catch (err) {
           console.error(
