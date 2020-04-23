@@ -98,22 +98,29 @@ export class BlockHistory {
     if (contractKit) {
       (async () => {
         try {
-          while (blockWrapper.block.number + 1 !== await contractKit.web3.eth.getBlockNumber()) {
+          // wait for the current and the next block to arrive
+          while (await contractKit.web3.eth.getBlockNumber() < blockWrapper.block.number + 1) {
             await new Promise(resolve => setTimeout(resolve, 50));
           }
 
-          const block = await contractKit.web3
-            .eth.getBlock(blockWrapper.block.number + 1)
-
-          const parseExtraData = parseBlockExtraData(block.extraData)
-
+          // get all potential signers
           const signers = await contractKit.election.getValidatorSigners(
             blockWrapper.block.number
           )
 
           if (signers) {
-            blockWrapper.signers = signers.filter((potentialSigner, index) =>
-              bitIsSet(parseExtraData.aggregatedSeal.bitmap, index));
+            // get the next block to get the bitmap of actual signers
+            const block = await contractKit.web3
+              .eth.getBlock(blockWrapper.block.number + 1)
+
+            // crypto voodoo
+            const parseExtraData = parseBlockExtraData(block.extraData)
+
+            blockWrapper.signers = signers.filter(
+              (potentialSigner, index) =>
+                bitIsSet(parseExtraData.parentAggregatedSeal.bitmap, index) ||
+                potentialSigner.toLowerCase() === blockWrapper.block.miner.toLowerCase()
+            );
           }
         } catch (err) {
           console.error(
