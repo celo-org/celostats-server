@@ -438,8 +438,10 @@ export default class Node {
   private getSignHistory(): SignedState[] {
     let signHistory: SignedState[] = Array(cfg.maxBins).fill(null)
 
-    if (this._validatorData.signer) {
-      signHistory = blockHistory.getSignHistory(this._validatorData.signer)
+    const signer = this._validatorData.signer || this._id
+
+    if (signer) {
+      signHistory = blockHistory.getSignHistory(signer)
     }
 
     return signHistory
