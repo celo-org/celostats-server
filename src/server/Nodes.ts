@@ -136,7 +136,13 @@ export class Nodes extends Array<Node> {
           return (t.getId() === node.getId())
         }) === index
       )
-      .map((n) => n.getSummary())
+      .map((n: Node) => n.getSummary())
+  }
+
+  public getOfflineButInteresting(): NodeSummary[] {
+    return this
+      .filter((node: Node) => node.isOfflineButInteresting())
+      .map((n: Node) => n.getSummary())
   }
 
   private removeOldNodes(): void {

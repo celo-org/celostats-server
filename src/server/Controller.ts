@@ -175,6 +175,16 @@ export default class Controller {
 
           // propagate new block to all the clients
           this.handleGetCharts()
+
+          const offliner = nodes.getOfflineButInteresting()
+
+          if (offliner.length > 0) {
+            this.clientBroadcast(
+              Events.Init,
+              offliner
+            )
+          }
+
         }
 
         // get stats for reporting node

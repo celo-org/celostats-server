@@ -142,8 +142,8 @@ export default class Node {
     return this._id
   }
 
-  public getName(): string {
-    return this._info.name
+  public isOfflineButInteresting(): boolean {
+    return !this._stats.active && !!this._validatorData.affiliation
   }
 
   public getUptime(): Uptime {
@@ -316,7 +316,8 @@ export default class Node {
         uptime: this._stats.uptime
       },
       info: this._info,
-      uptime: this._uptime
+      uptime: this._uptime,
+      signHistory: this.getSignHistory()
     }
   }
 
@@ -420,7 +421,8 @@ export default class Node {
 
   private getPropagationHistory(): number[] {
     const propagationHistory =
-      blockHistory.getNodePropagationHistory(this._id) || new Array(cfg.maxPropagationHistory).fill(-1)
+      blockHistory.getNodePropagationHistory(this._id) ||
+      new Array(cfg.maxPropagationHistory).fill(-1)
 
     const positives: number[] = propagationHistory
       .filter((propagation: number) => {
