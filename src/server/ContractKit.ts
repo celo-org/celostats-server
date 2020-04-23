@@ -35,6 +35,7 @@ let contractsLoaded = false;
 
 function reset() {
   contractsLoaded = false
+  console.success("ContractKit connection reset!")
 }
 
 const getContractKit = () => {
@@ -42,8 +43,7 @@ const getContractKit = () => {
     return {
       validators,
       election,
-      web3,
-      reset
+      web3
     }
   }
 
@@ -51,5 +51,6 @@ const getContractKit = () => {
 }
 
 export {
-  getContractKit
+  getContractKit,
+  reset
 }

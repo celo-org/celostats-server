@@ -1,6 +1,6 @@
 import express from "express";
 import { cfg } from "../utils/config"
-import { getContractKit } from "../ContractKit"
+import { getContractKit, reset } from "../ContractKit"
 import { execSync } from "child_process"
 
 export const routes = express.Router()
@@ -110,7 +110,7 @@ Execution time: ${end[1] / 1000000}ms
     res.end()
 
     // try to reset the contract kit, maybe it helps. fingers crossed!
-    contractKit.reset()
+    reset()
   }
 })
 
