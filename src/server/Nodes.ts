@@ -101,7 +101,7 @@ export class Nodes extends Array<Node> {
   }
 
   public getNodeBySpark(spark: string): Node {
-    return this.getNode((n: Node) => n.getSpark()?.toLowerCase() === spark.toLowerCase())
+    return this.getNode((n: Node) => n.getSpark() === spark)
   }
 
   public getNodeById(id: Address): Node {
