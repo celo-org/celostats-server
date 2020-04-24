@@ -134,7 +134,7 @@ export default class Node {
     }
   }
 
-  public getSpark() {
+  public getSpark(): string {
     return this._spark;
   }
 
