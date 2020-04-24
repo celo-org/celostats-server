@@ -142,6 +142,10 @@ export default class Node {
     return this._id
   }
 
+  public getName(): string {
+    return this._info.name
+  }
+
   public isOfflineButInteresting(): boolean {
     return !this._stats.active && !!this._validatorData.affiliation &&
       (this._validatorData.elected || this._validatorData.registered)
@@ -324,7 +328,6 @@ export default class Node {
   public getNodeStats(): NodeStats {
     return {
       id: this.getId(),
-      name: this._info.name,
       stats: {
         registered: this._stats.registered || this._validatorData.registered,
         active: this._stats.active,
