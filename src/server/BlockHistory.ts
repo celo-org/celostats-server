@@ -17,6 +17,8 @@ import { getContractKit } from "./ContractKit"
 import { IDictionary } from "./interfaces/IDictionary"
 import { SignedState } from "./interfaces/SignedState"
 import { bitIsSet, parseBlockExtraData } from "@celo/utils/lib/istanbul"
+import { nodes } from "./Nodes"
+import Node from "./Node"
 
 export class BlockHistory {
 
@@ -116,11 +118,12 @@ export class BlockHistory {
             // crypto voodoo
             const parseExtraData = parseBlockExtraData(block.extraData)
 
-            blockWrapper.signers = signers.filter(
-              (potentialSigner, index) =>
-                bitIsSet(parseExtraData.parentAggregatedSeal.bitmap, index) ||
-                potentialSigner.toLowerCase() === blockWrapper.block.miner.toLowerCase()
-            );
+            blockWrapper.signers = signers
+              .filter(
+                (potentialSigner, index) =>
+                  bitIsSet(parseExtraData.parentAggregatedSeal.bitmap, index) ||
+                  potentialSigner.toLowerCase() === blockWrapper.block.miner.toLowerCase()
+              );
           }
         } catch (err) {
           console.error(
@@ -363,12 +366,15 @@ export class BlockHistory {
           return SignedState.Unknown
         }
 
-        const signer = block.signers.find(
+        const node: Node = nodes.getNodeById(id)
+
+        const signed = !!block.signers.find(
           (signer: string) =>
             signer.toLowerCase() === id.toLowerCase()
         )
 
-        return signer ? SignedState.Signed : SignedState.Unsigned
+        return signed ? SignedState.Signed :
+          node.isElected() ? SignedState.Unsigned : SignedState.Skipped
       })
 
     // pad right

@@ -101,11 +101,11 @@ export class Nodes extends Array<Node> {
   }
 
   public getNodeBySpark(spark: string): Node {
-    return this.getNode((n: Node) => n.getSpark() === spark)
+    return this.getNode((n: Node) => n.getSpark().toLowerCase() === spark.toLowerCase())
   }
 
   public getNodeById(id: Address): Node {
-    return this.getNode((n: Node) => n.getId() === id)
+    return this.getNode((n: Node) => n.getId().toLowerCase() === id.toLowerCase())
   }
 
   public createEmptyNode(

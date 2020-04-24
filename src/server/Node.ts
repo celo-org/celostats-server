@@ -155,6 +155,10 @@ export default class Node {
     return this._uptime
   }
 
+  public isElected(): boolean {
+    return this._stats.elected || this._validatorData.elected
+  }
+
   public setStakingInformation(
     registered: boolean,
     elected: boolean
