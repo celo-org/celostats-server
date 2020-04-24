@@ -37,17 +37,6 @@ export class Nodes extends Array<Node> {
     }
   }
 
-  public setInactive(
-    spark: string
-  ): NodeStats {
-    const node = this.getNodeBySpark(spark)
-
-    if (node) {
-      node.setState(false)
-      return node.getNodeStats()
-    }
-  }
-
   public updatePending(
     id: Address,
     stats: Stats

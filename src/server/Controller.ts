@@ -164,26 +164,10 @@ export default class Controller {
       )
 
       if (changedBlock) {
-        // if we had a new height report
+
         if (changedBlock.number > prevBlockNumber) {
-          this.clientBroadcast(
-            Events.LastBlock,
-            <LastBlock>{
-              highestBlock: changedBlock.number
-            }
-          )
-
-          // propagate new block to all the clients
-          this.handleGetCharts()
-
-          const offliner: NodeStats[] = nodes.getOfflineButInteresting()
-
-          offliner.forEach((nodeSummary: NodeStats) => {
-            this.clientBroadcast(
-              Events.Add,
-              nodeSummary
-            )
-          })
+          // if we had a new height report
+          this.handleHighestBlock(changedBlock.number)
         }
 
         // get stats for reporting node

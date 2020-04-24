@@ -289,6 +289,11 @@ export default class Node {
     this._stats.uptime = this.calculateUptime()
   }
 
+  public setInactive(): NodeStats {
+    this.setState(false)
+    return this.getNodeStats()
+  }
+
   public isInactiveAndOld() {
     return (
       // if last status is set
