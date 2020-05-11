@@ -1,5 +1,7 @@
 export enum SignedState {
   Unknown,
   Signed,
-  Unsigned
+  Unsigned,
+  Skipped,
+  Punished
 }

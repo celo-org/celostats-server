@@ -8,6 +8,7 @@ import { StatsResponse } from "./interfaces/StatsResponse"
 import { Pending } from "./interfaces/Pending"
 import { Latency } from "./interfaces/Latency"
 import { NodeStats } from "./interfaces/NodeStats"
+import { cfg, trusted } from "./utils/config"
 
 export class Nodes extends Array<Node> {
 
@@ -33,17 +34,6 @@ export class Nodes extends Array<Node> {
 
     if (node) {
       return node.setLatency(latency)
-    }
-  }
-
-  public setInactive(
-    spark: string
-  ): NodeStats {
-    const node = this.getNodeBySpark(spark)
-
-    if (node) {
-      node.setState(false)
-      return node.getNodeStats()
     }
   }
 
@@ -115,7 +105,7 @@ export class Nodes extends Array<Node> {
   }
 
   public getNodeById(id: Address): Node {
-    return this.getNode((n: Node) => n.getId() === id)
+    return this.getNode((n: Node) => n.getId()?.toLowerCase() === id.toLowerCase())
   }
 
   public createEmptyNode(
@@ -135,7 +125,13 @@ export class Nodes extends Array<Node> {
           return (t.getId() === node.getId())
         }) === index
       )
-      .map((n) => n.getSummary())
+      .map((n: Node) => n.getSummary())
+  }
+
+  public getOfflineButInteresting(): NodeStats[] {
+    return this
+      .filter((node: Node) => node.isOfflineButInteresting())
+      .map((n: Node) => n.getNodeStats())
   }
 
   private removeOldNodes(): void {
@@ -158,3 +154,7 @@ export class Nodes extends Array<Node> {
 }
 
 export const nodes = new Nodes()
+
+if (cfg.prePopulateFromWhitelist) {
+  trusted.forEach((addr: string) => nodes.createEmptyNode(addr))
+}

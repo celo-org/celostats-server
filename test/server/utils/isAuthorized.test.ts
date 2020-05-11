@@ -11,7 +11,6 @@ describe('isAuthorized', () => {
   it('should authorize with valid sig', () => {
 
     const stats: InfoWrapped = {
-      address: "0x0",
       info: dummyInfo,
       id: 'lorem ipsum'
     }
@@ -25,7 +24,6 @@ describe('isAuthorized', () => {
   it('should not authorize with invalid sig', () => {
 
     const stats: InfoWrapped = {
-      address: "0x0",
       info: dummyInfo,
       id: 'lorem ipsum'
     }
@@ -46,7 +44,6 @@ describe('isAuthorized', () => {
   it('should not authorize with different valid sig', () => {
 
     const stats: InfoWrapped = {
-      address: "0x0",
       info: dummyInfo,
       id: 'lorem ipsum'
     }
@@ -67,7 +64,6 @@ describe('isAuthorized', () => {
   it('should not authorize with different address', () => {
 
     const stats: InfoWrapped = {
-      address: "0x0",
       info: dummyInfo,
       id: 'lorem ipsum'
     }
@@ -87,7 +83,6 @@ describe('isAuthorized', () => {
   it('should not authorize from untrusted address', () => {
 
     const stats: InfoWrapped = {
-      address: "0x0",
       info: dummyInfo,
       id: 'lorem ipsum'
     }

@@ -16,6 +16,9 @@ import { Address } from "./interfaces/Address"
 import { getContractKit } from "./ContractKit"
 import { IDictionary } from "./interfaces/IDictionary"
 import { SignedState } from "./interfaces/SignedState"
+import { bitIsSet, parseBlockExtraData } from "@celo/utils/lib/istanbul"
+import { nodes } from "./Nodes"
+import Node from "./Node"
 
 export class BlockHistory {
 
@@ -29,9 +32,9 @@ export class BlockHistory {
     let writtenBlock: Block = null
 
     if (
-      receivedBlock && receivedBlock.uncles &&
+      receivedBlock &&
       !isNaN(receivedBlock.number) && receivedBlock.number >= 0 &&
-      receivedBlock.transactions && receivedBlock.difficulty
+      receivedBlock.transactions
     ) {
       const historyBlock: BlockWrapper = this._blocks.findBlockByNumber(
         receivedBlock.number
@@ -97,16 +100,30 @@ export class BlockHistory {
     if (contractKit) {
       (async () => {
         try {
-          while (blockWrapper.block.number !== await contractKit.web3.eth.getBlockNumber()) {
+          // wait for the current and the next block to arrive
+          while (await contractKit.web3.eth.getBlockNumber() < blockWrapper.block.number + 1) {
             await new Promise(resolve => setTimeout(resolve, 50));
           }
 
+          // get all potential signers
           const signers = await contractKit.election.getValidatorSigners(
             blockWrapper.block.number
           )
 
           if (signers) {
-            blockWrapper.signers = signers;
+            // get the next block to get the bitmap of actual signers
+            const block = await contractKit.web3
+              .eth.getBlock(blockWrapper.block.number + 1)
+
+            // crypto voodoo
+            const parseExtraData = parseBlockExtraData(block.extraData)
+
+            blockWrapper.signers = signers
+              .filter(
+                (potentialSigner, index) =>
+                  bitIsSet(parseExtraData.parentAggregatedSeal.bitmap, index) ||
+                  potentialSigner.toLowerCase() === blockWrapper.block.miner.toLowerCase()
+              );
           }
         } catch (err) {
           console.error(
@@ -349,12 +366,15 @@ export class BlockHistory {
           return SignedState.Unknown
         }
 
-        const signer = block.signers.find(
+        const node: Node = nodes.getNodeById(id)
+
+        const signed = !!block.signers.find(
           (signer: string) =>
             signer.toLowerCase() === id.toLowerCase()
         )
 
-        return signer ? SignedState.Signed : SignedState.Unsigned
+        return signed ? SignedState.Signed :
+          node.isElected() ? SignedState.Unsigned : SignedState.Skipped
       })
 
     // pad right
@@ -451,8 +471,6 @@ export class BlockHistory {
       .map((blockWrapper: BlockWrapper): {
         height: number
         blocktime: number
-        difficulty: string
-        uncles: number
         transactions: number
         gasSpending: number
         gasLimit: number
@@ -462,8 +480,6 @@ export class BlockHistory {
         return {
           height: blockWrapper.block.number,
           blocktime: blockWrapper.block.time / 1000,
-          difficulty: blockWrapper.block.difficulty,
-          uncles: blockWrapper.block.uncles.length,
           transactions: blockWrapper.block.transactions ? blockWrapper.block.transactions.length : 0,
           gasSpending: blockWrapper.block.gasUsed,
           gasLimit: blockWrapper.block.gasLimit,
@@ -477,8 +493,6 @@ export class BlockHistory {
       height: chartHistory.map((h) => h.height),
       blocktime: padArray(chartHistory.map((h) => h.blocktime), cfg.maxBins, 0),
       avgBlocktime: this.getAvgBlocktime(),
-      difficulty: chartHistory.map((h) => h.difficulty),
-      uncles: chartHistory.map((h) => h.uncles),
       transactions: chartHistory.map((h) => h.transactions),
       gasSpending: padArray(chartHistory.map((h) => h.gasSpending), cfg.maxBins, 0),
       gasLimit: padArray(chartHistory.map((h) => h.gasLimit), cfg.maxBins, 0),

@@ -22,7 +22,6 @@ export const dummyInfo: Info = {
 export const dummyNodeInformation: NodeInformation = {
   stats: {
     id: '0x1',
-    address: "0x2",
     info: dummyInfo
   },
   nodeData: {
@@ -38,7 +37,6 @@ export const dummyBlock: Block = {
   time: 0,
   received: 0,
   arrived: 0,
-  uncles: [],
   validators: {
     elected: [],
     registered: []
@@ -55,7 +53,6 @@ export const dummyBlock: Block = {
   parentHash: '',
   // miner address
   miner: '',
-  difficulty: '0',
   totalDifficulty: '',
   gasLimit: 0,
   gasUsed: 0,
@@ -85,7 +82,6 @@ export const dummyBlockSummary: BlockSummary = {
   parentHash: '',
   // miner address
   miner: '',
-  difficulty: '',
   totalDifficulty: '',
   gasLimit: 0,
   gasUsed: 0,

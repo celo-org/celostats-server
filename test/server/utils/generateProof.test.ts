@@ -15,7 +15,6 @@ describe('#generateProof()', () => {
   it('should generate 130 bytes long 0x prefixed signatures always', () => {
 
     const stats: InfoWrapped = {
-      address: '0x0',
       id: 'lorem ipsum',
       info: dummyInfo
     }
@@ -29,7 +28,6 @@ describe('#generateProof()', () => {
 
   it('must verify its own signature', () => {
     const stats: InfoWrapped = {
-      address: '0x0',
       id: 'lorem ipsum',
       info: dummyInfo
     }

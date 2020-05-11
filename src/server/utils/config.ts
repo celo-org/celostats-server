@@ -18,6 +18,7 @@ if (process.env.RESERVED_ADDRESSES) {
 }
 
 const compression = process.env.COMPRESSION ? process.env.COMPRESSION === 'true' : true
+const prePopulateFromWhitelist = process.env.PRE_POPULATE_FROM_WHITELIST ? process.env.PRE_POPULATE_FROM_WHITELIST === 'true' : false
 const production = process.env.NODE_ENV ? process.env.NODE_ENV === 'production' : false
 
 const JSONRPC = process.env.JSONRPC || "http://localhost:8545"
@@ -28,6 +29,7 @@ export const cfg = {
   // WARNING: this will trust every node and has to be always
   // on false in production environments!
   trustEveryNode: false,
+  prePopulateFromWhitelist,
   port: process.env.PORT || 3000,
   headersTimeout: 0.9 * 1000,
   maxHeadersCount: 0,

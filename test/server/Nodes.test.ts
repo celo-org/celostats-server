@@ -14,7 +14,6 @@ describe('Nodes', () => {
     },
     stats: {
       id: '11',
-      address: '0x12345',
       info: dummyInfo,
     }
   }

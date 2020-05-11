@@ -134,7 +134,7 @@ export default class Node {
     }
   }
 
-  public getSpark() {
+  public getSpark(): string {
     return this._spark;
   }
 
@@ -146,8 +146,17 @@ export default class Node {
     return this._info.name
   }
 
+  public isOfflineButInteresting(): boolean {
+    return !this._stats.active && !!this._validatorData.affiliation &&
+      (this._validatorData.elected || this._validatorData.registered)
+  }
+
   public getUptime(): Uptime {
     return this._uptime
+  }
+
+  public isElected(): boolean {
+    return this._stats.elected || this._validatorData.elected
   }
 
   public setStakingInformation(
@@ -284,11 +293,17 @@ export default class Node {
     this._stats.uptime = this.calculateUptime()
   }
 
+  public setInactive(): NodeStats {
+    this.setState(false)
+    return this.getNodeStats()
+  }
+
   public isInactiveAndOld() {
     return (
       // if last status is set
+      this._uptime.lastStatus !== null && !this._uptime.lastStatus &&
       // if last update is set
-      !this._uptime.lastStatus && !isNaN(this._uptime.lastUpdate) &&
+      !isNaN(this._uptime.lastUpdate) &&
       // if last update is past max inactive time
       (Date.now() - this._uptime.lastUpdate) > cfg.maxInactiveTime
     )
@@ -322,7 +337,6 @@ export default class Node {
   public getNodeStats(): NodeStats {
     return {
       id: this.getId(),
-      name: this._info.name,
       stats: {
         registered: this._stats.registered || this._validatorData.registered,
         active: this._stats.active,
@@ -361,7 +375,6 @@ export default class Node {
         hash: blockWrapper.block.hash,
         parentHash: blockWrapper.block.parentHash,
         miner: blockWrapper.block.miner,
-        difficulty: blockWrapper.block.difficulty,
         totalDifficulty: blockWrapper.block.totalDifficulty,
         gasLimit: blockWrapper.block.gasLimit,
         gasUsed: blockWrapper.block.gasUsed,
@@ -422,7 +435,8 @@ export default class Node {
 
   private getPropagationHistory(): number[] {
     const propagationHistory =
-      blockHistory.getNodePropagationHistory(this._id) || new Array(cfg.maxPropagationHistory).fill(-1)
+      blockHistory.getNodePropagationHistory(this._id) ||
+      new Array(cfg.maxPropagationHistory).fill(-1)
 
     const positives: number[] = propagationHistory
       .filter((propagation: number) => {
@@ -440,8 +454,10 @@ export default class Node {
   private getSignHistory(): SignedState[] {
     let signHistory: SignedState[] = Array(cfg.maxBins).fill(null)
 
-    if (this._validatorData.signer) {
-      signHistory = blockHistory.getSignHistory(this._validatorData.signer)
+    const signer = this._validatorData.signer || this._id
+
+    if (signer) {
+      signHistory = blockHistory.getSignHistory(signer)
     }
 
     return signHistory

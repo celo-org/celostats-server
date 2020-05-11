@@ -168,6 +168,12 @@ export default class Controller {
       )
 
       if (changedBlock) {
+
+        if (changedBlock.number > prevBlockNumber) {
+          // if we had a new height report
+          this.handleHighestBlock(changedBlock.number)
+        }
+
         // get stats for reporting node
         const stats: BlockStats = node.setBlock(
           changedBlock
@@ -181,9 +187,9 @@ export default class Controller {
 
           console.info(
             'API', 'BLK',
-            'Block:', stats.block.number,
-            'TotalDifficulty:', stats.block.totalDifficulty,
-            'from:', stats.id, 'ip:', ip
+            'Block:', stats.block?.number,
+            'TotalDifficulty:', stats.block?.totalDifficulty,
+            'from:', node.getName(), 'ip:', ip
           )
         }
 
@@ -233,6 +239,12 @@ export default class Controller {
       validators.registered &&
       validators.elected
     ) {
+
+      console.success(
+        'BLK',
+        `Got ValidatorSet. Elected: ${validators.elected.length} Registered: ${validators.registered.length}`
+      )
+
       for (const validator of validators.registered) {
 
         // trust registered validators and signers - not safe
@@ -320,9 +332,10 @@ export default class Controller {
     id: string
   ): void {
 
-    const nodeStats: NodeStats = nodes.setInactive(id)
+    const node: Node = nodes.getNodeBySpark(id)
 
-    if (nodeStats) {
+    if (node) {
+      const nodeStats: NodeStats = node.setInactive()
       this.clientBroadcast(
         Events.Inactive,
         nodeStats
@@ -330,7 +343,7 @@ export default class Controller {
 
       console.success(
         'API', 'CON', 'Node:',
-        `'${nodeStats.name}'`, `(${id})`,
+        `'${node.getName()}'`, `(${id})`,
         'disconnected.'
       )
     }
@@ -486,6 +499,28 @@ export default class Controller {
     )
 
     return true
+  }
+
+  private handleHighestBlock(highestBlock: number) {
+    // broadcast that we have reached a new height!
+    this.clientBroadcast(
+      Events.LastBlock,
+      <LastBlock>{
+        highestBlock: highestBlock
+      }
+    )
+
+    // propagate new block to all the clients
+    this.handleGetCharts()
+
+    // propagate all the nodes that can be of interest
+    nodes.getOfflineButInteresting()
+      .forEach((nodeStats: NodeStats) => {
+        this.clientBroadcast(
+          Events.Stats,
+          nodeStats
+        )
+      })
   }
 
   public stop(): void {
