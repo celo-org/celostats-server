@@ -15,7 +15,7 @@ let validators: ValidatorsWrapper = null;
 let election: ElectionWrapper = null;
 let contractsLoaded = false;
 
-(async () => {
+async function loadContractKit() {
   if (!contractsLoaded) {
     try {
       const kit: ContractKit = await newKitFromWeb3(web3)
@@ -31,11 +31,12 @@ let contractsLoaded = false;
       console.error('Loading of contract kit failed!', err.message)
     }
   }
-})()
+}
 
 function reset() {
   contractsLoaded = false
-  console.success("ContractKit connection reset!")
+  loadContractKit()
+    .then(() => console.success("ContractKit connection reset!"))
 }
 
 const getContractKit = () => {
@@ -49,6 +50,10 @@ const getContractKit = () => {
 
   return null
 }
+
+(async () => {
+  await loadContractKit()
+})()
 
 export {
   getContractKit,
