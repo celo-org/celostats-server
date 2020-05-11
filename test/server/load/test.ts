@@ -36,7 +36,6 @@ const blockInterval = setInterval(() => {
   const block: Block = {
     ...dummyBlock,
     number: blockNumber,
-    difficulty: (1).toString(),
     totalDifficulty: blockNumber.toString(),
     hash: "0x1" + getRandomInt(0, 1000000),
     miner: nodes[getRandomInt(0, nodeCount - 1)].getAddress(),

@@ -72,7 +72,6 @@ export class Node {
 
       const infoWrapped: InfoWrapped = {
         id: this.id,
-        address: this.address,
         info: {
           ...dummyInfo,
           name: this.id,
@@ -147,6 +146,7 @@ export class Node {
         stats: {
           ...dummyStats,
           uptime: 100,
+          peers: getRandomInt(10, 200),
           pending: getRandomInt(0, 10),
           active: true
         }
@@ -173,9 +173,9 @@ export class Node {
     }
 
     const nodeResponseBlock: NodeResponseBlock = {
-        stats: blockWrapped,
-        proof: generateProof(blockWrapped, this.key)
-      }
+      stats: blockWrapped,
+      proof: generateProof(blockWrapped, this.key)
+    }
 
     this.api.emit(Events.Block, nodeResponseBlock)
 
