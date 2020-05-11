@@ -12,6 +12,7 @@
     "clean": "rm -rf ./dist ./coverage ./.nyc_output",
     "test": "VERBOSITY=0 mocha",
     "test:watch": "yarn test -- --watch",
+    "test:load": "ts-node ./test/server/load/test.ts",
     "test:cover": "nyc yarn test",
     "compile": "yarn compile:client && yarn compile:server",
     "compile:server": "tsc -b ./src/server",
