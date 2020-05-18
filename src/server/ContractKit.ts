@@ -55,6 +55,10 @@ const getContractKit = () => {
   await loadContractKit()
 })()
 
+if (cfg.cycleContractKit) {
+  setInterval(() => reset(), 20 * 1000)
+}
+
 export {
   getContractKit,
   reset
