@@ -22,6 +22,7 @@ import { NodeResponseBlock } from "../../../src/server/interfaces/NodeResponseBl
 import { cfg } from "../../../src/server/utils/config"
 import { NodeResponseStats } from "../../../src/server/interfaces/NodeResponseStats"
 import { StatsWrapped } from "../../../src/server/interfaces/StatsWrapped"
+import { Address } from "../../../src/server/interfaces/Address";
 
 const Socket = Primus.createSocket({
   pathname: '/api',
@@ -40,10 +41,13 @@ export class Node {
   api: Primus.Socket = null
   key = generateKey()
   publicKey = this.key.getPublic().encode('hex')
-  address = '0x' + hash(this.publicKey.substr(2), 'hex').substr(24)
+  address: Address = '0x' + hash(this.publicKey.substr(2), 'hex').substr(24);
 
   private pingInterval: NodeJS.Timeout = null
   private statsInterval: NodeJS.Timeout = null
+
+  private isElected = false
+  private isRegistered = false
 
   constructor(
     private id: string,
@@ -65,6 +69,14 @@ export class Node {
 
   getAddress() {
     return this.address
+  }
+
+  setElected(elected: boolean) {
+    this.isElected = elected
+  }
+
+  setRegistered(registered: boolean) {
+    this.isRegistered = registered
   }
 
   start() {
@@ -148,7 +160,9 @@ export class Node {
           uptime: 100,
           peers: getRandomInt(10, 200),
           pending: getRandomInt(0, 10),
-          active: true
+          active: true,
+          elected: this.isElected,
+          registered: this.isRegistered
         }
       }
 
