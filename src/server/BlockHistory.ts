@@ -93,12 +93,12 @@ export class BlockHistory {
         received: block.received,
         propagation: block.propagation
       })
-    }
+    };
 
-    const contractKit = getContractKit()
+    (async () => {
+      const contractKit = await getContractKit()
+      if (contractKit) {
 
-    if (contractKit) {
-      (async () => {
         try {
           // wait for the current and the next block to arrive
           while (await contractKit.web3.eth.getBlockNumber() < blockWrapper.block.number + 1) {
@@ -133,8 +133,8 @@ export class BlockHistory {
             'Error:', err.message
           )
         }
-      })()
-    }
+      }
+    })()
 
     this._blocks.saveBlock(blockWrapper)
 
