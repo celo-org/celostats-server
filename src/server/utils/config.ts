@@ -46,5 +46,5 @@ export const cfg = {
     perMessageDeflate: compression
   },
   JSONRPC,
-  cycleContractKit: false
+  cycleContractKit: true
 }
