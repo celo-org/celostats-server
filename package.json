@@ -35,7 +35,7 @@
     "@types/socket.io": "^2.1.4",
     "@typescript-eslint/eslint-plugin": "^2.19.0",
     "@typescript-eslint/parser": "^2.19.0",
-    "angular": "^1.7.9",
+    "angular": "^1.8.0",
     "body-parser": "^1.18.3",
     "bootstrap": "^4.4.1",
     "bufferutil": "~4.0.1",
