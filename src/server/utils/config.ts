@@ -8,13 +8,13 @@ export const reserved: Address[] = []
 
 // add trusted from env
 if (process.env.TRUSTED_ADDRESSES) {
-  trusted.push(...process.env.TRUSTED_ADDRESSES.split(','))
+  trusted.push(...(process.env.TRUSTED_ADDRESSES.split(',').map((address: Address) => address.toLowerCase())))
 }
 if (process.env.BANNED_ADDRESSES) {
-  banned.push(...process.env.BANNED_ADDRESSES.split(','))
+  banned.push(...(process.env.BANNED_ADDRESSES.split(',').map((address: Address) => address.toLowerCase())))
 }
 if (process.env.RESERVED_ADDRESSES) {
-  reserved.push(...process.env.RESERVED_ADDRESSES.split(','))
+  reserved.push(...(process.env.RESERVED_ADDRESSES.split(',').map((address: Address) => address.toLowerCase())))
 }
 
 const compression = process.env.COMPRESSION ? process.env.COMPRESSION === 'true' : true
@@ -41,6 +41,7 @@ export const cfg = {
   clientPingTimeout: 5 * 1000,
   nodeCleanupTimeout: 1000 * 60 * 60,
   statisticsInterval: 60 * 1000,
+  retrieveTrustedSignersInterval: 60 * 1000,
   compression,
   transport: {
     perMessageDeflate: compression
