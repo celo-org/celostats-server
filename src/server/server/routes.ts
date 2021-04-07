@@ -96,7 +96,7 @@ Current Signer Set: ${JSON.stringify(css, null, 2)}
 
 Election Config: ${JSON.stringify(election, null, 2)}
 
-Highest Block: ${await contractKit.web3.eth.getBlockNumber()}
+Highest Block: ${await contractKit.connection.getBlockNumber()}
 
 Execution time: ${end[1] / 1000000}ms
 </pre>`

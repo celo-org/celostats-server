@@ -22,9 +22,8 @@ export function isAuthorized(
     proof && proof.publicKey && proof.signature
   ) {
     if (
-      reserved.indexOf(proof.address) < 0 &&
+      reserved.indexOf(proof.address.toLowerCase()) < 0 &&
       trusted
-        .map((address: Address): Address => address.toLowerCase())
         .indexOf(proof.address.toLowerCase()) > -1
     ) {
 

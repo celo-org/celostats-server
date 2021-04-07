@@ -36,6 +36,7 @@ import { nodes } from "./Nodes"
 import { blockHistory } from "./BlockHistory"
 import { BlockStats } from "./interfaces/BlockStats"
 import { NodeSummary } from "./interfaces/NodeSummary"
+import { getContractKit } from './ContractKit'
 
 export default class Controller {
   public readonly statistics: Statistics;
@@ -234,7 +235,6 @@ export default class Controller {
         if (
           validator.address &&
           trusted
-            .map((address: Address) => address.toLowerCase())
             .indexOf(validator.address.toLowerCase()) === -1
         ) {
           trusted.push(validator.address.toLowerCase())
@@ -243,7 +243,6 @@ export default class Controller {
         if (
           validator.signer &&
           trusted
-            .map((address: Address) => address.toLowerCase())
             .indexOf(validator.signer.toLowerCase()) === -1
         ) {
           trusted.push(validator.signer.toLowerCase())
@@ -362,11 +361,20 @@ export default class Controller {
     stats: InfoWrapped,
     spark: Primus.spark
   ): boolean {
+    if (banned.indexOf(spark.address.ip.toLowerCase()) >= 0) {
+      console.error(
+        'API', 'CON', 'Node Closed: banned ip',
+        `'${stats.id}'`, `(${id})`,
+        'address:', proof.address,
+        'ip:', spark.address.ip
+      )
 
-    if (
-      banned.indexOf(spark.address.ip) >= 0 ||
-      !isAuthorized(proof, stats)
-    ) {
+      spark.end(undefined, {reconnect: false})
+
+      return false
+    }
+
+    if (!isAuthorized(proof, stats)) {
       console.error(
         'API', 'CON', 'Node Closed: wrong auth',
         `'${stats.id}'`, `(${id})`,
@@ -386,17 +394,31 @@ export default class Controller {
     return true
   }
 
-  public handleNodeHello(
+  public async handleNodeHello(
     id: Address,
     proof: Proof,
     stats: InfoWrapped,
     spark: Primus.spark
-  ): boolean {
+  ): Promise<boolean> {
+    const kit = await getContractKit()
+    if (!stats.info || stats.info.net != kit.chainId) {
+      console.error(
+        'API', 'CON', 'Node Closed: node from different chainId',
+        `'${stats.id}'`, `(${id})`,
+        'address:', proof.address,
+        'chainId:', stats.info?.net
+      )
+
+      spark.end(undefined, {reconnect: false})
+
+      return false
+    }
+
     const isAuthed = this.handleNodeAuth(
       spark.id, proof, stats, spark
     )
 
-    if (isAuthed && stats.info) {
+    if (isAuthed) {
       this.handleNodeInfo(id, stats, spark)
     }
 
