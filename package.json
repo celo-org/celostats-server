@@ -68,7 +68,7 @@
     "primus": "^7.3.4",
     "primus-emit": "^1.0.0",
     "primus-spark-latency": "^0.1.1",
-    "pug": "^2.0.4",
+    "pug": "^3.0.1",
     "sha3": "^2.0.7",
     "socket.io": "^2.4.0",
     "throttled-queue": "^1.0.7",
