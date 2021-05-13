@@ -168,7 +168,7 @@ export default class Node {
   }
 
   public getTrusted(): boolean {
-    return trusted.indexOf(this.getId()) > -1
+    return trusted.indexOf(this.getId().toLowerCase()) > -1
   }
 
   public setBlock(

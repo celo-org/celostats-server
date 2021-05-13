@@ -101,8 +101,8 @@ export class BlockHistory {
 
         try {
           // wait for the current and the next block to arrive
-          while (await contractKit.web3.eth.getBlockNumber() < blockWrapper.block.number + 1) {
-            await new Promise(resolve => setTimeout(resolve, 50));
+          while (await contractKit.connection.getBlockNumber() < blockWrapper.block.number + 1) {
+            await new Promise(resolve => setTimeout(resolve, 500));
           }
 
           // get all potential signers
@@ -112,8 +112,7 @@ export class BlockHistory {
 
           if (signers) {
             // get the next block to get the bitmap of actual signers
-            const block = await contractKit.web3
-              .eth.getBlock(blockWrapper.block.number + 1)
+            const block = await contractKit.connection.getBlock(blockWrapper.block.number + 1)
 
             // crypto voodoo
             const parseExtraData: IstanbulExtra = parseBlockExtraData(block.extraData)

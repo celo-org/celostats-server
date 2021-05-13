@@ -11,7 +11,7 @@ import Controller from "../Controller";
 import { createServer } from "http"
 import { expressConfig } from "./expressConfig"
 import { routes } from "./routes";
-import { cfg } from "../utils/config"
+import { cfg, trusted } from "../utils/config"
 import { Proof } from "../interfaces/Proof";
 import { NodeResponseLatency } from "../interfaces/NodeResponseLatency";
 import { StatsWrapped } from "../interfaces/StatsWrapped";
@@ -31,6 +31,9 @@ import { isInputValid } from "../utils/isInputValid";
 import { deleteSpark } from "../utils/deleteSpark";
 import { Events } from "./Events"
 import { blockHistory } from "../BlockHistory"
+import { getContractKit } from '../ContractKit'
+import { Address } from 'interfaces/Address'
+import { Validator } from '@celo/contractkit/lib/wrappers/Validators'
 
 export default class Server {
 
@@ -134,7 +137,7 @@ export default class Server {
         )
 
         spark
-          .on(Events.Hello, (data: NodeResponseInfo): void => {
+          .on(Events.Hello, async (data: NodeResponseInfo): Promise<void> => {
             this.controller.statistics.add(Sides.Node, Directions.In)
 
             const {
@@ -147,7 +150,7 @@ export default class Server {
 
             const id = proof.address;
 
-            const isAuthed = this.controller.handleNodeHello(
+            const isAuthed = await this.controller.handleNodeHello(
               id, proof, stats, spark
             )
 
@@ -323,9 +326,35 @@ export default class Server {
       })
   }
 
+  private initNodeTrustedRetriever(): void {
+    const signersRetriever = async () => {
+      const kit = await getContractKit()
+      const registeredValidators = (
+        await kit.validators.getRegisteredValidators()
+      ).map((validator: Validator) => validator.signer)
+      .map((address: Address) => address.toLowerCase())
+      const diffAddresses = registeredValidators.filter(item => trusted.indexOf(item) < 0)
+      trusted.push(...diffAddresses)
+      if (diffAddresses.length > 0 ) {
+        console.success(
+          'SERVER', 'TRUSTED', 'Retrieved from signers',
+          'New addresses:', `${diffAddresses}`
+        )
+      } else {
+        console.success(
+          'SERVER', 'TRUSTED', 'Retrieved from signers',
+          'No new signers to add'
+        )
+      }
+    }
+    signersRetriever()
+    setInterval(signersRetriever, cfg.retrieveTrustedSignersInterval);
+  }
+
   public init(): void {
     this.initApi()
     this.initClient()
+    this.initNodeTrustedRetriever()
     this.controller.init()
   }
 }
