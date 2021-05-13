@@ -70,7 +70,7 @@
     "primus-spark-latency": "^0.1.1",
     "pug": "^2.0.4",
     "sha3": "^2.0.7",
-    "socket.io": "^2.3.0",
+    "socket.io": "^2.4.0",
     "throttled-queue": "^1.0.7",
     "toastr": "^2.1.4",
     "ts-node": "^8.6.2",
