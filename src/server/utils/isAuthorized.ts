@@ -89,7 +89,7 @@ export function isAuthorized(
     }
   } else {
     console.error(
-      'API', 'SIG', 'Input data malformed'
+      'API', 'SIG', 'Input data malformed', stats, proof
     )
   }
 

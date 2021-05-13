@@ -16,7 +16,7 @@ import { Address } from "./interfaces/Address"
 import { getContractKit } from "./ContractKit"
 import { IDictionary } from "./interfaces/IDictionary"
 import { SignedState } from "./interfaces/SignedState"
-import { bitIsSet, parseBlockExtraData } from "@celo/utils/lib/istanbul"
+import { bitIsSet, IstanbulExtra, parseBlockExtraData } from "@celo/utils/lib/istanbul"
 import { nodes } from "./Nodes"
 import Node from "./Node"
 
@@ -93,12 +93,12 @@ export class BlockHistory {
         received: block.received,
         propagation: block.propagation
       })
-    }
+    };
 
-    const contractKit = getContractKit()
+    (async () => {
+      const contractKit = await getContractKit()
+      if (contractKit) {
 
-    if (contractKit) {
-      (async () => {
         try {
           // wait for the current and the next block to arrive
           while (await contractKit.web3.eth.getBlockNumber() < blockWrapper.block.number + 1) {
@@ -116,7 +116,7 @@ export class BlockHistory {
               .eth.getBlock(blockWrapper.block.number + 1)
 
             // crypto voodoo
-            const parseExtraData = parseBlockExtraData(block.extraData)
+            const parseExtraData: IstanbulExtra = parseBlockExtraData(block.extraData)
 
             blockWrapper.signers = signers
               .filter(
@@ -133,8 +133,8 @@ export class BlockHistory {
             'Error:', err.message
           )
         }
-      })()
-    }
+      }
+    })()
 
     this._blocks.saveBlock(blockWrapper)
 
