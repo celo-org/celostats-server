@@ -1,0 +1,21 @@
+steps:
+  - name: "docker"
+    id: "docker"
+    entrypoint: "docker"
+    args: [
+      "build",
+      "-f", "Dockerfile",
+      "-t", "gcr.io/$PROJECT_ID/celostats-server:$BRANCH_NAME",
+      "."
+    ]
+    waitFor: ["-"]
+  - name: "docker"
+    id: "docker_tag"
+    args: [
+      "tag",
+      "gcr.io/$PROJECT_ID/celostats-server:$BRANCH_NAME",
+    ]
+    wait_for: ["docker"]
+timeout: 1200s
+images:
+  - "gcr.io/$PROJECT_ID/celostats-server:$BRANCH_NAME"
