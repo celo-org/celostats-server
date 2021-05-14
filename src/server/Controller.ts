@@ -72,7 +72,7 @@ export default class Controller {
 
     // print statistics
     setInterval(() => {
-      const clients = Object.keys(this.client.sockets.connected).length
+      const clients = Object.keys(this.client.sockets.allSockets()).length
 
       let nodes = 0;
       this.api.forEach(() => nodes++);
@@ -81,13 +81,13 @@ export default class Controller {
     }, cfg.statisticsInterval)
   }
 
-  private clientBroadcast(
+  private async clientBroadcast(
     action: Events,
     payload: object
   ) {
-    for (const i in this.client.sockets.connected) {
+    for (const i of (await this.client.sockets.allSockets()).values()) {
       this.emit(
-        this.client.sockets.connected[i],
+        this.client.sockets.sockets.get(i),
         action, payload
       );
       this.statistics.add(Sides.Client, Directions.Out)

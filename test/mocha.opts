@@ -1,4 +1,0 @@
---require test/testhook.js
---extension js,ts
---exit
-./test/**/*.test.*

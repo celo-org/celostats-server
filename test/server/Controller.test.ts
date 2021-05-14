@@ -32,7 +32,7 @@ describe('Controller', () => {
       pingInterval: false
     })
 
-    const client = io(server, {
+    const client = new io.Server(server, {
       path: '/client',
       transports: ['websocket'],
       cookie: false,

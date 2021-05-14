@@ -1,0 +1,10 @@
+{
+  "diff": true,
+  "extension": ["js", "ts"],
+  "spec": "./test/**/*.test.*",
+  "reporter": "spec",
+  "timeout": 5000,
+  "recursive": true,
+  "require": ["./test/testhook.js"],
+  "watch-files": ["./test/**/*.ts"]
+}

@@ -44,11 +44,11 @@ export default class Server {
 
   constructor() {
 
-    expressConfig.get('/stats', (
+    expressConfig.get('/stats', async (
       req: express.Request,
       res: express.Response
     ) => {
-      const clients = Object.keys(this.client.sockets.connected).length
+      const clients = (await this.client.sockets.allSockets()).size
 
       let nodes = 0;
       this.api.forEach(() => nodes++);
@@ -97,9 +97,12 @@ export default class Server {
       }
     })
 
-    this.client = io(server, {
+    this.client = new io.Server(server, {
       path: '/client',
       transports: ['websocket'],
+      cors: {
+        origin: "*"
+      },
       cookie: false,
       pingInterval: null,
       pingTimeout: cfg.clientPingTimeout,
