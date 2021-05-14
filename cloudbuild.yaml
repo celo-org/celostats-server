@@ -4,7 +4,7 @@ steps:
     args: [
       "build",
       "-f", "Dockerfile",
-      "-t", "gcr.io/$PROJECT_ID/celostats-server:$BRANCH_NAME",
+      "-t", "gcr.io/$PROJECT_ID/celostats-server:$COMMIT_SHA",
       "."
     ]
     waitFor: ["-"]
