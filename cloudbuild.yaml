@@ -4,10 +4,19 @@ steps:
     args: [
       "build",
       "-f", "Dockerfile",
-      "-t", "gcr.io/$PROJECT_ID/celostats-server:$COMMIT_SHA",
+      "-t", "gcr.io/$PROJECT_ID/celostats-server:$BRANCH_NAME",
       "."
     ]
     waitFor: ["-"]
+  - name: "docker"
+    id: "docker_tag"
+    args: [
+      "tag",
+      "gcr.io/$PROJECT_ID/celostats-server:$BRANCH_NAME",
+      "gcr.io/$PROJECT_ID/celostats-server:$COMMIT_SHA"
+    ]
+    wait_for: ["docker"]
 timeout: 1200s
 images:
+  - "gcr.io/$PROJECT_ID/celostats-server:$BRANCH_NAME"
   - "gcr.io/$PROJECT_ID/celostats-server:$COMMIT_SHA"
