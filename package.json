@@ -10,7 +10,7 @@
   "scripts": {
     "lint": "eslint --ext .ts ./src ./test/server",
     "clean": "rm -rf ./dist ./coverage ./.nyc_output",
-    "test": "VERBOSITY=0 mocha",
+    "test": "mocha --config=test/.mocharc.json --node-env=test --exit",
     "test:watch": "yarn test -- --watch",
     "test:cover": "nyc yarn test",
     "compile": "yarn compile:client && yarn compile:server",
