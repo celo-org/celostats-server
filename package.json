@@ -88,6 +88,9 @@
     "type": "git",
     "url": "https://github.com/goerli/netstats-server.git"
   },
+  "resolutions": {
+    "**/underscore": "1.12.1"
+  },
   "homepage": "https://github.com/goerli/netstats-server",
   "bugs": {
     "url": "https://github.com/goerli/netstats-server/issues"
