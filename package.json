@@ -23,7 +23,7 @@
     "start:inspect": "node --inspect ./dist/server/app.js"
   },
   "dependencies": {
-    "@celo/contractkit": "^1.2.0",
+    "@celo/contractkit": "^1.3.0",
     "@celo/utils": "^1.2.0",
     "@types/compression": "^1.0.1",
     "@types/d3": "^5.7.2",
