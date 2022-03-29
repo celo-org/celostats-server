@@ -40,7 +40,7 @@
     "bufferutil": "~4.0.1",
     "chalk": "4.0.0",
     "compression": "^1.7.4",
-    "d3": "~5.15.0",
+    "d3": "~7.0.0",
     "d3-collection": "^1.0.7",
     "d3-selection": "^1.4.1",
     "d3-tip": "^0.9.1",
