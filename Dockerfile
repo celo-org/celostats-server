@@ -1,4 +1,7 @@
-FROM node:12.16
+FROM node:20-alpine
+
+RUN apk add --no-cache git &&\
+    apk upgrade --no-cache
 
 ADD . /celostats-server
 WORKDIR /celostats-server
