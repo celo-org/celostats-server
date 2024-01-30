@@ -4,12 +4,12 @@
     on:
       push:
         branches:
-          - "main"
+          - "master"
       release:
         types: [published]
       pull_request:
         branches:
-          - "main"
+          - "master"
       workflow_dispatch:
         
         
