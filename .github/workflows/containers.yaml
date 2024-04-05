@@ -1,5 +1,5 @@
 ---
-    name: CI/CD for celostats-server
+    name: Build containers for celostats-server
         
     on:
       push:

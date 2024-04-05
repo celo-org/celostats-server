@@ -1,13 +1,11 @@
 import { Proof } from "../interfaces/Proof";
 import { InfoWrapped } from "../interfaces/InfoWrapped";
 import { reserved, trusted } from "./config";
-// @ts-ignore
 import { ec as EC } from "elliptic"
-// @ts-ignore
+// @ts-expect-error not a module
 import { KeyPair } from "elliptic/lib/elliptic/ec"
 import { isInputValid } from "./isInputValid";
 import { hash } from "./hash";
-import { Address } from "../interfaces/Address"
 
 const secp256k1 = new EC('secp256k1')
 
@@ -47,7 +45,7 @@ export function isAuthorized(
       try {
         pubkey = secp256k1.keyFromPublic(pubkeyNoZeroX, 'hex')
       } catch (err) {
-        console.error('API', 'SIG', 'Public Key Error', err.message)
+        console.error('API', 'SIG', 'Public Key Error', (err as Error).message)
         return false
       }
 
@@ -81,7 +79,7 @@ export function isAuthorized(
           return false
         }
       } catch (e) {
-        console.error('API', 'SIG', 'Signature Error', e.message)
+        console.error('API', 'SIG', 'Signature Error', (e as Error).message)
         return false
       }
     }

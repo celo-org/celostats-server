@@ -4,7 +4,7 @@ import { createServer } from "http";
 import Controller from "../../src/server/Controller"
 import { expressConfig } from "../../src/server/server/expressConfig";
 import { routes } from "../../src/server/server/routes";
-// @ts-ignore
+// @ts-expect-error not a module
 import Primus from "primus"
 import { ClientPong } from "../../src/server/interfaces/ClientPong";
 import { Sides } from "../../src/server/statistics/Sides";
@@ -69,6 +69,7 @@ describe('Controller', () => {
 
       // mock spark
       const socket = <io.Socket>{
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         emit: (name: string, payload: any): void => {
           // evaluate
           assert(name === 'client-latency')
@@ -87,6 +88,7 @@ describe('Controller', () => {
 
       // mock spark
       const socket = <io.Socket>{
+        // eslint-disable-next-line
         emit: (name: string, payload: any): void => {
           // stub, do not remove
         }
@@ -112,6 +114,7 @@ describe('Controller', () => {
 
       // mock spark
       const socket = <io.Socket>{
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         emit: (name: string, payload: any) => {
           // evaluate
           assert(name === 'client-latency')
@@ -134,6 +137,7 @@ describe('Controller', () => {
 
       // mock spark
       const socket = <io.Socket>{
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         emit: (name: string, payload: any) => {
           const expected = Math.round(Date.now() / 2)
           // evaluate

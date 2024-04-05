@@ -130,6 +130,7 @@ routes.use((
  * Error handler
  */
 routes.use((
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   err: any,
   req: express.Request,
   res: express.Response

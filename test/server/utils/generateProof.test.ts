@@ -1,9 +1,8 @@
 import { generateProof } from "./generateProof";
 import assert from "assert";
 import { hash } from "../../../src/server/utils/hash"
-// @ts-ignore
 import { ec as EC } from "elliptic"
-// @ts-ignore
+// @ts-expect-error not a module
 import { KeyPair } from "elliptic/lib/elliptic/ec"
 import { dummyInfo } from "../constants"
 import { InfoWrapped } from "../../../src/server/interfaces/InfoWrapped"

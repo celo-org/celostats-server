@@ -1,10 +1,10 @@
 import '../utils/logger'
 import io from "socket.io"
-// @ts-ignore
+// @ts-expect-error Not a module
 import Primus from "primus"
-// @ts-ignore
+// @ts-expect-error Not a module
 import * as primusEmit from "primus-emit"
-// @ts-ignore
+// @ts-expect-error Not a module
 import * as primusSparkLatency from "primus-spark-latency"
 import express from "express";
 import Controller from "../Controller";
@@ -317,10 +317,10 @@ export default class Server {
 
             this.controller.handleClientPong(data, socket)
           })
-          .on(Events.Error, (reason: string): void => {
+          .on(Events.Error, (reason: Error): void => {
             const id = socket.id;
             console.error(reason)
-            this.controller.handleClientEnd(id, socket, reason)
+            this.controller.handleClientEnd(id, socket, reason.toString())
           })
           .once(Events.Disconnecting, (reason: string): void => {
             const id = socket.id;

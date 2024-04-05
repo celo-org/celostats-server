@@ -1,4 +1,3 @@
-// @ts-ignore
 import * as d3 from "d3"
 import Blocks from "./Blocks";
 import { Block } from "./interfaces/Block";
@@ -129,7 +128,7 @@ export class BlockHistory {
             'API', 'BLK',
             'Getting signers failed for Block:',
             blockWrapper.block.number,
-            'Error:', err.message
+            'Error:', (err as Error).message
           )
         }
       }
