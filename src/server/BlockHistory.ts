@@ -129,7 +129,7 @@ export class BlockHistory {
             'API', 'BLK',
             'Getting signers failed for Block:',
             blockWrapper.block.number,
-            'Error:', err.message
+            'Error:', (err as Error).message
           )
         }
       }

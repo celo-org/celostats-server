@@ -1,6 +1,6 @@
 import './utils/logger'
 import { cfg } from "./utils/config"
-import { ContractKit, newKitFromWeb3 } from "@celo/contractkit"
+import { ContractKit, newKit } from "@celo/contractkit"
 import { ValidatorsWrapper } from "@celo/contractkit/lib/wrappers/Validators"
 import { ElectionWrapper } from "@celo/contractkit/lib/wrappers/Election"
 import Web3 from "web3";
@@ -16,29 +16,21 @@ let kit: {
 const getContractKit = async () => {
   if (!kit) {
     try {
-      const web3 = new Web3(
-        new Web3.providers.HttpProvider(cfg.JSONRPC, {
-          keepAlive: true,
-          timeout: cfg.timeout
-        })
-      );
-      
-      const contractKit: ContractKit = newKitFromWeb3(web3)
+      const contractkit: ContractKit = newKit(cfg.JSONRPC)
       
       // load contracts
-      const validators: ValidatorsWrapper = await contractKit.contracts.getValidators()
-      const election: ElectionWrapper = await contractKit.contracts.getElection()
-      const chainId = await contractKit.connection.chainId()
+      const validators: ValidatorsWrapper = await contractkit.contracts.getValidators()
+      const election: ElectionWrapper = await contractkit.contracts.getElection()
+      const chainId = await contractkit.connection.chainId()
       
       kit = {
         validators,
         election,
-        connection: contractKit.connection,
+        connection: kit.connection,
         chainId
-
       }
     } catch (err) {
-      console.error('Loading of contract kit failed!', err.message)
+      console.error('Loading of contract kit failed!', (err as Error).message)
     }
   }
 

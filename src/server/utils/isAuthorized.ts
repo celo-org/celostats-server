@@ -47,7 +47,7 @@ export function isAuthorized(
       try {
         pubkey = secp256k1.keyFromPublic(pubkeyNoZeroX, 'hex')
       } catch (err) {
-        console.error('API', 'SIG', 'Public Key Error', err.message)
+        console.error('API', 'SIG', 'Public Key Error', (err as Error).message)
         return false
       }
 
@@ -81,7 +81,7 @@ export function isAuthorized(
           return false
         }
       } catch (e) {
-        console.error('API', 'SIG', 'Signature Error', e.message)
+        console.error('API', 'SIG', 'Signature Error', (e as Error).message)
         return false
       }
     }

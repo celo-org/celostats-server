@@ -317,10 +317,10 @@ export default class Server {
 
             this.controller.handleClientPong(data, socket)
           })
-          .on(Events.Error, (reason: string): void => {
+          .on(Events.Error, (reason: Error): void => {
             const id = socket.id;
             console.error(reason)
-            this.controller.handleClientEnd(id, socket, reason)
+            this.controller.handleClientEnd(id, socket, reason.toString())
           })
           .once(Events.Disconnecting, (reason: string): void => {
             const id = socket.id;
