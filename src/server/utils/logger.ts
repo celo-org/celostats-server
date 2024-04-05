@@ -1,18 +1,10 @@
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let chalk: any;
-
-async function loadChalk() {
-    chalk = await import('chalk');
-}
-
-loadChalk();
-
+import chalk from "chalk"
 import * as util from "util"
 
 declare global {
   interface Console {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    success: any;
+    success: any
   }
 }
 const sections = [
@@ -163,7 +155,8 @@ styles.forEach(function (item) {
     if (typeof args[0] === 'object') {
       message = util.inspect(args[0], {depth: null, colors: true})
     } else {
-      message = item.messageColor(util.format(args[0], ...args.slice(1)))
+      // eslint-disable-next-line prefer-spread
+      message = item.messageColor(util.format.apply(util, args))
     }
 
     // @ts-expect-error fix linter
