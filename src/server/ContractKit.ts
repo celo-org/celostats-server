@@ -15,17 +15,17 @@ let kit: {
 const getContractKit = async () => {
   if (!kit) {
     try {
-      const contractkit: ContractKit = newKit(cfg.JSONRPC)
+      const contractKit: ContractKit = newKit(cfg.JSONRPC)
       
       // load contracts
-      const validators: ValidatorsWrapper = await contractkit.contracts.getValidators()
-      const election: ElectionWrapper = await contractkit.contracts.getElection()
-      const chainId = await contractkit.connection.chainId()
+      const validators: ValidatorsWrapper = await contractKit.contracts.getValidators()
+      const election: ElectionWrapper = await contractKit.contracts.getElection()
+      const chainId = await contractKit.connection.chainId()
       
       kit = {
         validators,
         election,
-        connection: kit.connection,
+        connection: contractKit.connection,
         chainId
       }
     } catch (err) {
