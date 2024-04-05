@@ -3,7 +3,6 @@ import { cfg } from "./utils/config"
 import { ContractKit, newKit } from "@celo/contractkit"
 import { ValidatorsWrapper } from "@celo/contractkit/lib/wrappers/Validators"
 import { ElectionWrapper } from "@celo/contractkit/lib/wrappers/Election"
-import Web3 from "web3";
 import { Connection } from '@celo/connect'
 
 let kit: { 

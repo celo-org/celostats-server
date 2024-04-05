@@ -1,10 +1,10 @@
 import '../utils/logger'
 import io from "socket.io"
-// @ts-ignore
+// @ts-expect-error Not a module
 import Primus from "primus"
-// @ts-ignore
+// @ts-expect-error Not a module
 import * as primusEmit from "primus-emit"
-// @ts-ignore
+// @ts-expect-error Not a module
 import * as primusSparkLatency from "primus-spark-latency"
 import express from "express";
 import Controller from "../Controller";

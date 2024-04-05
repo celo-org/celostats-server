@@ -1,4 +1,4 @@
-// @ts-ignore
+// @ts-expect-error not a module
 import Primus from "primus"
 
 export function deleteSpark(

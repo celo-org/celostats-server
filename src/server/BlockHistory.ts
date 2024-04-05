@@ -1,4 +1,3 @@
-// @ts-ignore
 import * as d3 from "d3"
 import Blocks from "./Blocks";
 import { Block } from "./interfaces/Block";

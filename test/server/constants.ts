@@ -14,7 +14,6 @@ export const dummyInfo: Info = {
   protocol: '',
   api: '',
   os: '',
-  // eslint-disable-next-line @typescript-eslint/camelcase
   os_v: '',
   client: ''
 }

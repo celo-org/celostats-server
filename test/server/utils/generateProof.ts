@@ -2,9 +2,8 @@ import { Wrapper } from "../../../src/server/interfaces/Wrapper";
 import { Proof } from "../../../src/server/interfaces/Proof";
 import { hash } from "../../../src/server/utils/hash";
 import { trusted } from "../../../src/server/utils/config";
-// @ts-ignore
 import { ec as EC } from "elliptic"
-// @ts-ignore
+// @tx-expect-error not a module
 import { KeyPair } from "elliptic/lib/elliptic/ec"
 
 const secp256k1 = new EC('secp256k1')

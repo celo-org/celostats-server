@@ -30,7 +30,6 @@ export default class Node {
     net: null,
     node: null,
     os: null,
-    // eslint-disable-next-line @typescript-eslint/camelcase
     os_v: null,
     port: null,
     protocol: null,

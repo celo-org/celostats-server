@@ -1,5 +1,5 @@
 import './utils/logger'
-// @ts-ignore
+// @ts-expect-error Primus is not a module
 import Primus from "primus"
 import Node from "./Node";
 import io from "socket.io"
@@ -97,6 +97,7 @@ export default class Controller {
   private emit(
     s: io.Socket | Primus.spark,
     action: Events,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     payload?: object | any[]
   ) {
     if (payload) {

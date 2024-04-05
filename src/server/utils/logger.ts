@@ -3,6 +3,7 @@ import * as util from "util"
 
 declare global {
   interface Console {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     success: any
   }
 }
@@ -97,20 +98,20 @@ const styles = [
 
 styles.forEach(function (item) {
   if (item.inherit !== undefined) {
-    // @ts-ignore
+    // @ts-expect-error fix linter
     console[item.name] = console[item.inherit]
   }
 
-  // @ts-ignore
+  // @ts-expect-error fix linter
   const fn = console[item.name]
 
-  // @ts-ignore
+  // @ts-expect-error fix linter
   console[item.name] = (...args) => {
     if (args.length === 0) {
       return false
     }
 
-    // @ts-ignore
+    // @ts-expect-error fix linter
     if (verbosity[ENV_VERBOSITY].indexOf(item.name) === -1) {
       return false
     }
@@ -139,7 +140,7 @@ styles.forEach(function (item) {
     sign = item.signColor.bold('[') + chalk.reset.bold.white(section) + item.signColor.bold(']')
 
     if (type !== null) {
-      // @ts-ignore
+      // @ts-expect-error fix linter
       sign = sign + ' ' + item.signColor.bold('[') + typeColors[type](type) + item.signColor.bold(']')
     }
 
@@ -154,12 +155,11 @@ styles.forEach(function (item) {
     if (typeof args[0] === 'object') {
       message = util.inspect(args[0], {depth: null, colors: true})
     } else {
-      // @ts-ignore
       // eslint-disable-next-line prefer-spread
       message = item.messageColor(util.format.apply(util, args))
     }
 
-    // @ts-ignore
+    // @ts-expect-error fix linter
     return fn.apply(this, item.formatter(sign, message))
   }
 })
