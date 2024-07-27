@@ -74,7 +74,7 @@
     "toastr": "^2.1.4",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.4",
-    "underscore": "1.13.6",
+    "underscore": "1.13.7",
     "utf-8-validate": "^6.0.3",
     "web3": "4.7.0",
     "ws": "^8.16.0"
@@ -91,7 +91,7 @@
     "url": "https://github.com/goerli/netstats-server.git"
   },
   "resolutions": {
-    "**/underscore": "1.12.1"
+    "**/underscore": "1.13.7"
   },
   "homepage": "https://github.com/goerli/netstats-server",
   "bugs": {
