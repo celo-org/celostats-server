@@ -76,7 +76,7 @@
     "typescript": "^5.4.4",
     "underscore": "1.13.6",
     "utf-8-validate": "^6.0.3",
-    "web3": "4.7.0",
+    "web3": "4.14.0",
     "ws": "^8.16.0"
   },
   "devDependencies": {
